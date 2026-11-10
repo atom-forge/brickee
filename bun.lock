@@ -5,7 +5,7 @@
     "": {
       "name": "@atom-forge/brickee",
       "devDependencies": {
-        "@atom-forge/ship": "file:../ship",
+        "@atom-forge/ship": "0.1.0",
         "@atom-forge/ui": "^0.0.37",
         "@lucide/svelte": "^1.59.0",
         "@sveltejs/adapter-auto": "^7.0.0",
@@ -35,7 +35,7 @@
 
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ["@atlaskit/pragmatic-drag-and-drop-hitbox@1.2.0", "", { "dependencies": { "@atlaskit/pragmatic-drag-and-drop": "^1.8.0", "@babel/runtime": "^7.0.0" } }, "sha512-eWJvvuHZOC4Yk+Li7QpS+JM2F/I50/3PhMvEcyvcHbXI0FP0kCDD1MiF8Hv7uSOxpk5JNqKoOmK8e1ncOzTgqA=="],
 
-    "@atom-forge/ship": ["@atom-forge/ship@file:../ship", { "bin": { "ship-it": "bin/ship-it.js" } }],
+    "@atom-forge/ship": ["@atom-forge/ship@0.1.0", "", { "bin": { "ship-it": "bin/ship-it.js" } }, "sha512-g+qq5WMqA8N1sw7iMeT5dXKoXpnBNJ6iG7kSD4nUMXylunawk0CGUMFKhKRwD7tzgGOjMPUnj8WkrdKoOxchHA=="],
 
     "@atom-forge/ui": ["@atom-forge/ui@0.0.37", "", { "dependencies": { "@atlaskit/pragmatic-drag-and-drop": "^1.7.9", "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0", "chart.js": "^4.5.1", "esm-env": "^1.2.2", "lucide-svelte": "^0.561.0", "marked": "^17.0.4", "sheetclip": "^0.3.0", "svelte-dnd-action": "^0.9.70", "svelte-highlight": "^7.9.0", "tailwind-merge": "^3.4.0", "turndown": "^7.2.0" }, "peerDependencies": { "@sveltejs/kit": "^2.0.0", "svelte": "^5.0.0" } }, "sha512-/CqQ/FJhHxxfjvyaekmxMLzbiAfPEtNhTbXknqAAGY0nOKdLagO6EuDgPMbw6bp5rkwLZz9um2/7l8TjJXOgCQ=="],
 

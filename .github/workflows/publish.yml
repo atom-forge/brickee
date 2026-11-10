@@ -13,19 +13,8 @@ jobs:
       contents: read
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    defaults:
-      run:
-        working-directory: brickee
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: brickee
-      - uses: actions/checkout@v4
-        with:
-          repository: atom-forge/ship
-          ref: 8410051f6bbcbafcc4826d3eeb78f1001e9aebdc
-          path: ship
-          persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version: 24
