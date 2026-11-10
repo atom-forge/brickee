@@ -22,7 +22,8 @@
 		"package": "svelte-package",
 		"prepublishOnly": "bun run prepack",
 		"pub-check": "ship-it check",
-		"pub": "ship-it"
+		"pub": "ship-it",
+		"pub-validate": "ship-it validate"
 	},
 	"ship": {
 		"verify": [
@@ -102,5 +103,9 @@
 		"block-editor",
 		"markdown",
 		"editor"
-	]
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org"
+	}
 }
