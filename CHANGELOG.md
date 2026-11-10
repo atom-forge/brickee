@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-11-10
+
 ### Added
 
 - Showcase site in `src/routes` (`bun run dev`), styled like the `@atom-forge/ui` site: a playground (editor beside its preview, stored JSON and markdown), the guide (editor and preview, split view, markdown, stored form and schema), a page per bundled plugin, writing, nesting and overriding plugins, image blocks, and the host contexts (per-view values, code languages, localisation), each with live examples and their code. It resolves `@atom-forge/brickee` to the local source and prerenders to `build/` (`@sveltejs/adapter-static`); it is not part of the npm package.
