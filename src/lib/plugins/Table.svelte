@@ -52,12 +52,9 @@
 		BetweenVerticalEnd,
 		BetweenVerticalStart,
 		Columns3,
-		Info,
 		Rows3,
 		GripHorizontal,
 		GripVertical,
-		PanelBottom,
-		PanelTop,
 		Plus,
 		TextAlignCenter,
 		TextAlignEnd,
@@ -78,17 +75,6 @@
 	let at = $state<{ r: number; c: number } | null>(null);
 	const heads = $derived(tableHeads(props));
 	const headOf = (r: number) => rowHead(heads, r, rows.length);
-	function toggleHead(h: Head) {
-		const next = new Set(heads);
-		if (!next.delete(h)) next.add(h);
-		const { header: _, ...rest } = props;
-		props = { ...rest, heads: HEADS.filter((x) => next.has(x)) } as TableProps;
-	}
-	const HEAD_TOGGLES: { head: Head; icon: typeof PanelTop; label: string }[] = [
-		{ head: 'top', icon: PanelTop, label: 'Header row' },
-		{ head: 'bottom', icon: PanelBottom, label: 'Footer row (e.g. sums)' }
-	];
-
 	/* Dragging a row or a column by its grip: `to` is the slot it would go to (0…count), shown as a blue line. */
 	let drag = $state<{ kind: 'row' | 'col'; from: number; to: number } | null>(null);
 
@@ -250,13 +236,8 @@
 					{/each}
 				</div>
 			{:else}
-				<span class="hint" title={tr('Enter: next row · Shift+Enter: line break · paste from a spreadsheet')}><Info size={14} /></span>
+				<span class="idle">{tr('Click a cell to edit its row and column')}</span>
 			{/if}
-			<div class="seg heads">
-				{#each HEAD_TOGGLES as h (h.head)}
-					<button type="button" title={tr(h.label)} aria-pressed={heads.has(h.head)} class:on={heads.has(h.head)} onmousedown={(e) => e.preventDefault()} onclick={() => toggleHead(h.head)}><h.icon size={15} /></button>
-				{/each}
-			</div>
 		</div>
 	{/if}
 	<div class="grid">
@@ -321,9 +302,9 @@
 	.table {
 		font: 15px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif;
 	}
-	/* Beside the tag and the […] button in the corner; when it wraps, it pushes the table down. */
+	/* The row and column tools of the cell being edited; when it wraps, it pushes the table down. */
 	.bar {
-		margin: 0 9em 8px 0;
+		margin: 0 0 8px;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -336,13 +317,17 @@
 		gap: 1px;
 		padding: 2px;
 		border-radius: 8px;
-		background: #f4f4f6;
+		background: var(--color-muted, #f4f4f6);
+	}
+	.idle {
+		font-size: 12px;
+		color: var(--color-muted-contrast, #a0a0a8);
 	}
 	.label {
 		display: inline-grid;
 		place-items: center;
 		padding: 0 4px 0 5px;
-		color: #a0a0a8;
+		color: var(--color-muted-contrast, #a0a0a8);
 	}
 	.bar button {
 		display: inline-grid;
@@ -353,16 +338,16 @@
 		border: 0;
 		border-radius: 6px;
 		background: none;
-		color: #4b4b55;
+		color: var(--color-surface-contrast, #4b4b55);
 		cursor: pointer;
 	}
 	.bar button:hover:not(:disabled) {
-		background: #fff;
-		color: #1d1d1f;
+		background: var(--color-surface, #fff);
+		color: var(--color-surface-contrast, #1d1d1f);
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 	}
 	.bar button.on {
-		background: #fff;
+		background: var(--color-surface, #fff);
 		color: #2563eb;
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 	}
@@ -378,26 +363,15 @@
 		gap: 5px;
 		height: 28px;
 		padding: 0 10px;
-		border: 1px solid #e5e5ea;
+		border: 1px solid var(--color-frame, #e5e5ea);
 		border-radius: 8px;
 		font-size: 12px;
 		font-weight: 500;
 	}
 	.bar .toggle.on {
-		border-color: #bfdbfe;
-		background: #eff6ff;
+		border-color: color-mix(in srgb, #3b82f6 35%, transparent);
+		background: color-mix(in srgb, #3b82f6 8%, transparent);
 		box-shadow: none;
-	}
-	.hint {
-		display: inline-grid;
-		place-items: center;
-		color: #a0a0a8;
-		cursor: help;
-		opacity: 0;
-		transition: opacity 0.12s;
-	}
-	.table:hover .hint {
-		opacity: 1;
 	}
 
 	/* The table, with a + bar on the right (column) and below (row) that shows on hover. */
@@ -409,9 +383,9 @@
 	}
 	.frame {
 		overflow-x: auto;
-		border: 1px solid #e3e3e8;
+		border: 1px solid var(--color-frame, #e3e3e8);
 		border-radius: 10px;
-		background: #fff;
+		background: var(--color-surface, #fff);
 	}
 	table {
 		width: 100%;
@@ -421,8 +395,8 @@
 	td {
 		height: 1px;
 		padding: 0;
-		border-right: 1px solid #ececf0;
-		border-bottom: 1px solid #ececf0;
+		border-right: 1px solid var(--color-frame, #ececf0);
+		border-bottom: 1px solid var(--color-frame, #ececf0);
 		vertical-align: top;
 		transition: background 0.1s;
 	}
@@ -434,16 +408,16 @@
 	}
 	tr.row-on td,
 	td.col-on {
-		background: #f8faff;
+		background: color-mix(in srgb, #3b82f6 4%, transparent);
 	}
 	/* The header and the footer as on the site: a band above, the sums bold on grey behind a thicker line. */
 	tr.h-top td:not(.rgrip) {
-		background: #f1f1f4;
-		border-bottom: 2px solid #d8d8de;
+		background: var(--color-muted, #f1f1f4);
+		border-bottom: 2px solid var(--color-frame, #d8d8de);
 	}
 	tr.h-bottom td:not(.rgrip) {
-		background: #f1f1f4;
-		border-top: 2px solid #d8d8de;
+		background: var(--color-muted, #f1f1f4);
+		border-top: 2px solid var(--color-frame, #d8d8de);
 	}
 	textarea {
 		display: block;
@@ -461,10 +435,10 @@
 		outline: none;
 	}
 	textarea::placeholder {
-		color: #b8b8c0;
+		color: var(--color-muted-contrast, #b8b8c0);
 	}
 	textarea:focus {
-		background: #fff;
+		background: var(--color-surface, #fff);
 		box-shadow: inset 0 0 0 2px #3b82f6;
 	}
 	tr.h-top textarea {
@@ -472,21 +446,21 @@
 		font-size: 13px;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
-		color: #3a3a44;
+		color: var(--color-surface-contrast, #3a3a44);
 	}
 	tr.h-bottom textarea {
 		font-weight: 600;
-		color: #1d1d1f;
+		color: var(--color-surface-contrast, #1d1d1f);
 	}
 	/* grips: a thin row above the columns and a thin column before the rows, shown on hover */
 	td.corner,
 	td.rgrip {
 		width: 14px;
-		border-right: 1px solid #ececf0;
+		border-right: 1px solid var(--color-frame, #ececf0);
 	}
 	tr.grips td {
 		height: 14px;
-		border-bottom: 1px solid #ececf0;
+		border-bottom: 1px solid var(--color-frame, #ececf0);
 	}
 	.grip {
 		display: grid;
@@ -497,7 +471,7 @@
 		padding: 0;
 		border: 0;
 		background: none;
-		color: #b0b0b8;
+		color: var(--color-muted-contrast, #b0b0b8);
 		cursor: grab;
 		opacity: 0;
 		touch-action: none;
@@ -509,7 +483,7 @@
 	}
 	.grip:hover {
 		color: #2563eb;
-		background: #eef3fd;
+		background: color-mix(in srgb, #3b82f6 9%, transparent);
 	}
 	table.dragging,
 	table.dragging * {
@@ -540,8 +514,8 @@
 		padding: 0;
 		border: 0;
 		border-radius: 6px;
-		background: #f4f4f6;
-		color: #8a8a94;
+		background: var(--color-muted, #f4f4f6);
+		color: var(--color-muted-contrast, #8a8a94);
 		cursor: pointer;
 		opacity: 0;
 		transition: opacity 0.12s, background 0.12s;
@@ -557,7 +531,7 @@
 	}
 	.add-col:hover,
 	.add-row:hover {
-		background: #e8eefc;
+		background: color-mix(in srgb, #3b82f6 12%, transparent);
 		color: #2563eb;
 	}
 </style>

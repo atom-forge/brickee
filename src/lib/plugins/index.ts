@@ -1,6 +1,6 @@
 // The bundled plugins: plugins like any other (written with the kit), an app picks the ones it wants. Only general
 // blocks live here (video, map, table, gap); anything an app gives its own meaning to belongs in the app.
-import { MapPin, SquarePlay, Table, UnfoldVertical } from '@lucide/svelte';
+import { MapPin, PanelBottom, PanelTop, SquarePlay, Table, UnfoldVertical } from '@lucide/svelte';
 import { mdText } from '../kit/util';
 import type { BlockPlugin } from '../types';
 import { youtubeId } from './util';
@@ -51,6 +51,17 @@ export const table: BlockPlugin<TableProps> = {
 	keys: 'table grid rows columns price list',
 	icon: Table,
 	props: () => ({ rows: [['', ''], ['', '']], heads: ['top'] }),
+	fields: [
+		{
+			key: 'heads',
+			label: 'Header and footer',
+			kind: 'toggles',
+			options: [
+				{ value: 'top', label: 'Header row', icon: PanelTop },
+				{ value: 'bottom', label: 'Footer row (e.g. sums)', icon: PanelBottom }
+			]
+		}
+	],
 	tag: (p) => `table · ${p.rows?.length ?? 0}×${p.rows?.[0]?.length ?? 0}`,
 	content: 'none',
 	markdown: (p) => {

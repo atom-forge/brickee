@@ -6,11 +6,27 @@ This chapter lists the changes that may require action when you move to a newer 
 
 Changes that need no action from you — new exports, fixes, documentation updates — are listed only in the changelog (`CHANGELOG.md`, shipped with the package).
 
-> **No migration needed yet**
->
-> `@atom-forge/brickee` has not had a release that requires changes in code using it. The section below is only for applications that used the editor before it became this package.
+## From 0.0.1 to 0.0.2
 
-## From the `block-editor` workspace package to Unreleased
+### Images and media are no longer part of the package
+
+The package has no notion of images any more. Whether a block stores an image's URL or an id, how the user picks the image, and how the stored value becomes an address are decided by the application's own image plugin (see [Images](writing-plugins.md#images)).
+
+| Removed | Was |
+|---|---|
+| `kind: 'image'`, `kind: 'images'` | Field kinds that stored the id (or ids) of a picked media item, with the built-in image picker popup |
+| `media` prop of `Editor` and `Preview` | The images blocks could pick from and refer to |
+| `provideMedia`, `useMedia`, `findMedia`, `MediaItem` | The media context, its lookup and its type |
+| `media` option of `toMarkdown` | `toMarkdown(blocks, { plugins, media })` is now `toMarkdown(blocks, { plugins })` |
+| `ctx.media` in a plugin's `markdown(props, ctx)` | `MarkdownContext` is now `{ inner }` |
+
+`PropField['kind']` is now `'text' | 'textarea' | 'color' | 'select' | 'slider'`. Stored documents are unaffected: a block's props keep whatever they stored, ids included.
+
+**What to do:** in your image plugins, replace each `image` or `images` field with your own picking — a button in the plugin's view that opens your media dialog or an upload and writes the result into `props`, or a plain `text` field for a URL — and keep the prop keys, so stored documents still load. Remove the `media` prop from your editors and previews, and the `media` option from your `toMarkdown` calls. Where a view, a preview or a `markdown` form turned an id into an address with `useMedia`, `findMedia` or `ctx.media`, look it up in your application's own data instead: a module of your app, or a Svelte context of your own provided above the editor and the preview (`markdown` runs outside components, so it needs module data). Define a `MediaItem`-like type in your app if you still need one.
+
+## From the `block-editor` workspace package to 0.0.1
+
+This section is only for applications that used the editor before it became this package.
 
 The editor started as `block-editor`, a workspace package inside an application. It moved here as `@atom-forge/brickee` with the same stored form, so saved documents need no conversion. The import specifiers changed, the plugin kit moved from the plugins entry point into the core, and the site-specific plugins stayed with the application.
 

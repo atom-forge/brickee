@@ -79,18 +79,17 @@ Markdown is a first-class format: the clipboard carries it, and a host can impor
 | `fromStored(block)` | `StoredBlock` → `Block` | anywhere |
 | `toStored(block)` | `Block` → `StoredBlock` | browser only |
 | `fromMarkdown(text)` | markdown → `Block[]` | anywhere |
-| `toMarkdown(blocks, { plugins, media })` | `Block[]` → markdown | browser only |
+| `toMarkdown(blocks, { plugins })` | `Block[]` → markdown | browser only |
 | `inline(md)` | inline markdown → inline HTML | anywhere |
 
 The markdown functions work on the editor form (`Block[]`), so stored documents go through `fromStored` and `toStored`:
 
 ```ts
-import { fromMarkdown, fromStored, toMarkdown, toStored, type MediaItem, type StoredBlock } from '@atom-forge/brickee';
+import { fromMarkdown, fromStored, toMarkdown, toStored, type StoredBlock } from '@atom-forge/brickee';
 import { PLUGINS } from '@atom-forge/brickee/plugins';
 
 // Stored document -> markdown (browser only).
-export const exportMarkdown = (doc: StoredBlock[], media: MediaItem[]) =>
-	toMarkdown(doc.map(fromStored), { plugins: PLUGINS, media });
+export const exportMarkdown = (doc: StoredBlock[]) => toMarkdown(doc.map(fromStored), { plugins: PLUGINS });
 
 // Markdown -> stored document (browser only).
 export const importMarkdown = (text: string): StoredBlock[] => fromMarkdown(text).map(toStored);
@@ -110,6 +109,6 @@ What `toMarkdown` writes:
 
 - consecutive list items on consecutive lines, every other block separated by a blank line;
 - list items and paragraphs indented by two spaces per level;
-- a plugin block through its plugin's `markdown(props, { inner, media })`, where `inner` is its nested blocks already converted; a plugin without a markdown form, or one returning `''`, is left out.
+- a plugin block through its plugin's `markdown(props, { inner })`, where `inner` is its nested blocks already converted; a plugin without a markdown form, or one returning `''`, is left out.
 
 Writing a markdown form for your own plugin is covered in [Writing plugins](writing-plugins.md#markdown-form).

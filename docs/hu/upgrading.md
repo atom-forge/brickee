@@ -6,11 +6,27 @@ Ez a fejezet azokat a változásokat sorolja fel, amelyek teendőt igényelhetne
 
 A tőled semmit nem igénylő változások – új exportok, javítások, dokumentációfrissítések – csak a változásnaplóban (`CHANGELOG.md`, a csomaggal együtt szállítva) szerepelnek.
 
-> **Egyelőre nincs szükség migrációra**
->
-> Az `@atom-forge/brickee`-nek még nem volt olyan kiadása, amely változtatást igényelt volna az azt használó kódban. Az alábbi szakasz csak azoknak az alkalmazásoknak szól, amelyek már azelőtt használták a szerkesztőt, hogy ebből a csomagból lett volna.
+## A 0.0.1-ről a 0.0.2-re
 
-## A `block-editor` munkaterület-csomagról az Unreleased változatra
+### A képek és a média már nem részei a csomagnak
+
+A csomag többé nem ismeri a kép fogalmát. Hogy egy blokk a kép URL-jét vagy egy azonosítót tárol, hogyan választja ki a felhasználó a képet, és hogyan lesz a tárolt értékből cím, azt az alkalmazás saját képpluginja dönti el (lásd [Képek](writing-plugins.md#képek)).
+
+| Eltávolítva | Mi volt |
+|---|---|
+| `kind: 'image'`, `kind: 'images'` | Mezőfajták, amelyek egy kiválasztott médiaelem azonosítóját (vagy azonosítóit) tárolták, a beépített képválasztó felugró ablakkal |
+| Az `Editor` és a `Preview` `media` propja | A képek, amelyek közül a blokkok választhattak, és amelyekre hivatkozhattak |
+| `provideMedia`, `useMedia`, `findMedia`, `MediaItem` | A média-kontextus, a keresője és a típusa |
+| A `toMarkdown` `media` beállítása | A `toMarkdown(blocks, { plugins, media })` helyett most `toMarkdown(blocks, { plugins })` |
+| `ctx.media` egy plugin `markdown(props, ctx)` függvényében | A `MarkdownContext` most `{ inner }` |
+
+A `PropField['kind']` most `'text' | 'textarea' | 'color' | 'select' | 'slider'`. A tárolt dokumentumokat ez nem érinti: egy blokk propsa megtartja, amit tárolt, az azonosítókat is.
+
+**Teendő:** a képpluginjaidban cseréld le az `image` és `images` mezőket saját kiválasztásra — egy gombra a plugin nézetében, amely megnyitja a médiaablakodat vagy egy feltöltést, és az eredményt a `props`-ba írja, vagy egy egyszerű `text` mezőre egy URL-hez —, és tartsd meg a prop-kulcsokat, hogy a tárolt dokumentumok továbbra is betöltődjenek. Töröld a `media` propot a szerkesztőidről és előnézeteidről, és a `media` beállítást a `toMarkdown`-hívásaidból. Ahol egy nézet, előnézet vagy `markdown` alak a `useMedia`, `findMedia` vagy `ctx.media` segítségével alakított címmé egy azonosítót, ott az alkalmazásod saját adatában keresd ki: az alkalmazásod egy moduljában, vagy egy saját Svelte-kontextusban, amelyet a szerkesztő és az előnézet fölött adsz meg (a `markdown` komponenseken kívül fut, ezért modulbeli adat kell neki). Ha továbbra is szükséged van rá, definiálj egy `MediaItem`-szerű típust az alkalmazásodban.
+
+## A `block-editor` munkaterület-csomagról a 0.0.1-es változatra
+
+Ez a szakasz csak azoknak az alkalmazásoknak szól, amelyek már azelőtt használták a szerkesztőt, hogy ebből a csomagból lett volna.
 
 A szerkesztő `block-editor` néven, egy alkalmazáson belüli munkaterület-csomagként indult. Ugyanazzal a tárolt alakkal költözött ide `@atom-forge/brickee` néven, így az elmentett dokumentumokat nem kell átalakítani. Az import-azonosítók megváltoztak, a plugin-kit a pluginok belépési pontjából átkerült a magba, az oldalspecifikus pluginok pedig az alkalmazásnál maradtak.
 

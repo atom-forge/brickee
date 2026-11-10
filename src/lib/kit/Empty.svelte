@@ -16,9 +16,9 @@
 		justify-content: center;
 		gap: 8px;
 		min-height: 96px;
-		border: 1px dashed #d4d4da;
+		border: 1px dashed var(--color-frame, #d4d4da);
 		border-radius: 10px;
-		color: #a0a0a8;
+		color: var(--color-muted-contrast, #a0a0a8);
 		font: 14px system-ui, sans-serif;
 	}
 </style>

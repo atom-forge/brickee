@@ -2,143 +2,21 @@
 
 [← Előző](writing-plugins.md) · [Tartalom](index.md) · [Következő →](server-side.md)
 
-A szerkesztőnek nincsenek propjai az alkalmazás fogalmaihoz. Amit a befogadó alkalmazás tud — a képeit, az éppen mutatott oldalszélességet, a nyelvét —, az három Svelte-kontextuson keresztül jut el a pluginokhoz. Mindegyikhez tartozik egy `provide…` függvény, amelyet a szerkesztő vagy az előnézet fölötti komponens inicializálásakor hívsz meg, és egy `use…` függvény a plugin-komponensek számára.
+A szerkesztőnek nincsenek propjai az alkalmazás fogalmaihoz. Amit a befogadó alkalmazás tud — az éppen mutatott oldalszélességet, a kiemelhető kódnyelveket, a nyelvét —, az három Svelte-kontextuson keresztül jut el a pluginokhoz. Mindegyikhez tartozik egy `provide…` függvény, amelyet a szerkesztő vagy az előnézet fölötti komponens inicializálásakor hívsz meg, és egy `use…` függvény a plugin-komponensek számára.
 
 | Kontextus | Megadás | Olvasás | Mit hordoz |
 |---|---|---|---|
-| Média | `media` prop, vagy `provideMedia(() => list)` | `useMedia()` | A képek, amelyek közül a blokkok választhatnak. |
 | Nézet | `provideView(() => key)` | `useView()` | A nézet, amelyet a nézetenkénti mezők szerkesztenek. |
+| Kódnyelvek | `provideCodeLanguages(() => list)` | `useCodeLanguages()` | A nyelvek, amelyeket a kódblokk felkínál. |
 | Szöveg | `messages` prop, vagy `provideText(() => messages)` | `useText()` | Felületi szövegek az alkalmazás nyelvén. |
 
 A beágyazott szerkesztők és előnézetek mindhármat a szülőjüktől öröklik.
 
-## Média
-
-A blokkok soha nem tárolnak kép-URL-t. A képmező egy `MediaItem` **azonosítóját** tárolja, a szerkesztő, az előnézet és a pluginok pedig a dokumentum médiájában keresik ki az elemet:
-
-```ts
-interface MediaItem {
-	id: string; // a blokk propsában tárolva
-	name: string; // fájlnév vagy cím, a választóban jelenik meg
-	url: string; // a kép címe
-	group?: string; // címsor a választóban (pl. a melléklet kategóriája)
-}
-```
-
-A mellékelt pluginok nem használnak képeket; a képblokkokat neked kell megírnod, mert az elrendezésük az oldalé. Egy minimális `photo` plugin — képmező, alternatív szöveg és magasságcsúszka:
-
-```svelte
-<!-- PhotoView.svelte -->
-<script lang="ts" module>
-	export interface PhotoProps extends Record<string, unknown> {
-		/** Egy MediaItem azonosítója. */
-		image: string;
-		alt: string;
-		/** A magasság a szélesség %-ában (20–150), vagy beállítatlan a kép saját alakjához. */
-		ratio?: unknown;
-	}
-
-	/** CSS aspect-ratio egy tárolt magasságból, vagy undefined. */
-	export const aspect = (v: unknown) => {
-		const n = Number(v);
-		return n >= 20 && n <= 150 ? `100 / ${n}` : undefined;
-	};
-</script>
-
-<script lang="ts">
-	import { ImageIcon } from '@lucide/svelte';
-	import { Empty, findMedia, useMedia, type PluginViewProps } from '@atom-forge/brickee';
-
-	let { props = $bindable(), blocks = $bindable() }: PluginViewProps<PhotoProps> = $props();
-	const media = useMedia();
-	const item = $derived(findMedia(media(), props.image));
-</script>
-
-{#if item}
-	<img src={item.url} alt={props.alt} style="max-width: 100%" />
-{:else}
-	<Empty icon={ImageIcon} text="Pick an image above" />
-{/if}
-```
-
-```svelte
-<!-- PhotoPreview.svelte -->
-<script lang="ts">
-	import { baseValue, findMedia, useMedia, type PluginPreviewProps } from '@atom-forge/brickee';
-	import { aspect, type PhotoProps } from './PhotoView.svelte';
-
-	let { props }: PluginPreviewProps<PhotoProps> = $props();
-	const media = useMedia();
-	const item = $derived(findMedia(media(), props.image));
-</script>
-
-{#if item}
-	<img src={item.url} alt={props.alt ?? ''} style:aspect-ratio={aspect(baseValue(props.ratio))} />
-{/if}
-
-<style>
-	img {
-		width: 100%;
-		object-fit: cover;
-	}
-</style>
-```
-
-```ts
-// photo.ts
-import { ImageIcon } from '@lucide/svelte';
-import { findMedia, mdText, type BlockPlugin } from '@atom-forge/brickee';
-import PhotoView, { type PhotoProps } from './PhotoView.svelte';
-import PhotoPreview from './PhotoPreview.svelte';
-
-export const photo: BlockPlugin<PhotoProps> = {
-	type: 'photo',
-	label: 'Photo',
-	hint: 'One picked image',
-	keys: 'photo image picture',
-	icon: ImageIcon,
-	props: () => ({ image: '', alt: '' }),
-	fields: [
-		{ key: 'image', label: 'Image', kind: 'image' },
-		{ key: 'alt', label: 'Alt text', kind: 'text', placeholder: 'What the image shows' },
-		{ key: 'ratio', label: 'Height', kind: 'slider', min: 20, max: 150, unit: '%', none: 'Original' }
-	],
-	tag: () => 'photo',
-	content: 'none',
-	markdown: (p, { media }) => {
-		const url = findMedia(media, p.image)?.url;
-		return url ? `![${mdText(p.alt)}](${url})` : '';
-	},
-	view: PhotoView,
-	preview: PhotoPreview
-};
-```
-
-A szerkesztőnek és az előnézetnek ugyanazt a médiát add:
-
-```svelte
-<script lang="ts">
-	import { Editor, Preview, type MediaItem, type StoredBlock } from '@atom-forge/brickee';
-	import { photo } from './photo';
-
-	let { value = $bindable(), media }: { value: StoredBlock[]; media: MediaItem[] } = $props();
-</script>
-
-<Editor bind:value plugins={[photo]} {media} />
-<Preview blocks={value} plugins={[photo]} {media} />
-```
-
-Plugin-komponensben a listát a `useMedia()`-val olvasd ki — függvényt ad vissza, így a lista mindig friss marad —, egy elemet pedig a `findMedia(list, id)`-vel keress meg, ahogy a photo nézete és előnézete is teszi.
-
-> **Bélyegképek a szerkesztőben**
->
-> A szerkesztőnek csak kis képekre van szüksége. Mivel a blokkok azonosítókat tárolnak, a szerkesztőnek adhatsz egy bélyegkép-URL-ekből álló listát, az oldalon lévő előnézetnek pedig egy teljes méretű URL-ekből állót, ugyanazokkal az azonosítókkal.
-
-Tipikus forrás egy oldal feltöltött mellékletei vagy egy médiatár. Minden képnek, amelyre egy dokumentum hivatkozik, szerepelnie kell a listában, különben a blokkja semmit sem renderel.
+A képek nem kontextuson keresztül érkeznek: hogy egy képblokk mit tárol, és honnan veszi a képeit, azt az alkalmazás saját pluginja dönti el (lásd [Képek](writing-plugins.md#képek)).
 
 ## Nézetenkénti értékek
 
-Egyes beállítások attól függnek, hogyan jelenik meg az oldal: egy képnek telefonon más képarány kellhet, mint széles képernyőn. A `views` beállítással rendelkező `slider` mező nézetenként tárol értéket:
+Egyes beállítások attól függnek, hogyan jelenik meg az oldal: egy képnek telefonon más képarány kellhet, mint széles képernyőn. A `views` beállítással rendelkező `slider` mező nézetenként tárol értéket. Itt ez a [Pluginok írása](writing-plugins.md#képek) fejezet `photo` pluginjának magassága és a mellékelt `gap`:
 
 ```ts
 import type { BlockPlugin } from '@atom-forge/brickee';
@@ -184,18 +62,17 @@ Az előnézet a `viewValues(value, keys)`-szel olvassa ki őket — minden néze
 
 ```svelte
 <script lang="ts">
-	import { findMedia, useMedia, viewValues, type PluginPreviewProps } from '@atom-forge/brickee';
-	import { aspect, type PhotoProps } from './PhotoView.svelte';
+	import { viewValues, type PluginPreviewProps } from '@atom-forge/brickee';
+	import { aspect, imageSrc, type PhotoProps } from './PhotoView.svelte';
 
 	let { props }: PluginPreviewProps<PhotoProps> = $props();
-	const media = useMedia();
-	const item = $derived(findMedia(media(), props.image));
+	const src = $derived(imageSrc(props.url));
 	// desktop, tablet, phone: mindegyikhez egy CSS aspect-ratio ('auto': a kép saját alakja)
 	const r = $derived(viewValues(props.ratio, ['desktop', 'tablet', 'phone']).map((v) => aspect(v) ?? 'auto'));
 </script>
 
-{#if item}
-	<img src={item.url} alt={props.alt ?? ''} style:--r-desktop={r[0]} style:--r-tablet={r[1]} style:--r-phone={r[2]} />
+{#if src}
+	<img {src} alt={props.alt ?? ''} style:--r-desktop={r[0]} style:--r-tablet={r[1]} style:--r-phone={r[2]} />
 {/if}
 
 <style>
@@ -220,6 +97,23 @@ Az előnézet a `viewValues(value, keys)`-szel olvassa ki őket — minden néze
 > **Csak csúszkák**
 >
 > A `views` a `slider` mezőkön támogatott. A többi mezőfajta figyelmen kívül hagyja.
+
+## Kódnyelvek
+
+A kódblokk nyelve (`props.lang`, a markdown-kerítés info-szövege) alapból szabad szöveg. Ha az alkalmazás tudja, mely nyelveket tud kiemelni az oldala, megadja a listát, és a kódblokk mezősávjában a mező legördülő lista lesz, elején a *Nincs* opcióval:
+
+```svelte
+<script lang="ts">
+	import { Editor, provideCodeLanguages, type StoredBlock } from '@atom-forge/brickee';
+
+	let { value = $bindable() }: { value: StoredBlock[] } = $props();
+	provideCodeLanguages(() => [{ value: 'ts', label: 'TypeScript' }, { value: 'svelte', label: 'Svelte' }, 'css', 'bash']);
+</script>
+
+<Editor bind:value />
+```
+
+Egy elem string vagy `{ value, label? }`; a `value` kerül tárolásra. A beágyazott szerkesztők öröklik a listát. Egy tárolt nyelv, amely nincs a listában, opció marad, így egy régebbi dokumentum megnyitásakor semmi sem vész el.
 
 ## Felületi szövegek
 

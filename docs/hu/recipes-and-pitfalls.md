@@ -38,23 +38,22 @@ export const messages: Messages = { ...hu, Button: 'Gomb', 'A link as a button':
 ```svelte
 <!-- lib/BlockEditor.svelte -->
 <script lang="ts">
-	import { Editor, provideView, type MediaItem, type StoredBlock } from '@atom-forge/brickee';
+	import { Editor, provideView, type StoredBlock } from '@atom-forge/brickee';
 	import { messages, PAGE_PALETTE, plugins } from './blocks';
 
 	let {
 		value = $bindable(),
-		media = [],
 		palette = PAGE_PALETTE,
 		view
-	}: { value: StoredBlock[]; media?: MediaItem[]; palette?: string[]; view?: string } = $props();
+	}: { value: StoredBlock[]; palette?: string[]; view?: string } = $props();
 
 	provideView(() => view);
 </script>
 
-<Editor bind:value {plugins} {palette} {media} {messages} />
+<Editor bind:value {plugins} {palette} {messages} />
 ```
 
-A közzétett oldalt a `<Preview blocks={doc} {plugins} {media} {messages} />`-val és ugyanazokkal a `plugins`-szal rendereld, így egy blokk ugyanúgy néz ki a szerkesztő előnézetében és az oldalon.
+A közzétett oldalt a `<Preview blocks={doc} {plugins} {messages} />`-val és ugyanazokkal a `plugins`-szal rendereld, így egy blokk ugyanúgy néz ki a szerkesztő előnézetében és az oldalon.
 
 ## A teljes dokumentum másolása markdownként
 
@@ -62,13 +61,13 @@ A kijelölt blokkok másolása már most is markdownt tesz a vágólapra. Egy, a
 
 ```svelte
 <script lang="ts">
-	import { fromStored, toMarkdown, type MediaItem, type StoredBlock } from '@atom-forge/brickee';
+	import { fromStored, toMarkdown, type StoredBlock } from '@atom-forge/brickee';
 	import { plugins } from './blocks';
 
-	let { doc, media = [] }: { doc: StoredBlock[]; media?: MediaItem[] } = $props();
+	let { doc }: { doc: StoredBlock[] } = $props();
 
 	// Kattintáskezelőben fut, így a csak böngészőben működő toMarkdown itt biztonságos.
-	const copy = () => navigator.clipboard.writeText(toMarkdown(doc.map(fromStored), { plugins, media }));
+	const copy = () => navigator.clipboard.writeText(toMarkdown(doc.map(fromStored), { plugins }));
 </script>
 
 <button type="button" onclick={copy}>Copy as markdown</button>
@@ -106,10 +105,12 @@ Az alkalmazás a csomag lefordított `dist/` mappáját olvassa, ezért minden v
 | Tünet | Ok | Megoldás |
 |---|---|---|
 | A blokkmezők és a popupok stílus nélkülinek tűnnek | Hiányzik az `@atom-forge/ui` téma CSS-e vagy a Tailwind `@source`-a | Állítsd be az `@atom-forge/ui`-t a dokumentációja szerint, és az alkalmazást a `Root`-ja alatt rendereld. |
+| A blokkfogantyúk balra kilógnak | A fogantyúk a szerkesztő dobozától balra jelennek meg | Adj a szerkesztőt körülvevő elemnek kb. 22 px bal oldali paddinget. |
 | A popupok nem nyílnak meg, vagy „context not found” hibák linkelt csomaggal | A `svelte` vagy az `@atom-forge/ui` két példányban van jelen | Vedd fel őket a Vite `resolve.dedupe` listájába. |
 | Egy plugin blokkja „Unknown block” feliratot mutat | A pluginja hiányzik a `plugins`-ból | Egy dokumentumtípus minden szerkesztőjének és előnézetének ugyanazokat a pluginokat add át. |
 | Egy blokk hiányzik a `Preview`-ból | A pluginjának nincs `preview`-ja | Adj a pluginnak `preview`-t (a mellékelt pluginoknak van alapértelmezett), vagy rendereld a blokkot a saját megjelenítőddel. |
-| Egy plugin blokkja hiányzik az oldalról | Az előnézet más `plugins`-t kapott, vagy a kép azonosítója nincs a `media`-ban | Ugyanazt a pluginlistát és médiát használd a szerkesztőhöz és az előnézethez. |
+| Egy plugin blokkja hiányzik az oldalról | Az előnézet más `plugins`-t kapott | Ugyanazt a pluginlistát használd a szerkesztőhöz és az előnézethez. |
+| Egy képblokk semmit sem renderel | Az előnézete elutasítja a tárolt címet, vagy az alkalmazás saját keresése nem ismeri a tárolt azonosítót | Olyan címet tárolj, amelyet az előnézet elfogad (`http(s)` vagy az oldalon belüli); az azonosítókat a szerkesztőben és az oldalon ugyanabból az adatból oldd fel. |
 | Egy doboz nem tehető egy másik dobozba | A beágyazott szerkesztők egy szint mélyek | A tárolókat tartalomblokkok befogadására tervezd, ne más tárolókéra. |
 | Egy blokk nem érhető el egy tárolón belül | Az `accepts` vagy az alkalmazás `palette`-je kihagyja | Vedd fel a palettaazonosítót az `accepts`-be (vagy használd az `'md:*'`-ot az összes beépítetthez). |
 | Egy egyedi blokk kétszer jelenik meg | A séma nem kényszeríti ki a `unique`-ot | Ellenőrizd a szerveren, ha az alkalmazásod számít rá. |

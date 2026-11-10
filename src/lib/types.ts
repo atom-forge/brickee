@@ -1,4 +1,3 @@
-import type { MediaItem } from './media';
 import type { Component } from 'svelte';
 import type { StoredBlock } from './model';
 import type { Icon } from './palette';
@@ -53,10 +52,11 @@ export interface PropField {
 	key: string;
 	label: string;
 	/**
-	 * 'image' picks one of the document's images (stores its id), 'images' several (an array of ids, in picking order).
+	 * 'toggles' is a row of icon buttons, each switching one of `options` on or off; stored as the list of the ones on
+	 * (in `options` order).
 	 * 'slider' steps through `options` in their order (e.g. heights), or, with `min` and `max`, sets a number freely.
 	 */
-	kind: 'text' | 'textarea' | 'color' | 'select' | 'slider' | 'image' | 'images';
+	kind: 'text' | 'textarea' | 'color' | 'select' | 'slider' | 'toggles';
 	placeholder?: string;
 	/** A number slider: its range, step (default 1) and unit shown after the value. */
 	min?: number;
@@ -75,8 +75,8 @@ export interface PropField {
 	 * alone, or, with own values for other views, as an object by view key.
 	 */
 	views?: { key: string; label: string }[];
-	/** For 'select' and 'slider'. */
-	options?: { value: string; label: string }[];
+	/** For 'select', 'slider' and 'toggles' (where `icon` is the button and `label` its tooltip). */
+	options?: { value: string; label: string; icon?: Icon }[];
 	/** The field's text from the stored value; default: the value as a string. */
 	format?: (value: unknown) => string;
 	/** The stored value from the field's text (e.g. a list from lines, an id from a URL); default: the text. '' removes the key. */
@@ -105,8 +105,6 @@ export interface PluginPreviewProps<P extends Props = Props> {
 export interface MarkdownContext {
 	/** The nested blocks as markdown ('' when it has none). */
 	inner: string;
-	/** The media of the document, to turn an attachment id into its url. */
-	media: MediaItem[];
 }
 
 export interface BlockPlugin<P extends Props = Props> {
@@ -132,7 +130,7 @@ export interface BlockPlugin<P extends Props = Props> {
 	 */
 	preview?: Component<PluginPreviewProps<any>>;
 	/**
-	 * For a plugin with nested blocks: the blocks it takes, as palette ids ('md:p', 'image'…); 'md:*' stands for every
+	 * For a plugin with nested blocks: the blocks it takes, as palette ids ('md:p', 'youtube'…); 'md:*' stands for every
 	 * built-in block. Its nested editor offers the host's palette narrowed to these. Default: everything the host has.
 	 */
 	accepts?: string[];

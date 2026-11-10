@@ -10,7 +10,7 @@ Everything else is a plugin. A plugin is a plain object (`BlockPlugin`) that nam
 
 - a **view** — a Svelte component shown in the editor;
 - a **preview** — a Svelte component that renders the block on the site;
-- **fields** — the settings shown on the top of the block (text, colour, select, slider, image…);
+- **fields** — the settings shown on the top of the block (text, colour, select, slider…);
 - optionally a **markdown form**, used when the document is copied or exported as markdown.
 
 The package ships four general-purpose plugins — table, YouTube video, map and gap — but they are plugins like any other: nothing in the core depends on them, and you pass only the ones you want. Image blocks, boxes and other site-specific blocks are plugins you write yourself.
@@ -24,7 +24,7 @@ bun add @atom-forge/brickee @atom-forge/ui @lucide/svelte
 | Peer dependency | Why |
 |---|---|
 | `svelte` `^5.0.0` | The editor, the preview and the plugins are Svelte 5 components. |
-| `@atom-forge/ui` `>=0.0.37` | The popups (link prompt, image picker) and the form controls of the block fields. |
+| `@atom-forge/ui` `>=0.0.37` | The popups (link prompt) and the form controls of the block fields. |
 | `@lucide/svelte` `>=1.0.0` | The block icons. |
 | `zod` `^4.0.0` (optional) | Only for the server-side schema in `@atom-forge/brickee/schema`. |
 
@@ -36,6 +36,10 @@ The block fields and popups are `@atom-forge/ui` components, so the application 
 - the application rendered beneath the `@atom-forge/ui` `Root` component, which provides the theme and the overlay contexts.
 
 The top-level `Editor` creates its own popup manager and renders its own popup container; editors nested in plugin blocks share it.
+
+The editor takes its colours from the `@atom-forge/ui` theme tokens (`--color-surface`, `--color-frame`, `--color-muted-contrast`…), so it follows the host's light and dark mode. The preview's borders and captions are drawn from the text colour of the page.
+
+The block handles are drawn in a gutter **left of the editor's box**, about 22 px wide: give the element around the editor that much padding on the left, or the handles stick out of it.
 
 > **Missing theme**
 >

@@ -70,7 +70,7 @@
 	}
 	figcaption {
 		margin-top: 0.4em;
-		color: #6b6b76;
+		color: color-mix(in srgb, currentColor 65%, transparent);
 		font: 13px/1.4 system-ui, sans-serif;
 	}
 </style>

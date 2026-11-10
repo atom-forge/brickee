@@ -33,7 +33,7 @@
 
 <style>
 	.map {
-		border: 1px solid #e5e5ea;
+		border: 1px solid var(--color-frame, #e5e5ea);
 		border-radius: 10px;
 		overflow: hidden;
 	}

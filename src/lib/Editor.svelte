@@ -19,7 +19,7 @@
 		plainText
 	} from './dom';
 	import { fromMarkdown, fromStored, plainHtml, toMarkdown, toStored } from './markdown';
-	import { provideMedia, useMedia, type MediaItem } from './media';
+	import { useCodeLanguages } from './code';
 	import { provideText, useText, type Messages } from './i18n';
 	import { PopupContainer, createPopupManager, getPopupManager } from '@atom-forge/ui';
 	import LinkPrompt from './LinkPrompt.svelte';
@@ -41,8 +41,6 @@
 		plugins?: BlockPlugin[];
 		/** Set by plugins with nested blocks: a compact editor inside another block. */
 		nested?: boolean;
-		/** Images the blocks can pick from (the page's attachments); nested editors share their parent's. */
-		media?: MediaItem[];
 		/** UI text in the host's language (English text -> translation); nested editors share their parent's. */
 		messages?: Messages;
 	}
@@ -53,18 +51,15 @@
 		palette: paletteProp,
 		plugins = [],
 		nested = false,
-		media,
 		messages
 	}: Props = $props();
 
-	provideMedia(() => media);
 	provideText(() => messages);
 	// Popups (the link field) are atom-forge popups; the top editor has their container, nested editors share it.
 	// svelte-ignore state_referenced_locally
 	const popups = nested ? getPopupManager() : createPopupManager(getPopupManager());
 	const tr = useText();
 	const placeholder = $derived(placeholderProp ?? tr("Write something, or press '/' for blocks…"));
-	const getMedia = useMedia();
 
 	// One level of nesting: an editor inside a block offers no block types that hold blocks themselves, nor unique
 	// ones (those belong to the top level).
@@ -818,7 +813,7 @@
 	function onCopy(e: ClipboardEvent, cut = false) {
 		if (!selSet.size) return;
 		e.preventDefault();
-		e.clipboardData?.setData('text/plain', toMarkdown(value.filter((b) => selSet.has(b.id)), { plugins, media: getMedia() }));
+		e.clipboardData?.setData('text/plain', toMarkdown(value.filter((b) => selSet.has(b.id)), { plugins }));
 		if (cut) deleteSelected();
 	}
 
@@ -843,11 +838,22 @@
 
 	/* ------------------------------------------------------ properties panel */
 
-	// Plugin blocks show their tag and fields on their top (PropsBar); a code block its language in its corner.
-	const CODE_FIELDS: PropField[] = [
-		// Only characters an opening fence can carry (```c++, ```objective-c).
-		{ key: 'lang', label: 'Language', kind: 'text', placeholder: 'e.g. ts, py, css', parse: (s) => s.replace(/[^\w+#.-]/g, '') }
-	];
+	// Plugin blocks and code blocks show their tag and fields on their top (PropsBar); read-only, a code block shows its
+	// language in its corner.
+	// Free text, or a dropdown when the host gives a list (provideCodeLanguages). A stored language missing from the
+	// list stays an option, so opening an older document loses nothing.
+	const codeLanguages = useCodeLanguages();
+	const codeFields = (b: Block): PropField[] => {
+		const list = codeLanguages();
+		if (!list.length)
+			// Only characters an opening fence can carry (```c++, ```objective-c).
+			return [{ key: 'lang', label: 'Language', kind: 'text', placeholder: 'e.g. ts, py, css', parse: (s) => s.replace(/[^\w+#.-]/g, '') }];
+		const lang = typeof b.props?.lang === 'string' ? b.props.lang : '';
+		const options = [{ value: '', label: 'None' }, ...list.map((l) => ({ value: l.value, label: l.label ?? l.value }))];
+		if (lang && !list.some((l) => l.value === lang)) options.push({ value: lang, label: lang });
+		return [{ key: 'lang', label: 'Language', kind: 'select', options }];
+	};
+	const codeTag = (b: Block) => [tr('code'), b.props?.lang].filter(Boolean).join(' · ');
 	function tagOf(b: Block) {
 		const p = pluginOf(b.plugin);
 		return p ? p.tag(b.props ?? {}).split(' · ').map((s) => tr(s)).join(' · ') : (b.plugin ?? '');
@@ -858,19 +864,6 @@
 		return f.format ? f.format(v) : v == null ? '' : String(v);
 	};
 
-	/** Image fields: picking a picked image again takes it out. */
-	function pickMedia(b: Block, f: PropField, id: string) {
-		typed();
-		const next = { ...(b.props ?? {}) };
-		if (f.kind === 'image') {
-			if (next[f.key] === id) delete next[f.key];
-			else next[f.key] = id;
-		} else {
-			const ids = (next[f.key] as string[] | undefined) ?? [];
-			next[f.key] = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
-		}
-		b.props = next;
-	}
 	/** Sets one property to a value as it is ('' or undefined removes it). */
 	function setValue(b: Block, key: string, v: unknown) {
 		typed();
@@ -1274,7 +1267,7 @@
 					{#if plugin}
 						<div class="plugin">
 							{#snippet propsBar()}
-								<PropsBar block={b} tag={tagOf(b)} fields={plugin.fields ?? []} media={getMedia()} {tr} {setProp} {setValue} {pickMedia} open={fresh.has(b.id)} />
+								<PropsBar block={b} tag={tagOf(b)} fields={plugin.fields ?? []} {tr} {setProp} {setValue} open={fresh.has(b.id)} />
 							{/snippet}
 							<PluginHost
 								{plugin}
@@ -1307,6 +1300,10 @@
 							onclick={() => toggleTodo(b)}
 							>{#if b.checked}<Check size={12} strokeWidth={3} />{/if}</button
 						>
+					{:else if b.type === 'code' && !readonly}
+						<div class="code-fields">
+							<PropsBar block={b} tag={codeTag(b)} fields={codeFields(b)} {tr} {setProp} {setValue} />
+						</div>
 					{/if}
 					<div
 						class="ce"
@@ -1334,20 +1331,12 @@
 						}}
 					></div>
 				{/if}
-				{#if b.type === 'code'}
-					<!-- the language of a code block, in its corner -->
-					<label class="badge">
+				{#if b.type === 'code' && readonly}
+					<!-- read-only: the language of a code block, in its corner -->
+					<div class="badge">
 						<span class="tag">{tr('code')}</span>
-						{#if !readonly}
-							<input
-								class="lang"
-								placeholder={tr('language')}
-								aria-label={tr('Language')}
-								size="6"
-								bind:value={() => fieldText(b, CODE_FIELDS[0]), (v: string) => setProp(b, CODE_FIELDS[0], v)}
-							/>
-						{:else if b.props?.lang}<span class="tag">{b.props.lang}</span>{/if}
-					</label>
+						{#if b.props?.lang}<span class="tag">{b.props.lang}</span>{/if}
+					</div>
 				{:else if b.type === 'plugin' && (readonly || !pluginOf(b.plugin)?.fields?.length)}
 					<div class="badge"><span class="tag">{tagOf(b)}</span></div>
 				{/if}
@@ -1448,12 +1437,12 @@
 
 <style>
 	.editor {
-		--fg: #1d1d1f;
-		--muted: #a0a0a8;
+		--fg: var(--color-surface-contrast, #1d1d1f);
+		--muted: var(--color-muted-contrast, #a0a0a8);
 		--accent: #3b82f6;
 		--sel: rgba(59, 130, 246, 0.14);
-		--surface: #fff;
-		--border: #e5e5ea;
+		--surface: var(--color-surface, #fff);
+		--border: var(--color-frame, #e5e5ea);
 		--code-bg: rgba(120, 120, 140, 0.14);
 		position: relative;
 		outline: none;
@@ -1518,11 +1507,12 @@
 		bottom: -2px;
 	}
 
+	/* 1px short at both ends, so the bars of neighbouring blocks do not touch. */
 	.gutter {
 		position: absolute;
 		left: -22px;
-		top: 0;
-		bottom: 0;
+		top: 1px;
+		bottom: 1px;
 		width: 20px;
 	}
 	.handle {
@@ -1610,7 +1600,7 @@
 		top: 50%;
 		translate: 0 -50%;
 		border: 4px solid transparent;
-		border-right-color: #1d1d1f;
+		border-right-color: var(--color-surface-contrast, #1d1d1f);
 		border-left: 0;
 	}
 	.grab:has(.grip:hover) .bubble,
@@ -1635,8 +1625,9 @@
 		height: 26px;
 		padding: 0;
 		border: 0;
-		color: #fff;
-		background: #1d1d1f;
+		/* inverted: the theme's text colour as the background */
+		color: var(--color-surface, #fff);
+		background: var(--color-surface-contrast, #1d1d1f);
 		cursor: pointer;
 		box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
 	}
@@ -1649,7 +1640,7 @@
 		padding-right: 2px;
 	}
 	.bubble button:hover {
-		background: #3a3a40;
+		background: color-mix(in srgb, var(--color-surface-contrast, #1d1d1f) 82%, var(--color-surface, #fff));
 	}
 	.bubble button.del:hover {
 		background: #c62828;
@@ -1768,7 +1759,7 @@
 	.t-plugin > .badge {
 		top: calc(0.35em + 5px);
 		/* Readable over a map or an image. */
-		background: rgba(255, 255, 255, 0.92);
+		background: color-mix(in srgb, var(--color-surface, #fff) 92%, transparent);
 		border-radius: 6px;
 	}
 	.tag {
@@ -1782,25 +1773,22 @@
 		font: 500 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
 		user-select: none;
 	}
-	.lang {
-		width: 7em;
-		padding: 1px 6px;
-		border: 1px solid transparent;
-		border-radius: 5px;
-		background: none;
-		color: var(--fg);
-		font: 500 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
-		outline: none;
+	/* the fields bar on its own row above the code */
+	.t-code {
+		flex-wrap: wrap;
+		row-gap: 0;
 	}
-	.lang:hover,
-	.lang:focus {
-		border-color: var(--border);
-		background: var(--bg, #fff);
+	.code-fields,
+	.t-code .ce {
+		flex-basis: 100%;
+	}
+	.t-code:has(> .badge) .ce {
+		padding-right: 7.5em;
 	}
 	.t-code .ce {
 		background: var(--code-bg);
 		border-radius: 8px;
-		padding: 0.7em 7.5em 0.7em 0.9em;
+		padding: 0.7em 0.9em;
 		font: 0.88em/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
 		white-space: pre-wrap;
 	}

@@ -15,7 +15,7 @@ import { table, youtube } from '@atom-forge/brickee/plugins'; // or some
 
 | Export | `type` | Fields | Markdown form | What it is |
 |---|---|---|---|---|
-| `table` | `table` | — (edited in place) | a GFM table | Rows and columns of inline-formatted cells; rows and columns are dragged by their grips. The first row can be a header, the last a footer. |
+| `table` | `table` | header and footer (the cells are edited in place) | a GFM table | Rows and columns of inline-formatted cells; click a cell for its row and column tools (insert, delete, align), drag rows and columns by their grips. The first row can be a header, the last a footer. |
 | `youtube` | `youtube` | video link or id, title | a link | A YouTube video, loaded on click; any YouTube link is reduced to the video id. |
 | `map` | `map` | place or address, zoom slider | a link | A Google Maps embed of a place or an address. |
 | `gap` | `gap` | height slider | none | Empty space between blocks, 1–8 lines high. |

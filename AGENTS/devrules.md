@@ -18,6 +18,7 @@ Development rules of this package. Unlike `AGENTS/changelog.md` and `AGENTS/docu
 
 ## Project
 
+- Showcase site: `src/routes/(site)` (pages, each with live `examples/` shown with their `?raw` code) and `src/site` (the shell copied from the `@atom-forge/ui` site, sample documents, example plugins in `blocks/`). `kit.alias` resolves `@atom-forge/brickee` to `src/lib` and `$site` to `src/site`; `vite build` prerenders it to `build/`. Neither is part of the npm package. Wrap a demo `Editor` in `pl-6`: its handles are drawn left of its box.
 - Entry points (`package.json` `exports`): `.` → `index.ts`, `./plugins`, `./schema` (zod, optional peer), `./model`, `./locales/*`. Update `index.ts` or `plugins/index.ts` with every public API change.
 - UI text is English in the source; translations are `locales/<lang>.ts` (English text → translation), including plugin labels, hints, keys, field labels and tags.
 - `dist/` and `.svelte-kit/` are generated. Peer dependencies: `svelte` 5, `@atom-forge/ui`, `@lucide/svelte`, optionally `zod`.

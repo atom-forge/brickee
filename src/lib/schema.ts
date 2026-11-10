@@ -1,5 +1,5 @@
 // Server-side validation of a stored document (zod). Only the shape is checked: the renderers escape every text,
-// keep links to http(s)/mailto/tel/site paths, take colours only as #hex and images only from the host's media.
+// keep links to http(s)/mailto/tel/site paths, take colours only as #hex.
 import { z } from 'zod';
 import { acceptsId, MAX_DEPTH, MAX_INDENT, type StoredBlock } from './model';
 

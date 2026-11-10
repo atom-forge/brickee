@@ -26,7 +26,7 @@ Project decisions:
 - Editor wrapper component: `<path, e.g. src/lib/blocks/BlockEditor.svelte>`
 - Site previews that replace bundled ones: `<folder, e.g. src/lib/blocks/site/>`
 - Where documents are validated on the server: `<file>`
-- Media source for image fields: `<e.g. the page's attachments>`
+- Image blocks: what they store and where images are picked: `<e.g. URLs typed in a field, or ids of the page's attachments picked in a dialog>`
 - Views for per-view fields, and who provides the current one: `<keys and component, or "none">`
 - UI language and messages: `<e.g. Hungarian: locales/hu extended in the setup module>`
 
@@ -40,17 +40,20 @@ Rules:
 - Use the same plugin list for the editor and the site preview of a document
   type. Restrict what an editor offers with `palette`, not by dropping plugins.
 - Write new plugins with the core kit only (`Frame`, `Empty`, `safeColor`,
-  `viewValues`, `mdText`, `mdJoin`, `mdQuote`, `useMedia`, `useText`,
-  `useView`). Declare a view's `props` and `blocks` with `$bindable()`.
+  `viewValues`, `mdText`, `mdJoin`, `mdQuote`, `useText`, `useView`). Declare a view's `props` and `blocks` with `$bindable()`.
 - Treat plugin props as untrusted user input in previews: colours through
-  `safeColor`, links checked, numbers clamped, images looked up by id in the
-  media list. Never render props with `{@html}`.
+  `safeColor`, links and image addresses checked, numbers clamped. Never
+  render props with `{@html}`.
+- The package has no image concept. Image blocks are the project's own
+  plugins: they store a URL or an id of the project's media, pick it in their
+  view or the project's own dialog, and resolve ids with the project's own data.
 - Containers go one level deep; narrow their content with `accepts`.
 - Validate every saved document on the server with `blocksSchemaFor(plugins)`
   from `@atom-forge/brickee/schema`, plus the project's own refinements.
 - `gate` only marks content in the preview; cut gated content on the server.
-- App needs reach plugins through contexts (`media`, `provideView`, `messages`)
-  or plugin fields, never through new editor props.
+- App needs reach plugins through contexts (`provideView`,
+  `provideCodeLanguages`, `messages`), plugin fields or the project's own
+  modules and contexts, never through new editor props.
 - Put the English text of new labels, hints, keys and field labels into the
   project's messages.
 - `toMarkdown` and `toStored` need the browser; do not call them during SSR.

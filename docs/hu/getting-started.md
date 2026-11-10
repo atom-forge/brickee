@@ -10,7 +10,7 @@ Minden más plugin. A plugin egy egyszerű objektum (`BlockPlugin`), amely megne
 
 - egy **nézetet** — a szerkesztőben megjelenő Svelte-komponenst;
 - egy **előnézetet** — a blokkot az oldalon megjelenítő Svelte-komponenst;
-- **mezőket** — a blokk tetején megjelenő beállításokat (szöveg, szín, választó, csúszka, kép…);
+- **mezőket** — a blokk tetején megjelenő beállításokat (szöveg, szín, választó, csúszka…);
 - opcionálisan egy **markdown alakot**, amelyet a dokumentum markdownként való másolásakor vagy exportálásakor használ.
 
 A csomag négy általános plugint is tartalmaz — táblázat, YouTube-videó, térkép és térköz —, de ezek is ugyanolyan pluginok, mint bármelyik más: a magban semmi sem függ tőlük, és csak azokat adod át, amelyeket szeretnél. A képblokkokat, dobozokat és más, az oldalra jellemző blokkokat te írod meg pluginként.
@@ -24,7 +24,7 @@ bun add @atom-forge/brickee @atom-forge/ui @lucide/svelte
 | Peer dependency | Miért |
 |---|---|
 | `svelte` `^5.0.0` | A szerkesztő, az előnézet és a pluginok Svelte 5 komponensek. |
-| `@atom-forge/ui` `>=0.0.37` | A felugró ablakok (linkbekérő, képválasztó) és a blokkmezők űrlapvezérlői. |
+| `@atom-forge/ui` `>=0.0.37` | A felugró ablakok (linkbekérő) és a blokkmezők űrlapvezérlői. |
 | `@lucide/svelte` `>=1.0.0` | A blokkok ikonjai. |
 | `zod` `^4.0.0` (opcionális) | Csak az `@atom-forge/brickee/schema` szerveroldali sémájához. |
 
@@ -36,6 +36,10 @@ A blokkmezők és a felugró ablakok `@atom-forge/ui` komponensek, ezért az alk
 - az alkalmazás az `@atom-forge/ui` `Root` komponense alatt renderelődjön, amely a témát és az overlay-kontextusokat biztosítja.
 
 A legfelső szintű `Editor` saját felugróablak-kezelőt hoz létre, és saját felugróablak-tárolót renderel; a pluginblokkokba ágyazott szerkesztők ezt használják közösen.
+
+A szerkesztő a színeit az `@atom-forge/ui` téma tokenjeiből veszi (`--color-surface`, `--color-frame`, `--color-muted-contrast`…), így követi a befogadó alkalmazás világos és sötét módját. Az előnézet keretei és képaláírásai az oldal szövegszínéből számolódnak.
+
+A blokkok fogantyúi a **szerkesztő dobozától balra**, egy kb. 22 px széles sávban jelennek meg: a szerkesztőt körülvevő elemnek legyen ennyi bal oldali paddingje, különben a fogantyúk kilógnak belőle.
 
 > **Hiányzó téma**
 >

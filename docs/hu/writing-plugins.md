@@ -141,7 +141,7 @@ Regisztráld a többi mellé:
 
 > **A props a felhasználóktól jön**
 >
-> Egy plugin propsa az, ami el lett tárolva — amit egy szerkesztő begépelt, beillesztett, vagy amit bárki, aki dokumentumot menthet, elküldött az API-dnak. A séma csak az alakot ellenőrzi. Minden előnézetnek megbízhatatlanként kell kezelnie a propsot: a színeket a `safeColor`-on keresztül vedd át, ellenőrizd a linkeket, korlátozd a számokat, a képeket pedig a médialistában keresd ki, ne a tárolt URL-eket használd. A Svelte escape-eli a `{...}`-ban lévő szöveget; propot soha ne tegyél `{@html}`-be.
+> Egy plugin propsa az, ami el lett tárolva — amit egy szerkesztő begépelt, beillesztett, vagy amit bárki, aki dokumentumot menthet, elküldött az API-dnak. A séma csak az alakot ellenőrzi. Minden előnézetnek megbízhatatlanként kell kezelnie a propsot: a színeket a `safeColor`-on keresztül vedd át, ellenőrizd a linkeket és a képek címét, és korlátozd a számokat. A Svelte escape-eli a `{...}`-ban lévő szöveget; propot soha ne tegyél `{@html}`-be.
 
 ## Mezők
 
@@ -151,9 +151,9 @@ Minden `PropField` egy beállítás a blokk tetején. A szerkesztő rajzolja ki 
 |---|---|
 | `key` | A prop, amelyet szerkeszt. |
 | `label` | A címkéje (a `messages`-en keresztül fordítva). |
-| `kind` | `text`, `textarea`, `color`, `select`, `slider`, `image` vagy `images`. |
+| `kind` | `text`, `textarea`, `color`, `select`, `slider` vagy `toggles`. |
 | `placeholder` | Üres szövegmező tippje; opcionális színnél az a szín, amelyről a „none” gombra kattintás indul. |
-| `options` | `{ value, label }[]` a `select`-hez, valamint az értékeken lépkedő `slider`-hez. Egy opció címkéje tartalmazhat `{n}`-t, amelyet az értéke tölt ki. |
+| `options` | `{ value, label }[]` a `select`-hez, valamint az értékeken lépkedő `slider`-hez. Egy opció címkéje tartalmazhat `{n}`-t, amelyet az értéke tölt ki. A `toggles`-hez `{ value, label, icon }[]`: az `icon` a gomb, a `label` a buboréksúgója. |
 | `min`, `max`, `step`, `unit` | Számcsúszka (`slider`): a tartománya, a lépésköze (alapértelmezés 1) és az érték után mutatott mértékegység. |
 | `none` | A beállítatlan állapot címkéje: számcsúszkánál a `min`-től balra lévő rovátka, opcionális színnél a „none” gomb. |
 | `views` | Nézetenkénti értékek egy `slider`-hez (lásd [Nézetenkénti értékek](host-contexts.md#nézetenkénti-értékek)). |
@@ -169,8 +169,7 @@ Az egyes fajták így tárolják az értéküket:
 | `slider` `options`-szel | A csúszka pozíciójában lévő opció értéke. |
 | `slider` `min`-nel és `max`-szal | A szám szövegként (például `'56'`); a `none` rovátka eltávolítja a kulcsot. |
 | `color` | Egy `#rrggbb` szöveg; `none` esetén a törlése eltávolítja a kulcsot. |
-| `image` | A kiválasztott médiaelem `id`-ja; újbóli kiválasztása eltávolítja. |
-| `images` | Azonosítók tömbje, kiválasztási sorrendben; egy már kiválasztott elem újbóli kiválasztása kiveszi. |
+| `toggles` | A bekapcsolt opciók listája az `options` sorrendjében (ha egy sincs, `[]`); ilyen a beépített táblázat fejléce és lábléce. |
 
 Az üres érték (`''`, `null` vagy `undefined`, akkor is, ha a `parse` adja vissza) eltávolítja a kulcsot a `props`-ból, ezért az előnézetnek mindig kezelnie kell a hiányzó propot. A mező `parse`-a jó hely a bemenet normalizálására is: a mellékelt YouTube-mező bármilyen YouTube-linket elfogad, de csak a videó azonosítóját tárolja.
 
@@ -189,7 +188,7 @@ A `props`-ot és a `blocks`-ot akkor is `$bindable()`-lel deklaráld, ha a néze
 
 ## Az előnézet
 
-Az előnézet `PluginPreviewProps`-ot kap: `props`, `blocks` és `plugins`. Ez egy egyszerű Svelte-komponens, amely az oldal számára rendereli a blokkot. A média, a szövegek és a nézet a kontextusokon keresztül érhető el (`useMedia`, `useText`, `useView`; lásd [Az alkalmazás kontextusai](host-contexts.md)).
+Az előnézet `PluginPreviewProps`-ot kap: `props`, `blocks` és `plugins`. Ez egy egyszerű Svelte-komponens, amely az oldal számára rendereli a blokkot. A szövegek és a nézet a kontextusokon keresztül érhető el (`useText`, `useView`; lásd [Az alkalmazás kontextusai](host-contexts.md)); a képek a plugin saját ügyei (lásd [Képek](#képek)).
 
 ## Tárolók
 
@@ -275,10 +274,7 @@ Mindkettőre tipikus példa egy csak támogatóknak szóló elválasztó: dokume
 
 ## Markdown alak
 
-A `markdown(props, { inner, media })` markdownként adja vissza a blokkot; ezt használja a szerkesztő blokkok másolásakor, és a `toMarkdown`:
-
-- `inner` — a beágyazott blokkok, már markdownként (`''`, ha nincsenek);
-- `media` — a dokumentum médiája, hogy egy kép azonosítóját a `findMedia(media, id)?.url`-lel URL-lé alakíthasd.
+A `markdown(props, { inner })` markdownként adja vissza a blokkot; ezt használja a szerkesztő blokkok másolásakor, és a `toMarkdown`. Az `inner` a beágyazott blokkok, már markdownként (`''`, ha nincsenek).
 
 `''` visszaadásával kihagyod a blokkot. Azoknak a pluginoknak, amelyek kimenetének szövegként nincs értelme (hirdetéshely, a mellékelt `gap`), egyszerűen nincs markdown alakjuk. Három segédfüggvény gondoskodik a jól formált kimenetről:
 
@@ -287,6 +283,111 @@ A `markdown(props, { inner, media })` markdownként adja vissza a blokkot; ezt h
 | `mdText(value)` | Markdownban biztonságos egyszerű szöveg: escape-eli a soron belüli jelöléseket és a `#`-et, összevonja a sorokat. |
 | `mdJoin(...parts)` | Különálló blokkokként fűzi össze a részeket (köztük üres sorral), kihagyva az üreseket és a hamis értékűeket. |
 | `mdQuote(md)` | Minden sor elé `> `-t tesz, idézetblokként renderelt dobozhoz. |
+
+## Képek
+
+A szerkesztő nem ismeri a kép fogalmát: nincs képmező, nincs képválasztó, nincs médialista. Hogy egy blokk a kép URL-jét vagy az alkalmazás saját médiatárában lévő kép azonosítóját tárolja, hogyan választja ki a felhasználó, és hogyan lesz a tárolt értékből cím, az az alkalmazás döntése, így a képblokk az alkalmazás egy közönséges pluginja.
+
+Egy minimális `photo` plugin a kép címét tárolja, amelyet egy szövegmezőbe kell beírni, mellette alternatív szöveggel és magasságcsúszkával:
+
+```svelte
+<!-- PhotoView.svelte -->
+<script lang="ts" module>
+	export interface PhotoProps extends Record<string, unknown> {
+		/** A kép címe. */
+		url: string;
+		alt: string;
+		/** A magasság a szélesség %-ában (20–150), vagy beállítatlan a kép saját alakjához. */
+		ratio?: unknown;
+	}
+
+	/** A tárolt cím, ha http(s) vagy az oldalon belüli, különben ''. */
+	export const imageSrc = (u: unknown) => {
+		const s = String(u ?? '').trim();
+		return /^(https?:|\/(?!\/))/.test(s) ? s : '';
+	};
+
+	/** CSS aspect-ratio egy tárolt magasságból, vagy undefined. */
+	export const aspect = (v: unknown) => {
+		const n = Number(v);
+		return n >= 20 && n <= 150 ? `100 / ${n}` : undefined;
+	};
+</script>
+
+<script lang="ts">
+	import { ImageIcon } from '@lucide/svelte';
+	import { Empty, type PluginViewProps } from '@atom-forge/brickee';
+
+	let { props = $bindable(), blocks = $bindable() }: PluginViewProps<PhotoProps> = $props();
+	const src = $derived(imageSrc(props.url));
+</script>
+
+{#if src}
+	<img {src} alt={props.alt} style="max-width: 100%" />
+{:else}
+	<Empty icon={ImageIcon} text="Set the image's address above" />
+{/if}
+```
+
+```svelte
+<!-- PhotoPreview.svelte -->
+<script lang="ts">
+	import { baseValue, type PluginPreviewProps } from '@atom-forge/brickee';
+	import { aspect, imageSrc, type PhotoProps } from './PhotoView.svelte';
+
+	let { props }: PluginPreviewProps<PhotoProps> = $props();
+	const src = $derived(imageSrc(props.url));
+</script>
+
+{#if src}
+	<img {src} alt={props.alt ?? ''} style:aspect-ratio={aspect(baseValue(props.ratio))} />
+{/if}
+
+<style>
+	img {
+		width: 100%;
+		object-fit: cover;
+	}
+</style>
+```
+
+```ts
+// photo.ts
+import { ImageIcon } from '@lucide/svelte';
+import { mdText, type BlockPlugin } from '@atom-forge/brickee';
+import PhotoView, { type PhotoProps } from './PhotoView.svelte';
+import PhotoPreview from './PhotoPreview.svelte';
+
+export const photo: BlockPlugin<PhotoProps> = {
+	type: 'photo',
+	label: 'Photo',
+	hint: 'One image',
+	keys: 'photo image picture',
+	icon: ImageIcon,
+	props: () => ({ url: '', alt: '' }),
+	fields: [
+		{ key: 'url', label: 'Image', kind: 'text', placeholder: 'https://…', parse: (s) => s.trim() },
+		{ key: 'alt', label: 'Alt text', kind: 'text', placeholder: 'What the image shows' },
+		{ key: 'ratio', label: 'Height', kind: 'slider', min: 20, max: 150, unit: '%', none: 'Original' }
+	],
+	tag: () => 'photo',
+	content: 'none',
+	markdown: (p) => {
+		const src = imageSrc(p.url);
+		return src ? `![${mdText(p.alt)}](${src})` : '';
+	},
+	view: PhotoView,
+	preview: PhotoPreview
+};
+```
+
+A cím ugyanolyan prop, mint a többi, tehát megbízhatatlan: a nézet és az előnézet csak akkor rendereli, ha `http(s)` vagy az oldalon belüli cím, ahogy a gomb is ellenőrzi a linkjét.
+
+Más alkalmazások másként döntenek, de mindezt a pluginon belül:
+
+- **Médiatár.** A blokk URL helyett az alkalmazás médiatárában lévő kép azonosítóját tárolja. A nézet, az előnézet és a `markdown` az alkalmazás saját keresésével alakítja címmé az azonosítót: az alkalmazás egy moduljával, vagy egy saját Svelte-kontextussal, amelyet a szerkesztő és az előnézet fölött ad meg (a plugin-komponensek ezek alatt renderelődnek). A `markdown` komponenseken kívül fut — blokkok másolásakor és a `toMarkdown`-ban —, ezért csak modulbeli adatot használhat.
+- **Kiválasztás.** Szövegmező helyett a nézet saját választót is mutathat — egy gombot, amely megnyitja az alkalmazás médiaablakát vagy egy feltöltést —, és az eredményt a `props`-ba írja, amely kötött (bindable).
+- **Több kép.** Egy galéria egyetlen propban tárol egy listát (URL-ekből vagy azonosítókból), és ugyanígy a nézetében szerkeszti.
 
 ## A kit
 
@@ -299,7 +400,6 @@ A `markdown(props, { inner, media })` markdownként adja vissza a blokkot; ezt h
 | `baseValue(value)` | függvény | Egy nézetenkénti prop alapértéke. |
 | `viewValues(value, keys)` | függvény | Egy nézetenkénti prop értéke minden nézetre. |
 | `mdText`, `mdJoin`, `mdQuote` | függvények | Markdown alakok (fent). |
-| `useMedia`, `findMedia` | függvények | A dokumentum képei (lásd [Az alkalmazás kontextusai](host-contexts.md)). |
 | `useText` | függvény | Lefordítja a plugin saját felületi szövegeit. |
 | `useView` | függvény | Az alkalmazás által éppen mutatott nézet. |
 | `Preview` | komponens | Egy tároló beágyazott blokkjait rendereli (`nested`-del). |

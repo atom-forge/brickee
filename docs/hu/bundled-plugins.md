@@ -13,7 +13,7 @@ import { table, youtube } from '@atom-forge/brickee/plugins'; // vagy néhány
 
 | Export | `type` | Mezők | Markdown alak | Mi ez |
 |---|---|---|---|---|
-| `table` | `table` | — (helyben szerkesztve) | GFM-táblázat | Inline formázott cellák sorai és oszlopai; a sorokat és az oszlopokat a fogantyújuknál fogva húzhatod. Az első sor lehet fejléc, az utolsó lábléc. |
+| `table` | `table` | fejléc és lábléc (a cellák helyben szerkeszthetők) | GFM-táblázat | Inline formázott cellák sorai és oszlopai; egy cellába kattintva megjelennek a sora és oszlopa eszközei (beszúrás, törlés, igazítás), a sorokat és az oszlopokat a fogantyújuknál fogva húzhatod. Az első sor lehet fejléc, az utolsó lábléc. |
 | `youtube` | `youtube` | videóhivatkozás vagy -azonosító, cím | hivatkozás | YouTube-videó, kattintásra betöltve; bármely YouTube-hivatkozásból csak a videó azonosítója marad meg. |
 | `map` | `map` | hely vagy cím, nagyításcsúszka | hivatkozás | Egy hely vagy cím beágyazott Google Maps-térképe. |
 | `gap` | `gap` | magasságcsúszka | nincs | Üres hely a blokkok között, 1–8 sor magas. |

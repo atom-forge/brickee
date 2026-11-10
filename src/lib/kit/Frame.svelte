@@ -46,7 +46,7 @@
 <style>
 	.frame {
 		position: relative;
-		border: 1px solid #e5e5ea;
+		border: 1px solid var(--color-frame, #e5e5ea);
 		border-radius: 10px;
 		/* left: room for the inner blocks' handle bar (22px left of the row, which reaches 8px out) */
 		padding: 0.8em 1.1em 0.4em calc(30px + 0.5em);
@@ -61,7 +61,7 @@
 		gap: 8px;
 		margin: 0 9em 0.3em 0;
 		font: 600 13px/1.4 system-ui, sans-serif;
-		color: #1d1d1f;
+		color: var(--color-surface-contrast, #1d1d1f);
 	}
 	.head img {
 		height: 28px;
@@ -71,6 +71,6 @@
 	}
 	.muted {
 		font-weight: 400;
-		color: #a0a0a8;
+		color: var(--color-muted-contrast, #a0a0a8);
 	}
 </style>

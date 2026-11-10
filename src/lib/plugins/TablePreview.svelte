@@ -46,7 +46,7 @@
 	th,
 	td {
 		padding: 0.45em 0.7em;
-		border-bottom: 1px solid #e5e5ea;
+		border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
 		text-align: left;
 		vertical-align: top;
 	}
@@ -57,6 +57,6 @@
 		border-bottom-width: 2px;
 	}
 	th.bottom {
-		border-top: 2px solid #e5e5ea;
+		border-top: 2px solid color-mix(in srgb, currentColor 22%, transparent);
 	}
 </style>

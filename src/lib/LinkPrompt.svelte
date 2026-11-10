@@ -22,7 +22,7 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="light link" {onkeydown}>
+<div class="link" {onkeydown}>
 	<Input bind:this={input} compact monospace bind:value={url} placeholder="https://…" />
 	<Button compact accent label={tr('OK')} onclick={() => popups.resolve(url.trim())} />
 	{#if href}<Button compact ghost label={tr('Remove')} onclick={() => popups.resolve('')} />{/if}
@@ -34,8 +34,8 @@
 		gap: 6px;
 		width: 340px;
 		padding: 8px;
-		background: #fff;
-		border: 1px solid #e5e5ea;
+		background: var(--color-surface, #fff);
+		border: 1px solid var(--color-frame, #e5e5ea);
 		border-radius: 12px;
 		box-shadow: 0 10px 36px rgba(0, 0, 0, 0.2);
 	}

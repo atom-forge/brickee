@@ -19,7 +19,7 @@ flowchart TB
 - **Mellékelt pluginok** (`@atom-forge/brickee/plugins`) — ugyanolyan pluginok, mint bármelyik más, és csak abból készültek, amit a mag exportál. Csak azokat kapcsolod be, amelyekre szükséged van.
 - **A saját pluginjaid** — ugyanaz a `BlockPlugin` alak, az alkalmazásodban.
 
-Maga a szerkesztő semmit sem tud az alkalmazásodról. Amire egy alkalmazásnak szüksége van — a képei, az oldalszélességei, a nyelve —, az **kontextusokon** (média, nézet, szöveg) vagy a pluginok **mezőin** keresztül jut el a pluginokhoz, soha nem külön szerkesztő-propokon át.
+Maga a szerkesztő semmit sem tud az alkalmazásodról. Amire egy alkalmazásnak szüksége van — az oldalszélességei, a kódnyelvei, a nyelve —, az **kontextusokon** (nézet, kódnyelvek, szöveg) vagy a pluginok **mezőin** keresztül jut el a pluginokhoz, soha nem külön szerkesztő-propokon át. A képek sem kivételek: a képblokk a saját pluginod, amely úgy tárolja, választja ki és oldja fel a képeit, ahogy az alkalmazásod teszi.
 
 ## Tartalom
 
@@ -27,12 +27,12 @@ Maga a szerkesztő semmit sem tud az alkalmazásodról. Amire egy alkalmazásnak
 2. [A szerkesztő és az előnézet](editor-and-preview.md) — az `Editor` és a `Preview` propjai, a paletta, a szerkesztési funkciók és a görgetés-szinkron.
 3. [Dokumentumok és markdown](documents-and-markdown.md) — a tárolt alak (`StoredBlock`), a beépített blokkok, valamint az átalakítás markdownból és markdownba.
 4. [Mellékelt pluginok](bundled-plugins.md) — mit tartalmaz az `@atom-forge/brickee/plugins`, és hogyan írhatsz felül egy előnézetet vagy adhatsz hozzá mezőket.
-5. [Pluginok írása](writing-plugins.md) — a `BlockPlugin` felépítése, mezők, nézetek és előnézetek, tárolók, markdown alakok és a kit.
-6. [Az alkalmazás kontextusai](host-contexts.md) — média, nézetenkénti értékek és felületi szövegek.
+5. [Pluginok írása](writing-plugins.md) — a `BlockPlugin` felépítése, mezők, nézetek és előnézetek, tárolók, markdown alakok, képblokkok és a kit.
+6. [Az alkalmazás kontextusai](host-contexts.md) — nézetenkénti értékek, kódnyelvek és felületi szövegek.
 7. [A szerveren](server-side.md) — sémavalidálás, sima szöveg és védett tartalom.
 8. [Receptek és buktatók](recipes-and-pitfalls.md) — teljes minták és az elkerülendő hibák.
 9. [Frissítés](upgrading.md) — mit kell módosítanod a kódodban, amikor újabb verzióra váltasz.
 
 A könyvben van egy AI Notes fejezet is: utasítások, amelyeket a csomagot használó projekt ágens-utasításfájljába másolhatsz.
 
-A Svelte-példák teljes komponensek, hacsak másként nem jelzik. Az alkalmazásbeli értékek, például a képek listája vagy az aktuális oldalszélesség, azt jelölik, amit az alkalmazásod biztosít.
+A Svelte-példák teljes komponensek, hacsak másként nem jelzik. Az alkalmazásbeli értékek, például az aktuális oldalszélesség, azt jelölik, amit az alkalmazásod biztosít.

@@ -143,7 +143,7 @@ Register it beside the others:
 ```
 
 > [!danger] Props come from users
-> A plugin's props are whatever was stored — typed by an editor, pasted, or sent to your API by anyone who can save a document. The schema only checks the shape. Every preview must treat props as untrusted: take colours through `safeColor`, check links, clamp numbers, and look images up in the media list instead of using stored URLs. Svelte escapes text in `{...}`; never put a prop into `{@html}`.
+> A plugin's props are whatever was stored — typed by an editor, pasted, or sent to your API by anyone who can save a document. The schema only checks the shape. Every preview must treat props as untrusted: take colours through `safeColor`, check links and image addresses, and clamp numbers. Svelte escapes text in `{...}`; never put a prop into `{@html}`.
 
 ## Fields
 
@@ -153,9 +153,9 @@ Each `PropField` is one setting on the top of the block. The editor draws them a
 |---|---|
 | `key` | The prop it edits. |
 | `label` | Its label (translated through `messages`). |
-| `kind` | `text`, `textarea`, `color`, `select`, `slider`, `image` or `images`. |
+| `kind` | `text`, `textarea`, `color`, `select`, `slider` or `toggles`. |
 | `placeholder` | Hint of an empty text field; for an optional colour, the colour a click on "none" starts from. |
-| `options` | `{ value, label }[]` for `select`, and for a `slider` that steps through values. An option label may use `{n}`, filled with its value. |
+| `options` | `{ value, label }[]` for `select`, and for a `slider` that steps through values. An option label may use `{n}`, filled with its value. For `toggles`, `{ value, label, icon }[]`: `icon` is the button, `label` its tooltip. |
 | `min`, `max`, `step`, `unit` | A number `slider`: its range, step (default 1) and the unit shown after the value. |
 | `none` | The label of the unset state: a number slider's notch left of `min`, or an optional colour's "none" button. |
 | `views` | Per-view values for a `slider` (see [Per-view values](host-contexts.md#per-view-values)). |
@@ -171,8 +171,7 @@ How each kind stores its value:
 | `slider` with `options` | The value of the option at the slider's position. |
 | `slider` with `min` and `max` | The number as a string (for example `'56'`); the `none` notch removes the key. |
 | `color` | A `#rrggbb` string; with `none`, clearing it removes the key. |
-| `image` | The picked media item's `id`; picking it again removes it. |
-| `images` | An array of ids, in picking order; picking a picked one takes it out. |
+| `toggles` | The list of the options switched on, in `options` order (`[]` when none); the bundled table's header and footer are one. |
 
 An empty value (`''`, `null` or `undefined`, also when returned by `parse`) removes the key from `props`, so a preview must always handle a missing prop. A field's `parse` is also a good place to normalize input: the bundled YouTube field accepts any YouTube link and stores only the video id.
 
@@ -191,7 +190,7 @@ Declare `props` and `blocks` with `$bindable()` even when the view does not use 
 
 ## The preview
 
-The preview receives `PluginPreviewProps`: `props`, `blocks` and `plugins`. It is a plain Svelte component that renders the block for the site. Media, messages and the view are available through the contexts (`useMedia`, `useText`, `useView`; see [[host-contexts|Host contexts]]).
+The preview receives `PluginPreviewProps`: `props`, `blocks` and `plugins`. It is a plain Svelte component that renders the block for the site. Messages and the view are available through the contexts (`useText`, `useView`; see [[host-contexts|Host contexts]]); images are the plugin's own business (see [[writing-plugins#Images|Images]]).
 
 ## Containers
 
@@ -276,10 +275,7 @@ A supporters-only divider is a typical example of both: one per document, with t
 
 ## Markdown form
 
-`markdown(props, { inner, media })` returns the block as markdown, used when blocks are copied in the editor and by `toMarkdown`:
-
-- `inner` — the nested blocks already as markdown (`''` without any);
-- `media` — the document's media, to turn an image id into its URL with `findMedia(media, id)?.url`.
+`markdown(props, { inner })` returns the block as markdown, used when blocks are copied in the editor and by `toMarkdown`. `inner` is the nested blocks already as markdown (`''` without any).
 
 Return `''` to leave the block out. Plugins whose output has no meaning as text (an ad slot, the bundled `gap`) simply have no markdown form. Three helpers keep the output well-formed:
 
@@ -288,6 +284,111 @@ Return `''` to leave the block out. Plugins whose output has no meaning as text 
 | `mdText(value)` | Plain text made safe inside markdown: escapes inline marks and `#`, joins lines. |
 | `mdJoin(...parts)` | Joins parts as separate blocks (blank line between), leaving out empty and falsy ones. |
 | `mdQuote(md)` | Prefixes every line with `> `, for a box rendered as a blockquote. |
+
+## Images
+
+The editor has no notion of images: no image field, no picker, no list of media. Whether a block stores an image's URL or the id of an image in the app's own media library, how the user picks it, and how the stored value becomes an address are the application's decisions, so an image block is an ordinary plugin of the app.
+
+A minimal `photo` plugin stores the image's address, typed into a text field, with alt text and a height slider:
+
+```svelte
+<!-- PhotoView.svelte -->
+<script lang="ts" module>
+	export interface PhotoProps extends Record<string, unknown> {
+		/** The image's address. */
+		url: string;
+		alt: string;
+		/** The height in % of the width (20–150), or unset for the image's own shape. */
+		ratio?: unknown;
+	}
+
+	/** The stored address if it is http(s) or site-relative, else ''. */
+	export const imageSrc = (u: unknown) => {
+		const s = String(u ?? '').trim();
+		return /^(https?:|\/(?!\/))/.test(s) ? s : '';
+	};
+
+	/** A CSS aspect-ratio from a stored height, or undefined. */
+	export const aspect = (v: unknown) => {
+		const n = Number(v);
+		return n >= 20 && n <= 150 ? `100 / ${n}` : undefined;
+	};
+</script>
+
+<script lang="ts">
+	import { ImageIcon } from '@lucide/svelte';
+	import { Empty, type PluginViewProps } from '@atom-forge/brickee';
+
+	let { props = $bindable(), blocks = $bindable() }: PluginViewProps<PhotoProps> = $props();
+	const src = $derived(imageSrc(props.url));
+</script>
+
+{#if src}
+	<img {src} alt={props.alt} style="max-width: 100%" />
+{:else}
+	<Empty icon={ImageIcon} text="Set the image's address above" />
+{/if}
+```
+
+```svelte
+<!-- PhotoPreview.svelte -->
+<script lang="ts">
+	import { baseValue, type PluginPreviewProps } from '@atom-forge/brickee';
+	import { aspect, imageSrc, type PhotoProps } from './PhotoView.svelte';
+
+	let { props }: PluginPreviewProps<PhotoProps> = $props();
+	const src = $derived(imageSrc(props.url));
+</script>
+
+{#if src}
+	<img {src} alt={props.alt ?? ''} style:aspect-ratio={aspect(baseValue(props.ratio))} />
+{/if}
+
+<style>
+	img {
+		width: 100%;
+		object-fit: cover;
+	}
+</style>
+```
+
+```ts
+// photo.ts
+import { ImageIcon } from '@lucide/svelte';
+import { mdText, type BlockPlugin } from '@atom-forge/brickee';
+import PhotoView, { type PhotoProps } from './PhotoView.svelte';
+import PhotoPreview from './PhotoPreview.svelte';
+
+export const photo: BlockPlugin<PhotoProps> = {
+	type: 'photo',
+	label: 'Photo',
+	hint: 'One image',
+	keys: 'photo image picture',
+	icon: ImageIcon,
+	props: () => ({ url: '', alt: '' }),
+	fields: [
+		{ key: 'url', label: 'Image', kind: 'text', placeholder: 'https://…', parse: (s) => s.trim() },
+		{ key: 'alt', label: 'Alt text', kind: 'text', placeholder: 'What the image shows' },
+		{ key: 'ratio', label: 'Height', kind: 'slider', min: 20, max: 150, unit: '%', none: 'Original' }
+	],
+	tag: () => 'photo',
+	content: 'none',
+	markdown: (p) => {
+		const src = imageSrc(p.url);
+		return src ? `![${mdText(p.alt)}](${src})` : '';
+	},
+	view: PhotoView,
+	preview: PhotoPreview
+};
+```
+
+The address is a prop like any other, so it is untrusted: the view and the preview render it only when it is an `http(s)` or site-relative address, as the button checks its link.
+
+Other apps choose differently, all within the plugin:
+
+- **A media library.** The block stores the id of an image in the app's library instead of a URL. The view, the preview and `markdown` turn the id into an address with the app's own lookup: a module of the app, or the app's own Svelte context provided above the editor and the preview (plugin components are rendered beneath them). `markdown` runs outside components, when blocks are copied and in `toMarkdown`, so it can only use module data.
+- **Picking.** Instead of a text field, the view can show its own picker — a button that opens the app's media dialog or an upload — and write the result into `props`, which is bindable.
+- **Several images.** A gallery stores a list (of URLs or ids) in one prop and edits it in its view the same way.
 
 ## The kit
 
@@ -300,7 +401,6 @@ Return `''` to leave the block out. Plugins whose output has no meaning as text 
 | `baseValue(value)` | function | The base value of a per-view prop. |
 | `viewValues(value, keys)` | function | A per-view prop's value for each view. |
 | `mdText`, `mdJoin`, `mdQuote` | functions | Markdown forms (above). |
-| `useMedia`, `findMedia` | functions | The document's images (see [Host contexts](host-contexts.md)). |
 | `useText` | function | Translates the plugin's own UI text. |
 | `useView` | function | The view the host is showing. |
 | `Preview` | component | Renders a container's nested blocks (with `nested`). |

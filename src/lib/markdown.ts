@@ -1,4 +1,3 @@
-import type { MediaItem } from './media';
 import { MAX_INDENT, MD, newBlock, numbering, type Block, type BlockPlugin, type BlockType, type StoredBlock } from './types';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -196,7 +195,7 @@ export function fromMarkdown(src: string): Block[] {
 
 /** Blocks -> markdown text (browser only: uses the DOM to read the inline html). A plugin block is written by its
  * plugin's `markdown`; one without it is left out. */
-export function toMarkdown(blocks: Block[], opts: { plugins?: BlockPlugin[]; media?: MediaItem[] } = {}): string {
+export function toMarkdown(blocks: Block[], opts: { plugins?: BlockPlugin[] } = {}): string {
 	const nums = numbering(blocks);
 	const listy = (t: BlockType) => t === 'ul' || t === 'ol' || t === 'todo';
 	const md = (b: Block) => {
@@ -204,7 +203,7 @@ export function toMarkdown(blocks: Block[], opts: { plugins?: BlockPlugin[]; med
 		const plugin = opts.plugins?.find((p) => p.type === b.plugin);
 		if (!plugin?.markdown) return '';
 		const inner = b.blocks?.length ? toMarkdown(b.blocks.map(fromStored), opts) : '';
-		return plugin.markdown(b.props ?? {}, { inner, media: opts.media ?? [] }).trim();
+		return plugin.markdown(b.props ?? {}, { inner }).trim();
 	};
 	let out = '';
 	let prev: Block | undefined;

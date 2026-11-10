@@ -1,31 +1,27 @@
-<!-- The fields of a plugin block, on the top of its box. Closed: only a small header (the block's tag); a click on it
-     opens the fields in place: a wrapping row (label and control side by side), text areas on their own full-width rows. An image field shows the picked image(s); a click
-     opens the picker (ImagePicker) with all the document's images. -->
+<!-- The fields of a plugin block (or a code block), on the top of its box. Closed: only a small header (the block's
+     tag); a click on it opens the fields in place: a wrapping row (label and control side by side), text areas on their
+     own full-width rows. -->
 <script lang="ts">
-	import { ColorPicker, Input, NativeSelect, Slider, Textarea, getPopupManager } from '@atom-forge/ui';
+	import { ColorPicker, Input, NativeSelect, Slider, Textarea } from '@atom-forge/ui';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import { slide } from 'svelte/transition';
-	import ImagePicker from './ImagePicker.svelte';
 	import { useView } from './view';
 	import type { Translate } from './i18n';
-	import type { MediaItem } from './media';
 	import type { Block, PropField } from './types';
 
 	interface Props {
 		block: Block;
 		tag: string;
 		fields: PropField[];
-		media: MediaItem[];
 		tr: Translate;
 		/** Sets one property from its field's text and returns the text as it is now kept. */
 		setProp: (b: Block, f: PropField, raw: string) => string;
 		/** Sets one property to a value as it is ('' or undefined removes it). */
 		setValue: (b: Block, key: string, v: unknown) => void;
-		pickMedia: (b: Block, f: PropField, id: string) => void;
 		/** Start with the fields open (a block just made). */
 		open?: boolean;
 	}
-	let { block, tag, fields, media, tr, setProp, setValue, pickMedia, open: startOpen = false }: Props = $props();
+	let { block, tag, fields, tr, setProp, setValue, open: startOpen = false }: Props = $props();
 	// svelte-ignore state_referenced_locally
 	let open = $state(startOpen);
 
@@ -33,10 +29,18 @@
 		const v = block.props?.[f.key];
 		return f.format ? f.format(v) : v == null ? '' : String(v);
 	};
-	const picked = (f: PropField): string[] => {
+	/** A text field's placeholder: its label, and its own placeholder (an example) after it. */
+	const hint = (f: PropField) => [tr(f.label), f.placeholder && tr(f.placeholder)].filter(Boolean).join(' · ');
+	/** Toggles: the values switched on, kept in the order of the options. */
+	const toggled = (f: PropField): string[] => {
 		const v = block.props?.[f.key];
-		return Array.isArray(v) ? v : v ? [String(v)] : [];
+		return Array.isArray(v) ? v.map(String) : [];
 	};
+	function toggle(f: PropField, value: string) {
+		const on = new Set(toggled(f));
+		if (!on.delete(value)) on.add(value);
+		setValue(block, f.key, (f.options ?? []).map((o) => o.value).filter((x) => on.has(x)));
+	}
 	const optionLabel = (f: PropField, i: number) => {
 		const opt = f.options?.[i];
 		return opt ? tr(opt.label, { n: opt.value }) : '';
@@ -107,19 +111,9 @@
 
 	const short = $derived(fields.filter((f) => f.kind !== 'textarea'));
 	const long = $derived(fields.filter((f) => f.kind === 'textarea'));
-
-	const popups = getPopupManager();
-	const urlOf = (id: string) => media.find((m) => m.id === id);
-	function openPicker(e: MouseEvent, f: PropField) {
-		popups.open.component(
-			ImagePicker,
-			{ media, multiple: f.kind === 'images', getPicked: () => picked(f), pick: (id: string) => pickMedia(block, f, id), tr },
-			{ anchor: e, align: 'left' }
-		);
-	}
 </script>
 
-<div class="light bar" class:open>
+<div class="bar" class:open>
 	<button type="button" class="head" aria-expanded={open} title={tr(open ? 'Hide settings' : 'Settings')} onmousedown={(e) => e.preventDefault()} onclick={() => (open = !open)}>
 		<span class="tag">{tag}</span>
 		<ChevronDown size={13} class="chev" />
@@ -128,36 +122,46 @@
 	<div class="body" transition:slide={{ duration: 180 }}>
 	<div class="grid">
 		{#each short as f (f.key)}
-			{#if f.kind === 'image' || f.kind === 'images'}
-				{@const ids = picked(f)}
-				<div class="field">
-					<span class="name">{tr(f.label)}</span>
-					<button type="button" class="chosen" title={tr('Choose')} onclick={(e) => openPicker(e, f)}>
-						{#each ids as id, n (id)}
-							{@const m = urlOf(id)}
-							{#if m}<img src={m.url} alt={m.name} />{:else}<span class="missing" title={id}>?</span>{/if}
-							{#if f.kind === 'images' && n === 5 && ids.length > 6}<span class="more">+{ids.length - 6}</span>{/if}
-						{:else}
-							<span class="empty">{tr('Choose…')}</span>
-						{/each}
-					</button>
-				</div>
+			{#if f.kind === 'text'}
+				<!-- the field shows the value as kept (a YouTube link becomes its id); its label is the placeholder -->
+				<label class="field" title={tr(f.label)}>
+					<span class="sr">{tr(f.label)}</span>
+					<Input small monospace placeholder={hint(f)} bind:value={() => text(f), (v: string) => setProp(block, f, v)} />
+				</label>
 			{:else}
-			<!-- not a label around buttons (a slider's view buttons, a colour's clear): a click on a label goes to its first button -->
-			<svelte:element this={f.kind === 'slider' || f.kind === 'color' ? 'div' : 'label'} class="field">
+			<!-- not a label around buttons (a slider's view buttons, a colour's clear, toggles): a click on a label goes to its first button -->
+			<svelte:element this={f.kind === 'select' ? 'label' : 'div'} class="field inline" role={f.kind === 'toggles' ? 'group' : undefined} aria-label={f.kind === 'toggles' ? tr(f.label) : undefined}>
 				<span class="name"
 					>{tr(f.label)}{#if viewLabel(f)}<span class="view" class:own={current(f).mine}>{viewLabel(f)}</span>{/if}</span
 				>
 				{#if f.kind === 'select'}
 					<NativeSelect
+						small
 						options={(f.options ?? []).map((opt) => ({ value: opt.value, label: tr(opt.label, { n: opt.value }) }))}
 						bind:value={() => text(f), (v: string) => setProp(block, f, v)}
 					/>
+				{:else if f.kind === 'toggles'}
+					{@const on = toggled(f)}
+					<span class="toggles">
+						{#each f.options ?? [] as opt (opt.value)}
+							<button
+								type="button"
+								class="toggle"
+								class:on={on.includes(opt.value)}
+								aria-pressed={on.includes(opt.value)}
+								title={tr(opt.label)}
+								aria-label={tr(opt.label)}
+								onmousedown={(e) => e.preventDefault()}
+								onclick={() => toggle(f, opt.value)}
+								>{#if opt.icon}<opt.icon size={15} />{:else}{tr(opt.label)}{/if}</button
+							>
+						{/each}
+					</span>
 				{:else if f.kind === 'slider'}
 					<span class="line">
 					<span class="slider">
 						<Slider
-							compact
+							small
 							drawStops={!free(f) && (f.options?.length ?? 0) <= 10}
 							min={free(f) ? low(f) : 0}
 							max={free(f) ? f.max : (f.options?.length ?? 1) - 1}
@@ -175,25 +179,23 @@
 							<span class="swatch" aria-hidden="true"></span>{tr(f.none)}
 						</button>
 					{:else}
-						<ColorPicker bind:value={() => text(f) || '#000000', (v: string) => setProp(block, f, v)} />
+						<ColorPicker small bind:value={() => text(f) || '#000000', (v: string) => setProp(block, f, v)} />
 						{#if f.none}
 							<button type="button" class="clear" title={tr(f.none)} aria-label={tr(f.none)} onclick={() => setProp(block, f, '')}>×</button>
 						{/if}
 					{/if}
 					</span>
-				{:else}
-					<!-- the field shows the value as kept (a YouTube link becomes its id) -->
-					<Input monospace placeholder={f.placeholder && tr(f.placeholder)} bind:value={() => text(f), (v: string) => setProp(block, f, v)} />
 				{/if}
 			</svelte:element>
 			{/if}
 		{/each}
 	{#each long as f (f.key)}
-		<label class="field long" onfocusin={() => (editing = { key: f.key, text: text(f) })} onfocusout={() => (editing = null)}>
-				<span class="name">{tr(f.label)}</span>
+		<label class="field long" title={tr(f.label)} onfocusin={() => (editing = { key: f.key, text: text(f) })} onfocusout={() => (editing = null)}>
+				<span class="sr">{tr(f.label)}</span>
 				<Textarea
-					rows={3}
-					placeholder={f.placeholder && tr(f.placeholder)}
+					small
+					rows={2}
+					placeholder={hint(f)}
 					bind:value={() => (editing?.key === f.key ? editing.text : text(f)), (v: string) => {
 						if (editing?.key === f.key) editing.text = v;
 						setProp(block, f, v);
@@ -214,12 +216,12 @@
 		margin-bottom: 4px;
 		border-radius: 8px;
 		font: 12px/1.4 system-ui, sans-serif;
-		color: #1d1d1f;
+		color: var(--color-surface-contrast, #1d1d1f);
 	}
 	.bar.open {
 		justify-items: stretch;
 		margin-bottom: 8px;
-		padding: 8px 12px 12px;
+		padding: 6px 8px 8px;
 		background: rgba(120, 120, 140, 0.07);
 	}
 	.bar {
@@ -227,12 +229,13 @@
 			padding 0.18s,
 			background 0.18s;
 	}
-	/* the fields in 1–3 columns (as wide as the box allows), each with its label above */
+	/* the fields in columns as wide as the box allows; text fields carry their label as placeholder, the others a short
+	   label beside the control */
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-		gap: 12px 16px;
-		padding-top: 8px;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: 6px 10px;
+		padding-top: 6px;
 	}
 	.head {
 		display: flex;
@@ -241,13 +244,13 @@
 		padding: 0;
 		border: 0;
 		background: none;
-		color: #8e8e96;
+		color: var(--color-muted-contrast, #8e8e96);
 		cursor: pointer;
 		justify-self: start;
 	}
 	.head:hover .tag {
 		background: rgba(120, 120, 140, 0.2);
-		color: #1d1d1f;
+		color: var(--color-surface-contrast, #1d1d1f);
 	}
 	.head :global(.chev) {
 		transition: rotate 0.15s;
@@ -259,7 +262,7 @@
 		padding: 1px 6px;
 		border-radius: 5px;
 		background: rgba(120, 120, 140, 0.12);
-		color: #6e6e76;
+		color: var(--color-muted-contrast, #6e6e76);
 		font: 500 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
 		white-space: nowrap;
 		user-select: none;
@@ -267,8 +270,55 @@
 	.field {
 		display: grid;
 		align-content: start;
-		gap: 4px;
 		min-width: 0;
+	}
+	.field.inline {
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		gap: 8px;
+	}
+	/* compact controls: the bar's small type in the inputs too */
+	.field :global(input:not([type='range'])),
+	.field :global(textarea),
+	.field :global(select) {
+		font-size: 12px;
+	}
+	/* the label of a field whose placeholder shows it */
+	.sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	.toggles {
+		display: inline-flex;
+		justify-self: start;
+		gap: 1px;
+		padding: 2px;
+		border-radius: 7px;
+		background: var(--color-muted, #f4f4f6);
+	}
+	.toggle {
+		display: inline-grid;
+		place-items: center;
+		min-width: 26px;
+		height: 24px;
+		padding: 0 4px;
+		border: 0;
+		border-radius: 5px;
+		background: none;
+		color: var(--color-muted-contrast, #6e6e76);
+		cursor: pointer;
+	}
+	.toggle:hover {
+		color: var(--color-surface-contrast, #1d1d1f);
+	}
+	.toggle.on {
+		background: var(--color-surface, #fff);
+		color: #3b82f6;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 	}
 	/* text areas take a whole row */
 	.field.long {
@@ -283,7 +333,7 @@
 	.name {
 		font-size: 11.5px;
 		font-weight: 600;
-		color: #8e8e96;
+		color: var(--color-muted-contrast, #8e8e96);
 		white-space: nowrap;
 		user-select: none;
 	}
@@ -291,15 +341,15 @@
 	.view {
 		margin-left: 6px;
 		padding: 0 5px;
-		border: 1px dashed #c8c8d0;
+		border: 1px dashed var(--color-frame, #c8c8d0);
 		border-radius: 4px;
-		color: #6e6e76;
+		color: var(--color-muted-contrast, #6e6e76);
 		font-weight: 500;
 	}
 	.view.own {
 		border-style: solid;
-		border-color: #1d1d1f;
-		color: #1d1d1f;
+		border-color: var(--color-surface-contrast, #1d1d1f);
+		color: var(--color-surface-contrast, #1d1d1f);
 	}
 	.slider {
 		display: block;
@@ -308,7 +358,7 @@
 	}
 	.value {
 		min-width: 4.5em;
-		color: #3a3a40;
+		color: var(--color-surface-contrast, #3a3a40);
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
@@ -318,21 +368,21 @@
 		gap: 6px;
 		height: 30px;
 		padding: 0 10px 0 6px;
-		border: 1px dashed #c8c8d0;
+		border: 1px dashed var(--color-frame, #c8c8d0);
 		border-radius: 7px;
-		background: #fff;
-		color: #8e8e96;
+		background: var(--color-surface, #fff);
+		color: var(--color-muted-contrast, #8e8e96);
 		cursor: pointer;
 	}
 	.nocolor:hover {
 		border-color: var(--color-accent, #ea580c);
-		color: #3a3a40;
+		color: var(--color-surface-contrast, #3a3a40);
 	}
 	/* an empty swatch, struck through */
 	.swatch {
 		width: 16px;
 		height: 16px;
-		border: 1px solid #c8c8d0;
+		border: 1px solid var(--color-frame, #c8c8d0);
 		border-radius: 4px;
 		background: linear-gradient(to top right, transparent calc(50% - 1px), #e5484d calc(50% - 1px), #e5484d calc(50% + 1px), transparent calc(50% + 1px));
 	}
@@ -343,53 +393,13 @@
 		border: 0;
 		border-radius: 6px;
 		background: none;
-		color: #8e8e96;
+		color: var(--color-muted-contrast, #8e8e96);
 		font-size: 16px;
 		line-height: 1;
 		cursor: pointer;
 	}
 	.clear:hover {
 		background: rgba(120, 120, 140, 0.14);
-		color: #1d1d1f;
-	}
-	.chosen {
-		display: flex;
-		align-items: center;
-		gap: 3px;
-		min-height: 30px;
-		padding: 2px;
-		border: 1px solid #dcdce2;
-		border-radius: 7px;
-		background: #fff;
-		cursor: pointer;
-	}
-	.chosen:hover {
-		border-color: var(--color-accent, #ea580c);
-	}
-	/* images after the sixth are a "+n" */
-	.chosen > img:nth-of-type(n + 7) {
-		display: none;
-	}
-	.chosen img,
-	.chosen .missing {
-		width: 40px;
-		height: 24px;
-		object-fit: cover;
-		border-radius: 4px;
-	}
-	.chosen .missing {
-		display: grid;
-		place-items: center;
-		background: #eee;
-		color: #8e8e96;
-	}
-	.chosen .more {
-		padding: 0 4px;
-		color: #6e6e76;
-		font-size: 11px;
-	}
-	.chosen .empty {
-		padding: 0 8px;
-		color: #8e8e96;
+		color: var(--color-surface-contrast, #1d1d1f);
 	}
 </style>

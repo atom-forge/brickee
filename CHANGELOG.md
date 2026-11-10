@@ -7,9 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Showcase site in `src/routes` (`bun run dev`), styled like the `@atom-forge/ui` site: a playground (editor beside its preview, stored JSON and markdown), the guide (editor and preview, split view, markdown, stored form and schema), a page per bundled plugin, writing, nesting and overriding plugins, image blocks, and the host contexts (per-view values, code languages, localisation), each with live examples and their code. It resolves `@atom-forge/brickee` to the local source and prerenders to `build/` (`@sveltejs/adapter-static`); it is not part of the npm package.
+- A `toggles` field kind (`PropField`): a row of icon buttons, each switching one of `options` on or off (`options[].icon` is the button, `label` its tooltip), stored as the list of the ones on.
+- `provideCodeLanguages(() => list)` (with `useCodeLanguages` and the `CodeLanguage` type): a host context that turns a code block's language field into a dropdown of the given languages, with *None* first; without it the language stays free text. Nested editors inherit the list, and a stored language missing from it stays an option.
+
 ### Changed
 
+- The fields bar is more compact: smaller controls and type, text fields show their label as the placeholder (with the field's own placeholder after it), the other fields a short label beside the control.
+- The table's header and footer rows are two icon toggles in its fields bar (a `toggles` field), like any plugin field; the toolbar above the table holds only the row and column tools of the cell being edited, and says to click a cell while none is. The info icon with the keyboard hint is gone.
+- The editor follows the host's light and dark mode: its colours (block fields, popups, frames, the table editor, the block actions) come from the `@atom-forge/ui` theme tokens with the former colours as fallbacks, and the props bar and the link prompt no longer force the light theme. The previews' table borders, video captions and the gap's stripes are drawn from the text colour.
+- A code block's language is edited in the same fields bar as a plugin's (its header shows `code · <language>`), instead of a small input in its corner; read-only, the corner still shows the language.
+- The block handles keep 1px free above and below, so the handles of neighbouring blocks do not touch.
+- The docs note that the block handles are drawn about 22 px left of the editor's box, so the element around it needs that much left padding.
 - Releases are configured with `ship-it init`: the publish workflow comes from Ship's template, `package.json` gains `pub-validate` and `publishConfig`, and npm Trusted Publishing lets CI publish the next versions.
+
+### Removed
+
+- **Breaking:** images and media are no longer the library's concept — whether a block stores a URL or an id, how the user picks an image and how it is resolved is the application's decision. Removed: the `image` and `images` field kinds with their picker, the `media` prop of `Editor` and `Preview`, `provideMedia`, `useMedia`, `findMedia`, the `MediaItem` type, `toMarkdown`'s `media` option and `MarkdownContext.media`. An image block is an app plugin that picks in its own view or dialog and resolves with the app's own data; stored documents are unaffected. See the upgrading chapter.
 
 ## [0.0.1] - 2026-11-10
 

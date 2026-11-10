@@ -9,7 +9,6 @@
 | `value` | `StoredBlock[]` (bindable) | `[]` | A dokumentum. Minden változáskor visszaíródik; a kívülről lecserélt dokumentum újra betöltődik. |
 | `plugins` | `BlockPlugin[]` | `[]` | A pluginblokkok, amelyeket ez a szerkesztő megjeleníthet és felkínálhat. |
 | `palette` | `string[]` | minden beépített blokk, utána minden plugin | A perjeles menü által felkínált blokktípusok, ebben a sorrendben (lásd lent). |
-| `media` | `MediaItem[]` | — | A képek, amelyek közül a blokkok választhatnak (lásd [Az alkalmazás kontextusai](host-contexts.md)). |
 | `messages` | `Messages` | — | Felületi szövegek az alkalmazás nyelvén: angol szöveg → fordítás. |
 | `readonly` | `boolean` | `false` | Szerkesztés nélkül mutatja a dokumentumot; a pluginmezők rejtve vannak. |
 | `placeholder` | `string` | `Write something, or press '/' for blocks…` | Az üres blokk tippszövege. |
@@ -23,7 +22,6 @@ Az üres dokumentum egyetlen üres bekezdésként jelenik meg, így a szerkeszt�
 |---|---|---|---|
 | `blocks` | `StoredBlock[]` | — | A megjelenítendő dokumentum. |
 | `plugins` | `BlockPlugin[]` | — | A pluginok, amelyek előnézetei a pluginblokkokat renderelik. |
-| `media` | `MediaItem[]` | — | A képek, amelyekre a blokkok azonosítóval hivatkoznak. |
 | `messages` | `Messages` | — | Felületi szövegek az alkalmazás nyelvén. |
 | `markGated` | `boolean` | `true` | Megjelöli a kapus blokk utáni blokkokat (lásd [Egyedi és kapus blokkok](writing-plugins.md#egyedi-és-kapus-blokkok)). |
 | `nested` | `boolean` | `false` | A beágyazott blokkjaikat renderelő plugin-előnézetek állítják be. |
@@ -32,7 +30,7 @@ Az előnézet a beépített blokkokat sima HTML-ként rendereli (`p`, `h1`…`h6
 
 Hogy használod-e egyáltalán a `Preview`-t, rajtad múlik: a szerkesztő nem függ tőle. Egy saját megjelenítővel dolgozó alkalmazás maga is renderelheti a tárolt blokkokat, és a pluginjai elhagyhatják a `preview`-t.
 
-A legfelső szintű szerkesztőnek vagy előnézetnek átadott `media` és `messages` öröklődik minden alatta lévő beágyazott szerkesztőre, beágyazott előnézetre és pluginkomponensre.
+A legfelső szintű szerkesztőnek vagy előnézetnek átadott `messages` öröklődik minden alatta lévő beágyazott szerkesztőre, beágyazott előnézetre és pluginkomponensre.
 
 ## A paletta
 

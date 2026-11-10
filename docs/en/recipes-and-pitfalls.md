@@ -38,23 +38,22 @@ export const messages: Messages = { ...hu, Button: 'Gomb', 'A link as a button':
 ```svelte
 <!-- lib/BlockEditor.svelte -->
 <script lang="ts">
-	import { Editor, provideView, type MediaItem, type StoredBlock } from '@atom-forge/brickee';
+	import { Editor, provideView, type StoredBlock } from '@atom-forge/brickee';
 	import { messages, PAGE_PALETTE, plugins } from './blocks';
 
 	let {
 		value = $bindable(),
-		media = [],
 		palette = PAGE_PALETTE,
 		view
-	}: { value: StoredBlock[]; media?: MediaItem[]; palette?: string[]; view?: string } = $props();
+	}: { value: StoredBlock[]; palette?: string[]; view?: string } = $props();
 
 	provideView(() => view);
 </script>
 
-<Editor bind:value {plugins} {palette} {media} {messages} />
+<Editor bind:value {plugins} {palette} {messages} />
 ```
 
-Render the published page with `<Preview blocks={doc} {plugins} {media} {messages} />` and the same `plugins`, so a block looks the same in the editor's preview and on the site.
+Render the published page with `<Preview blocks={doc} {plugins} {messages} />` and the same `plugins`, so a block looks the same in the editor's preview and on the site.
 
 ## Copying the whole document as markdown
 
@@ -62,13 +61,13 @@ Copying selected blocks already puts markdown on the clipboard. For a "Copy as m
 
 ```svelte
 <script lang="ts">
-	import { fromStored, toMarkdown, type MediaItem, type StoredBlock } from '@atom-forge/brickee';
+	import { fromStored, toMarkdown, type StoredBlock } from '@atom-forge/brickee';
 	import { plugins } from './blocks';
 
-	let { doc, media = [] }: { doc: StoredBlock[]; media?: MediaItem[] } = $props();
+	let { doc }: { doc: StoredBlock[] } = $props();
 
 	// Runs in a click handler, so the browser-only toMarkdown is safe here.
-	const copy = () => navigator.clipboard.writeText(toMarkdown(doc.map(fromStored), { plugins, media }));
+	const copy = () => navigator.clipboard.writeText(toMarkdown(doc.map(fromStored), { plugins }));
 </script>
 
 <button type="button" onclick={copy}>Copy as markdown</button>
@@ -106,10 +105,12 @@ The application reads the package's built `dist/`, so rebuild the package after 
 | Symptom | Cause | Fix |
 |---|---|---|
 | Block fields and popups look unstyled | The `@atom-forge/ui` theme CSS or its Tailwind `@source` is missing | Set up `@atom-forge/ui` as its documentation describes and render the app beneath its `Root`. |
+| Block handles stick out on the left | The handles are drawn left of the editor's box | Give the element around the editor about 22 px of left padding. |
 | Popups do not open, or "context not found" errors with a linked package | Two copies of `svelte` or `@atom-forge/ui` | Add them to Vite's `resolve.dedupe`. |
 | A plugin block shows "Unknown block" | Its plugin is missing from `plugins` | Pass the same plugins to every editor and preview of a document type. |
 | A block is missing from `Preview` | Its plugin has no `preview` | Give the plugin a `preview` (the bundled ones have a default), or render the block with your own renderer. |
-| A plugin block is missing from the site | The preview got other `plugins`, or the image id is not in `media` | Use the same plugin list and media for the editor and the preview. |
+| A plugin block is missing from the site | The preview got other `plugins` | Use the same plugin list for the editor and the preview. |
+| An image block renders nothing | Its preview rejects the stored address, or the app's own lookup does not know the stored id | Store addresses the preview accepts (`http(s)` or site-relative); resolve ids from the same data in the editor and on the site. |
 | A box cannot be put inside another box | Nested editors go one level deep | Design containers to hold content blocks, not other containers. |
 | A block is not offered inside a container | Its `accepts` or the host `palette` leaves it out | Add the palette id to `accepts` (or use `'md:*'` for every built-in). |
 | A unique block appears twice | The schema does not enforce `unique` | Check it on the server if your application relies on it. |

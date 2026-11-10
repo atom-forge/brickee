@@ -79,18 +79,17 @@ A markdown teljes értékű formátum: a vágólap ezt hordozza, és a befogadó
 | `fromStored(block)` | `StoredBlock` → `Block` | bárhol |
 | `toStored(block)` | `Block` → `StoredBlock` | csak böngészőben |
 | `fromMarkdown(text)` | markdown → `Block[]` | bárhol |
-| `toMarkdown(blocks, { plugins, media })` | `Block[]` → markdown | csak böngészőben |
+| `toMarkdown(blocks, { plugins })` | `Block[]` → markdown | csak böngészőben |
 | `inline(md)` | inline markdown → inline HTML | bárhol |
 
 A markdown-függvények a szerkesztő alakján (`Block[]`) dolgoznak, ezért a tárolt dokumentumok a `fromStored` és a `toStored` függvényen mennek át:
 
 ```ts
-import { fromMarkdown, fromStored, toMarkdown, toStored, type MediaItem, type StoredBlock } from '@atom-forge/brickee';
+import { fromMarkdown, fromStored, toMarkdown, toStored, type StoredBlock } from '@atom-forge/brickee';
 import { PLUGINS } from '@atom-forge/brickee/plugins';
 
 // Tárolt dokumentum -> markdown (csak böngészőben).
-export const exportMarkdown = (doc: StoredBlock[], media: MediaItem[]) =>
-	toMarkdown(doc.map(fromStored), { plugins: PLUGINS, media });
+export const exportMarkdown = (doc: StoredBlock[]) => toMarkdown(doc.map(fromStored), { plugins: PLUGINS });
 
 // Markdown -> tárolt dokumentum (csak böngészőben).
 export const importMarkdown = (text: string): StoredBlock[] => fromMarkdown(text).map(toStored);
@@ -110,6 +109,6 @@ Amit a `toMarkdown` kiír:
 
 - az egymást követő listaelemeket egymást követő sorokba, minden más blokkot üres sorral elválasztva;
 - a listaelemeket és a bekezdéseket szintenként két szóközzel behúzva;
-- a plugin-blokkot a pluginja `markdown(props, { inner, media })` függvényével, ahol az `inner` a már átalakított beágyazott blokkjai; a markdown alak nélküli plugin, illetve az, amelyik `''`-t ad vissza, kimarad.
+- a plugin-blokkot a pluginja `markdown(props, { inner })` függvényével, ahol az `inner` a már átalakított beágyazott blokkjai; a markdown alak nélküli plugin, illetve az, amelyik `''`-t ad vissza, kimarad.
 
 Saját pluginod markdown alakjának megírásáról a [Pluginok írása](writing-plugins.md#markdown-alak) fejezet szól.

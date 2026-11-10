@@ -19,7 +19,7 @@ flowchart TB
 - **Bundled plugins** (`@atom-forge/brickee/plugins`) — plugins like any other, written only with what the core exports. You opt in to the ones you need.
 - **Your plugins** — the same `BlockPlugin` shape, living in your application.
 
-The editor itself knows nothing about your application. Whatever an app needs — its images, its page widths, its language — reaches the plugins through **contexts** (media, view, text) or through plugin **fields**, never through special editor props.
+The editor itself knows nothing about your application. Whatever an app needs — its page widths, its code languages, its language — reaches the plugins through **contexts** (view, code languages, text) or through plugin **fields**, never through special editor props. Images are no exception: an image block is a plugin of your own, which stores, picks and resolves its images the way your application does.
 
 ## Contents
 
@@ -27,12 +27,12 @@ The editor itself knows nothing about your application. Whatever an app needs �
 2. [The editor and the preview](editor-and-preview.md) — the `Editor` and `Preview` props, the palette, the editing features, and scroll sync.
 3. [Documents and markdown](documents-and-markdown.md) — the stored form (`StoredBlock`), the built-in blocks, and converting from and to markdown.
 4. [Bundled plugins](bundled-plugins.md) — what `@atom-forge/brickee/plugins` contains, and how to override a preview or add fields.
-5. [Writing plugins](writing-plugins.md) — the `BlockPlugin` anatomy, fields, views and previews, containers, markdown forms, and the kit.
-6. [Host contexts](host-contexts.md) — media, per-view values, and UI text.
+5. [Writing plugins](writing-plugins.md) — the `BlockPlugin` anatomy, fields, views and previews, containers, markdown forms, image blocks, and the kit.
+6. [Host contexts](host-contexts.md) — per-view values, code languages, and UI text.
 7. [On the server](server-side.md) — schema validation, plain text, and gated content.
 8. [Recipes and pitfalls](recipes-and-pitfalls.md) — complete patterns and the mistakes to avoid.
 9. [Upgrading](upgrading.md) — what to change in your code when you move to a newer version.
 
 The book also has an AI Notes chapter: instructions to copy into the agent instruction file of a project that uses the package.
 
-Svelte examples are complete components unless they say otherwise. Application values such as the list of images or the current page width stand for whatever your application provides.
+Svelte examples are complete components unless they say otherwise. Application values such as the current page width stand for whatever your application provides.

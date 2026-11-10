@@ -37,7 +37,7 @@ flowchart TB
 - **Bundled plugins** — plugins like any other, written only with what the core exports. You opt in to the ones you need.
 - **Your plugins** — the same `BlockPlugin` shape, living in your application.
 
-The editor itself knows nothing about your application. Whatever an app needs — its images, its page widths, its language — reaches the plugins through **contexts** (media, view, text) or through plugin **fields**, never through special editor props.
+The editor itself knows nothing about your application. Whatever an app needs — its page widths, its code languages, its language — reaches the plugins through **contexts** (view, code languages, text) or through plugin **fields**, never through special editor props. Images are no exception: an image block is a plugin of your own, which stores, picks and resolves its images the way your application does.
 
 This book is for Svelte 5 developers who embed the editor in an application, choose and adapt the bundled plugins, or write their own.
 
@@ -50,12 +50,12 @@ This book is for Svelte 5 developers who embed the editor in an application, cho
 2. [[editor-and-preview|The editor and the preview]] — the `Editor` and `Preview` props, the palette, the editing features, and scroll sync.
 3. [[documents-and-markdown|Documents and markdown]] — the stored form (`StoredBlock`), the built-in blocks, and converting from and to markdown.
 4. [[bundled-plugins|Bundled plugins]] — what `@atom-forge/brickee/plugins` contains, and how to override a preview or add fields.
-5. [[writing-plugins|Writing plugins]] — the `BlockPlugin` anatomy, fields, views and previews, containers, markdown forms, and the kit.
-6. [[host-contexts|Host contexts]] — media, per-view values, and UI text.
+5. [[writing-plugins|Writing plugins]] — the `BlockPlugin` anatomy, fields, views and previews, containers, markdown forms, image blocks, and the kit.
+6. [[host-contexts|Host contexts]] — per-view values, code languages, and UI text.
 7. [[server-side|On the server]] — schema validation, plain text, and gated content.
 8. [[recipes-and-pitfalls|Recipes and pitfalls]] — complete patterns and the mistakes to avoid.
 9. [[upgrading|Upgrading]] — what to change in your code when you move to a newer version.
 10. [[ai-notes|AI Notes]] — instructions to copy into the agent instruction file of a project that uses the package.
 
 > [!note] Examples
-> Svelte examples are complete components unless they say otherwise. Application values such as the list of images or the current page width stand for whatever your application provides.
+> Svelte examples are complete components unless they say otherwise. Application values such as the current page width stand for whatever your application provides.

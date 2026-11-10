@@ -9,8 +9,10 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`�
 - Peers: `svelte` 5, `@atom-forge/ui` (popups and field controls), `@lucide/svelte`; `zod` only for `@atom-forge/brickee/schema`. The app must set up `@atom-forge/ui` (Tailwind 4, its theme CSS and `@source`, the app beneath its `Root`).
 - Store the editor's `value` (`StoredBlock[]`) as it is. Built-in types start with `md:`; any other `type` is a plugin's. Never rename a plugin's `type`: stored documents refer to it.
 - Pass the same `plugins` to the `Editor` and the `Preview` of a document type. Restrict what an editor offers with `palette` (palette ids: `md:*` kinds and plugin types), not by dropping plugins.
-- No app-specific editor props: app data reaches plugins through contexts (`media` / `provideMedia`, `provideView`, `messages` / `provideText`) or plugin fields.
-- Plugin props are untrusted user input. Previews sanitize: `safeColor` for colours, check links, clamp numbers, look images up by id in the media list, never `{@html}` with props.
+- The editor's colours come from the `@atom-forge/ui` theme tokens (light/dark follow the host). Its block handles sit ~22 px left of its box: leave that much left padding around it.
+- No app-specific editor props: app data reaches plugins through contexts (`provideView`, `provideCodeLanguages`, `messages` / `provideText`), plugin fields, or the app's own modules and contexts.
+- No image concept: no image field, picker or media list. An image block is an app plugin that stores what the app chooses (a URL, or an id of its own media library), picks it in its view or the app's own dialog, and resolves ids with the app's own data.
+- Plugin props are untrusted user input. Previews sanitize: `safeColor` for colours, check links and image addresses (`http(s)` or site-relative), clamp numbers, never `{@html}` with props.
 - A plugin view declares both `props` and `blocks` with `$bindable()`, even if unused.
 - Containers (`content: 'blocks'`) nest one level only; nested editors never offer containers or unique plugins. `accepts` narrows their content (`'md:*'` = every built-in).
 - `unique`: one per document, top level; not enforced by the schema. `gate`: the preview only *marks* blocks after it; hide gated content on the server.
@@ -24,9 +26,9 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`�
 
 ```ts
 // @atom-forge/brickee — components
-// <Editor bind:value={StoredBlock[]} plugins?={BlockPlugin[]} palette?={string[]} media?={MediaItem[]}
-//         messages?={Messages} readonly?={boolean} placeholder?={string} />   // `nested` is for Frame only
-// <Preview blocks={StoredBlock[]} plugins={BlockPlugin[]} media?={MediaItem[]} messages?={Messages}
+// <Editor bind:value={StoredBlock[]} plugins?={BlockPlugin[]} palette?={string[]} messages?={Messages}
+//         readonly?={boolean} placeholder?={string} />   // `nested` is for Frame only
+// <Preview blocks={StoredBlock[]} plugins={BlockPlugin[]} messages?={Messages}
 //          markGated?={boolean /* default true */} nested?={boolean} />
 // <Frame bind:blocks {readonly} {palette} {plugins} heading?={string} empty?={string} image?={string} placeholder?={string} />
 // <Empty icon={Icon} text={string} />
@@ -43,15 +45,14 @@ function inline(md: string): string;                 // inline markdown -> safe 
 function fromStored(s: StoredBlock): Block;
 function toStored(b: Block): StoredBlock;           // browser only
 function fromMarkdown(src: string): Block[];        // one block per non-empty line; built-in blocks only
-function toMarkdown(blocks: Block[], opts?: { plugins?: BlockPlugin[]; media?: MediaItem[] }): string; // browser only
+function toMarkdown(blocks: Block[], opts?: { plugins?: BlockPlugin[] }): string; // browser only
 
 // contexts (call provide* in component init, above the editor/preview; use* in plugin components)
-interface MediaItem { id: string; name: string; url: string; group?: string }
-function provideMedia(own: () => MediaItem[] | undefined): void;
-function useMedia(): () => MediaItem[];
-function findMedia(list: MediaItem[], id: unknown): MediaItem | undefined;
 function provideView(get: () => string | undefined): void;
 function useView(): () => string | undefined;
+interface CodeLanguage { value: string; label?: string }      // value: stored as the code block's props.lang
+function provideCodeLanguages(own: () => (string | CodeLanguage)[] | undefined): void; // list: the language field is a dropdown
+function useCodeLanguages(): () => CodeLanguage[];             // empty: free text
 type Messages = Record<string, string>;
 type Translate = (text: string, vars?: Record<string, string | number>) => string; // fills {name}
 function provideText(own: () => Messages | undefined): void;
@@ -99,12 +100,12 @@ interface BlockPlugin<P extends Props = Props> {
 }
 interface PluginViewProps<P> { props: P; blocks: StoredBlock[]; readonly: boolean; palette: string[]; plugins: BlockPlugin[] }
 interface PluginPreviewProps<P> { props: P; blocks: StoredBlock[]; plugins: BlockPlugin[] }
-interface MarkdownContext { inner: string; media: MediaItem[] }
+interface MarkdownContext { inner: string }
 interface PropField {
 	key: string; label: string;
-	kind: 'text' | 'textarea' | 'color' | 'select' | 'slider' | 'image' | 'images';
+	kind: 'text' | 'textarea' | 'color' | 'select' | 'slider' | 'toggles'; // toggles: icon buttons, stores the list of the ones on
 	placeholder?: string;
-	options?: { value: string; label: string }[]; // select; stepped slider; label may use {n}
+	options?: { value: string; label: string; icon?: Icon }[]; // select; stepped slider (label may use {n}); toggles (icon + tooltip)
 	min?: number; max?: number; step?: number; unit?: string; // number slider (stored as string)
 	none?: string;                                // unset label (number slider notch, optional colour)
 	views?: { key: string; label: string }[];     // per-view slider values
@@ -113,10 +114,10 @@ interface PropField {
 }
 
 // @atom-forge/brickee/plugins
-// table, youtube, map, gap — the only bundled plugins (none holds nested blocks or uses media); PLUGINS = [table, youtube, map, gap]
+// table, youtube, map, gap — the only bundled plugins (none holds nested blocks or images); PLUGINS = [table, youtube, map, gap]
 // types: TableProps, YouTubeProps, MapProps, GapProps, Head
 // helpers: youtubeId, mapSrc, gapLines, GAP_LINES, GAP_MAX, tableHeads, rowHead, HEADS, square
-// Image blocks, boxes and other containers are app plugins you write yourself (see docs/en/writing-plugins.md, host-contexts.md).
+// Image blocks, boxes and other containers are app plugins you write yourself (see docs/en/writing-plugins.md).
 
 // @atom-forge/brickee/schema (zod)
 const blocksSchema: ZodType<StoredBlock[]>;
@@ -130,16 +131,15 @@ function blocksSchemaFor(plugins: readonly { type: string; accepts?: readonly st
 
 ```svelte
 <script lang="ts">
-	import { Editor, Preview, type MediaItem, type StoredBlock } from '@atom-forge/brickee';
+	import { Editor, Preview, type StoredBlock } from '@atom-forge/brickee';
 	import { PLUGINS } from '@atom-forge/brickee/plugins';
 	import { hu } from '@atom-forge/brickee/locales/hu';
 
-	let { media = [] }: { media?: MediaItem[] } = $props();
 	let value = $state<StoredBlock[]>([]);
 </script>
 
-<Editor bind:value plugins={PLUGINS} {media} messages={hu} />
-<Preview blocks={value} plugins={PLUGINS} {media} messages={hu} />
+<Editor bind:value plugins={PLUGINS} messages={hu} />
+<Preview blocks={value} plugins={PLUGINS} messages={hu} />
 ```
 
 ## Common extensions
@@ -214,7 +214,7 @@ export const plugins: BlockPlugin[] = [
 ];
 ```
 
-**Markdown form and conversion** — `markdown(props, { inner, media })` returns markdown or `''`; use `mdText`, `mdJoin`, `mdQuote`, and `findMedia(media, id)?.url` for images. Whole document: `toMarkdown(doc.map(fromStored), { plugins, media })`; import: `fromMarkdown(text).map(toStored)` (both in the browser).
+**Markdown form and conversion** — `markdown(props, { inner })` returns markdown or `''`; use `mdText`, `mdJoin`, `mdQuote`. Whole document: `toMarkdown(doc.map(fromStored), { plugins })`; import: `fromMarkdown(text).map(toStored)` (both in the browser).
 
 **Per-view fields** — add `views` to a slider field and provide the current view:
 
@@ -256,9 +256,12 @@ const result = blocksSchemaFor(plugins).safeParse(input); // or pass [{ type, ac
 | Symptom | Cause | Fix |
 |---|---|---|
 | Fields and popups unstyled | `@atom-forge/ui` theme CSS / `@source` missing | Set up `@atom-forge/ui`; render beneath its `Root`. |
+| Block handles stick out on the left | Handles are drawn ~22 px left of the editor's box | Give the editor's container ~22 px left padding. |
 | Context errors with a linked local copy | Duplicate `svelte` / `@atom-forge/ui` | Vite `resolve.dedupe: ['svelte', '@atom-forge/ui', '@lucide/svelte', 'zod']`. |
 | A block is missing from `<Preview>` | Its plugin has no `preview` | Add one (bundled plugins have a default) or render it yourself. |
-| "Unknown block" in the editor, block missing on the site | Plugin missing from `plugins`, or image id not in `media` | Same plugins and media for editor and preview. |
+| "Unknown block" in the editor, block missing on the site | Plugin missing from `plugins` | Same plugins for editor and preview. |
+| Image block renders nothing | Preview rejects the stored address, or the app's lookup lacks the id | Store `http(s)` / site-relative addresses; resolve ids from the same app data everywhere. |
+| `media` prop, `useMedia`, `findMedia`, `kind: 'image'` missing | Removed: images are the app's business | Own picking and lookup in the app's image plugin (see `docs/en/upgrading.md`). |
 | Box not offered inside a box | One nesting level | By design. |
 | Block not offered inside a container | `accepts` or host `palette` excludes it | Add its palette id (or `'md:*'`). |
 | Gated content visible to all | `gate` only marks | Cut the document on the server. |

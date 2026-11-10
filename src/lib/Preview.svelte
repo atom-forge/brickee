@@ -49,7 +49,6 @@
 <script lang="ts">
 	import { useText } from './i18n';
 	import { inline } from './markdown';
-	import { provideMedia, type MediaItem } from './media';
 	import { provideText, type Messages } from './i18n';
 	import type { BlockPlugin } from './types';
 
@@ -58,16 +57,13 @@
 		plugins: BlockPlugin[];
 		/** Set by plugins rendering their nested blocks; only the top level splits at the supporters-only divider. */
 		nested?: boolean;
-		/** The images blocks refer to by id; nested previews share their parent's. */
-		media?: MediaItem[];
 		/** UI text in the host's language; nested previews share their parent's. */
 		messages?: Messages;
 		/** Mark the blocks after a gate (the supporters-only divider) with a label and a dashed line; default: yes. */
 		markGated?: boolean;
 	}
-	let { blocks, plugins, nested = false, media, messages, markGated = true }: Props = $props();
+	let { blocks, plugins, nested = false, messages, markGated = true }: Props = $props();
 
-	provideMedia(() => media);
 	provideText(() => messages);
 	const tr = useText();
 

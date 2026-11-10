@@ -12,7 +12,6 @@ teaches: [palette]
 | `value` | `StoredBlock[]` (bindable) | `[]` | The document. Written back on every change; a document replaced from outside is loaded again. |
 | `plugins` | `BlockPlugin[]` | `[]` | The plugin blocks this editor can show and offer. |
 | `palette` | `string[]` | every built-in block, then every plugin | The block types the slash menu offers, in this order (see below). |
-| `media` | `MediaItem[]` | — | The images blocks can pick from (see [Host contexts](host-contexts.md)). |
 | `messages` | `Messages` | — | UI text in the host's language: English text → translation. |
 | `readonly` | `boolean` | `false` | Shows the document without editing; plugin fields are hidden. |
 | `placeholder` | `string` | `Write something, or press '/' for blocks…` | The hint of an empty block. |
@@ -26,7 +25,6 @@ An empty document is shown as one empty paragraph, so the value the editor write
 |---|---|---|---|
 | `blocks` | `StoredBlock[]` | — | The document to render. |
 | `plugins` | `BlockPlugin[]` | — | The plugins whose previews render the plugin blocks. |
-| `media` | `MediaItem[]` | — | The images the blocks refer to by id. |
 | `messages` | `Messages` | — | UI text in the host's language. |
 | `markGated` | `boolean` | `true` | Marks the blocks after a gate block (see [Unique and gate blocks](writing-plugins.md#unique-and-gate-blocks)). |
 | `nested` | `boolean` | `false` | Set by plugin previews that render their nested blocks. |
@@ -35,7 +33,7 @@ The preview renders built-in blocks as plain HTML (`p`, `h1`…`h6`, `ul`/`ol` w
 
 Using `Preview` at all is your choice: the editor does not depend on it. An application with its own renderer can render the stored blocks itself, and its plugins can leave `preview` out.
 
-`media` and `messages` given to the top-level editor or preview are inherited by every nested editor, nested preview and plugin component below it.
+`messages` given to the top-level editor or preview are inherited by every nested editor, nested preview and plugin component below it.
 
 ## The palette
 

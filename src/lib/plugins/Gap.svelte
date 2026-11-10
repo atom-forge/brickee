@@ -23,6 +23,6 @@
 <style>
 	.gap {
 		border-radius: 6px;
-		background: repeating-linear-gradient(-45deg, transparent 0 6px, rgb(0 0 0 / 0.05) 6px 12px);
+		background: repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in srgb, currentColor 7%, transparent) 6px 12px);
 	}
 </style>
