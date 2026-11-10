@@ -83,7 +83,7 @@
 		}
 	},
 	"devDependencies": {
-		"@atom-forge/ship": "0.1.0",
+		"@atom-forge/ship": "0.2.0",
 		"@atom-forge/ui": "^0.0.37",
 		"@lucide/svelte": "^1.59.0",
 		"@sveltejs/adapter-auto": "^7.0.0",

@@ -15,6 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `BlockPlugin.preview` is optional: an app with its own renderer leaves it out, and `<Preview>` skips such blocks. The bundled plugins keep a default preview, which an app may use or replace.
 - An optional markdown form for plugins (`BlockPlugin.markdown`), used by `toMarkdown(blocks, { plugins, media })` and by copying in the editor; the bundled plugins have one where it makes sense (YouTube and map as a link, table as a GFM table).
 - Scroll sync: `scrollSync()` keeps a preview box scrolled to the same fraction as the editor's box (one way, also when the preview's content changes size; `use:sync.source` / `use:sync.target`, `align()`), with `scrollFraction` / `setScrollFraction` for keeping a position across a layout change. Proportional only: the two show roughly the same place, not the same block.
-- Repository frame following the AtomForge packages: agent instructions, book, English and Hungarian docs, `README-AI.md`, `TODO.md`, `notes/`, and a tag-triggered publish workflow with `@atom-forge/ship` (installed from npm).
+- Repository frame following the AtomForge packages: agent instructions, book, English and Hungarian docs, `README-AI.md`, `TODO.md`, `notes/`, and a tag-triggered publish workflow with `@atom-forge/ship` 0.2.0 (installed from npm).
 
 ---
