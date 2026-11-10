@@ -1,0 +1,42 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    defaults:
+      run:
+        working-directory: brickee
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: brickee
+      - uses: actions/checkout@v4
+        with:
+          repository: atom-forge/ship
+          ref: 8410051f6bbcbafcc4826d3eeb78f1001e9aebdc
+          path: ship
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+      - run: bun install --frozen-lockfile
+      - run: bun run ship-it validate
+      - run: bun run check
+      - run: bun run prepack
+      - run: npm pack --dry-run --ignore-scripts
+      - run: npm publish --access public --ignore-scripts --provenance
