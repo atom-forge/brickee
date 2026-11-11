@@ -19,6 +19,6 @@ Read the rule file that applies before you start, not only at the end:
 ## Todos and notes
 
 - `TODO.md` lists planned work, most important first, one or two lines per item. Longer context lives in `notes/`, and the item links to it.
-- `notes/` holds ideas, plans, specs, and research in any form and language.
-- Neither is an instruction: work on an item only when asked. When you finish one, remove it from `TODO.md` (the changelog records the change) and update or delete the notes it made obsolete. When you notice work outside the current task, add it to `TODO.md` and mention it in your report.
+- `notes/` holds ideas, plans, specs, and research in any form and language. Notes that are done or no longer needed move to `notes/.archived/` (kept for history, not read as current plans).
+- Neither is an instruction: work on an item only when asked. When you finish one, remove it from `TODO.md` (the changelog records the change) and update the notes it made obsolete or move them to `notes/.archived/`. When you notice work outside the current task, add it to `TODO.md` and mention it in your report.
 - Neither is shipped in the npm package.
