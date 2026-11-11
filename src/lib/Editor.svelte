@@ -12,6 +12,7 @@
 	import BlockMenu, { type MenuRow } from './editor/BlockMenu.svelte';
 	import FormatBar from './editor/FormatBar.svelte';
 	import { History } from './editor/history';
+	import { createSweep } from './editor/sweep.svelte';
 	import { acceptsId, BUILT_IN_IDS, PALETTE_ITEMS, type Icon, type PaletteItem } from './palette';
 	import { MAX_INDENT, newBlock, numbering, uid, type Block, type BlockPlugin, type BlockType, type StoredBlock, type PropField, type Content, BUILT_IN_CONTENT, isMd, MD } from './types';
 
@@ -1135,56 +1136,25 @@
 
 	/* ------------------------------------------------- selection across blocks */
 
-	// A text selection dragged out of its block turns into a selection of whole blocks (each block is its own
-	// editable field, so the browser cannot select text across them). Nested editors run the same logic, so a
-	// sweep that leaves a box is taken over by the editor around it, with the box as one block.
-	let sweeping = $state(false);
-	let sweepFrom: Element | null = null;
-
-	function startSweep(e: MouseEvent) {
-		if (readonly || e.button !== 0 || e.shiftKey) return;
-		const t = e.target as Element;
-		if (!t.closest('.ce') || t.closest('.grab')) return;
-		sweepFrom = t;
-		addEventListener('mousemove', sweep);
-		addEventListener('mouseup', endSweep, { once: true });
-	}
-
-	function sweep(e: MouseEvent) {
-		const from = ownRow(sweepFrom);
-		const here = document.elementFromPoint(e.clientX, e.clientY);
-		if (!from || !here) return;
-		const row = root.contains(here) ? ownRow(here) : null;
-		// Left this editor, or came back to the starting block: back to plain text selection.
-		if (!root.contains(here) || row === from) {
-			if (sweeping) {
-				sweeping = false;
-				selA = selH = null;
-			}
-			return;
-		}
-		if (!row) return;
-		if (!sweeping) {
-			sweeping = true;
+	const sweep = createSweep({
+		root: () => root,
+		ownRow,
+		readonly: () => readonly,
+		select: (a, h) => {
+			selA = a;
+			selH = h;
+		},
+		clear: () => (selA = selH = null),
+		focusRoot: () => {
 			blurActive();
 			root.focus({ preventScroll: true });
 		}
-		getSelection()?.removeAllRanges();
-		selA = from.dataset.block!;
-		selH = row.dataset.block!;
-	}
-
-	function endSweep() {
-		removeEventListener('mousemove', sweep);
-		removeEventListener('mouseup', endSweep);
-		sweepFrom = null;
-		sweeping = false;
-	}
+	});
 
 	// Removed in the middle of a sweep or of typing: no listener or timer is left behind. (An effect's cleanup, not
 	// onDestroy: that also runs after server-side rendering, where there is no window.)
 	$effect(() => () => {
-		endSweep();
+		sweep.end();
 		history.dispose();
 	});
 
@@ -1295,7 +1265,7 @@
 <div
 	class="editor"
 	class:nested
-	class:sweeping
+	class:sweeping={sweep.sweeping}
 	role="presentation"
 	bind:this={root}
 	tabindex="-1"
@@ -1305,7 +1275,7 @@
 	onpaste={onRootPaste}
 	onmousedown={(e) => {
 		if (selA && !(e.target as HTMLElement).closest('.grab')) selA = selH = null;
-		startSweep(e);
+		sweep.start(e);
 	}}
 	ondragover={onDragOver}
 	ondrop={onDrop}
