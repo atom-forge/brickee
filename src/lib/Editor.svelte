@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, setContext, tick, untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
 	import { rich, clean, textLen, splitAtCaret, atStart, atEnd, caretOffset, caretRect, caretAt, setCaret, removeBeforeCaret, onEdgeLine, focusAtEdge, toggleCode, plainText, portal } from './dom';
 	import { fromMarkdown, fromStored, plainHtml, toMarkdown, toStored } from './markdown';
@@ -13,10 +13,10 @@
 	import FormatBar from './editor/FormatBar.svelte';
 	import { History } from './editor/history';
 	import { createSweep } from './editor/sweep.svelte';
+	import { createDrag, useHub } from './editor/drag.svelte';
 	import { acceptsId, BUILT_IN_IDS, PALETTE_ITEMS, type Icon, type PaletteItem } from './palette';
 	import { MAX_INDENT, newBlock, numbering, uid, type Block, type BlockPlugin, type BlockType, type StoredBlock, type PropField, type Content, BUILT_IN_CONTENT, isMd, MD } from './types';
 
-	const HUB = 'brickee:hub';
 
 	interface Props {
 		/** The document: built-in blocks as markdown snippets, plugin blocks with their props. */
@@ -117,17 +117,9 @@
 
 	// State shared by an editor and every editor nested in its plugin blocks: blocks can be dragged between them,
 	// and only the editor last worked in keeps a block selection.
-	type DragSource = { editor: string; ids: string[]; payload: StoredBlock[]; rows: HTMLElement[]; remove: () => void };
-	type Hub = {
-		src: DragSource | null;
-		target: { editor: string; over: string; after: boolean } | null;
-		active: string | null;
-	};
 	// A string, not an object: $state would proxy an object and break identity checks.
 	const token = uid();
-	const ownHub = $state<Hub>({ src: null, target: null, active: null });
-	const hub: Hub = getContext<Hub>(HUB) ?? ownHub;
-	setContext(HUB, hub);
+	const hub = useHub();
 
 	$effect(() => {
 		if (selA) hub.active = token;
@@ -1160,69 +1152,27 @@
 
 	/* ---------------------------------------------------------------- dragging */
 
-	function onDragStart(e: DragEvent, b: Block) {
-		const ids = selSet.has(b.id) ? value.filter((x) => selSet.has(x.id)).map((x) => x.id) : [b.id];
-		const moving = value.filter((x) => ids.includes(x.id));
-		hub.src = {
-			editor: token,
-			ids,
-			payload: moving.map((x) => $state.snapshot(toStored(x)) as StoredBlock),
-			rows: ids.map((id) => root.querySelector<HTMLElement>(`[data-block="${id}"]`)!).filter(Boolean),
-			remove: () => mutate(() => (value = value.filter((x) => !ids.includes(x.id)).concat(value.length === ids.length ? [newBlock()] : [])))
-		};
-		hub.target = null;
-		if (!e.dataTransfer) return;
-		e.dataTransfer.effectAllowed = 'move';
-		e.dataTransfer.setData('text/plain', ' ');
-		const row = (e.currentTarget as HTMLElement).closest('.row');
-		if (row) e.dataTransfer.setDragImage(row, 0, 0);
-	}
-
-	/** Can the dragged blocks land in this editor? Not inside themselves, and only plugins this editor offers. */
-	function accepts(src: DragSource) {
-		if (src.editor === token) return true;
-		if (src.rows.some((r) => r.contains(root))) return false;
-		return src.payload.every((s) => isMd(s) || (allowed.has(s.type) && !!pluginOf(s.type)));
-	}
-
-	function onDragOver(e: DragEvent) {
-		// A nested editor deeper in the tree already took this event.
-		if (!hub.src || e.defaultPrevented) return;
-		const row = ownRow(e.target as Element);
-		if (!row || !accepts(hub.src)) return;
-		e.preventDefault();
-		const r = row.getBoundingClientRect();
-		hub.target = { editor: token, over: row.dataset.block!, after: e.clientY > r.top + r.height / 2 };
-	}
-
-	function onDrop(e: DragEvent) {
-		const src = hub.src;
-		const at = hub.target;
-		if (!src || at?.editor !== token) return;
-		e.preventDefault();
-		hub.src = hub.target = null;
-		const { over, after } = at;
-		if (src.ids.includes(over)) return;
-		if (src.editor === token) {
+	const drag = createDrag({
+		token,
+		hub,
+		root: () => root,
+		ownRow,
+		moving: (id) => (selSet.has(id) ? value.filter((x) => selSet.has(x.id)).map((x) => x.id) : [id]),
+		payload: (ids) => value.filter((x) => ids.includes(x.id)).map((x) => $state.snapshot(toStored(x)) as StoredBlock),
+		remove: (ids) => mutate(() => (value = value.filter((x) => !ids.includes(x.id)).concat(value.length === ids.length ? [newBlock()] : []))),
+		holds: (payload) => payload.every((s) => isMd(s) || (allowed.has(s.type) && !!pluginOf(s.type))),
+		move: (ids, over, after) =>
 			mutate(() => {
-				const moving = value.filter((b) => src.ids.includes(b.id));
-				const rest = value.filter((b) => !src.ids.includes(b.id));
+				const moving = value.filter((b) => ids.includes(b.id));
+				const rest = value.filter((b) => !ids.includes(b.id));
 				const t = rest.findIndex((b) => b.id === over) + (after ? 1 : 0);
 				value = [...rest.slice(0, t), ...moving, ...rest.slice(t)];
-			});
-			return;
+			}),
+		insert: (payload, over, after) => {
+			const incoming = fit(payload.map(fromStored));
+			mutate(() => insertAt(idx(over) + (after ? 1 : 0), ...incoming));
 		}
-		// From another editor: copy in through the stored form, then remove at the source.
-		const incoming = fit(src.payload.map(fromStored));
-		mutate(() => {
-			const t = idx(over) + (after ? 1 : 0);
-			insertAt(t, ...incoming);
-		});
-		src.remove();
-	}
-
-	const dropMark = (id: string, after: boolean) =>
-		hub.target?.editor === token && hub.target.over === id && hub.target.after === after && !hub.src?.ids.includes(id);
+	});
 
 	/* ------------------------------------------------------------------- misc */
 
@@ -1277,17 +1227,17 @@
 		if (selA && !(e.target as HTMLElement).closest('.grab')) selA = selH = null;
 		sweep.start(e);
 	}}
-	ondragover={onDragOver}
-	ondrop={onDrop}
-	ondragend={() => (hub.src = hub.target = null)}
+	ondragover={drag.over}
+	ondrop={drag.drop}
+	ondragend={drag.end}
 >
 	{#each value as b, i (b.id)}
 		<div
 			class="row"
 			class:selected={selSet.has(b.id)}
-			class:dragging={hub.src?.editor === token && hub.src.ids.includes(b.id)}
-			class:drop-before={dropMark(b.id, false)}
-			class:drop-after={dropMark(b.id, true)}
+			class:dragging={drag.moves(b.id)}
+			class:drop-before={drag.mark(b.id, false)}
+			class:drop-after={drag.mark(b.id, true)}
 			data-block={b.id}
 			data-type={b.type}
 			style:--indent={b.indent}
@@ -1303,7 +1253,7 @@
 							class="handle"
 							draggable="true"
 							title={tr('Drag to move, click to select')}
-							ondragstart={(e) => onDragStart(e, b)}
+							ondragstart={(e) => drag.start(e, b.id)}
 							onclick={(e) => onHandleClick(e, b)}><span class="grip"><GripVertical size={16} /></span></span
 						>
 						<div class="bubble" role="toolbar" aria-label={tr('Block actions')}>
