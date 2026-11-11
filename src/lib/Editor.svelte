@@ -159,10 +159,24 @@
 
 	/* ---------------------------------------------------------------- history */
 
-	type Snap = { blocks: string; id: string | null; off: number };
+	// A step holds the document as frozen copies of its blocks, and an unchanged block's copy is shared by every step
+	// (a step costs only the blocks that changed, not the whole document).
+	type Snap = { blocks: readonly Block[]; id: string | null; off: number };
+	const copies = new Map<string, { key: string; copy: Block }>();
+	function copyOf(b: Block): Block {
+		const key = `${b.type}|${b.indent}|${b.checked ?? ''}|${b.plugin ?? ''}|${JSON.stringify(b.props ?? null)}|${JSON.stringify(b.blocks ?? null)}|${b.html}`;
+		const hit = copies.get(b.id);
+		if (hit?.key === key) return hit.copy;
+		const copy = Object.freeze(JSON.parse(JSON.stringify($state.snapshot(b))) as Block);
+		copies.set(b.id, { key, copy });
+		return copy;
+	}
 	const take = (): Snap => {
 		const e = focusedId ? el(focusedId) : null;
-		return { blocks: JSON.stringify($state.snapshot(value)), id: focusedId, off: e ? caretOffset(e) : 0 };
+		const blocks = value.map(copyOf);
+		// copies of deleted blocks: the steps that hold them keep them; the map does not need them
+		if (copies.size > blocks.length * 2) for (const id of [...copies.keys()]) if (!value.some((b) => b.id === id)) copies.delete(id);
+		return { blocks, id: focusedId, off: e ? caretOffset(e) : 0 };
 	};
 	const history = new History<Snap>(take, restore);
 	const typed = () => history.typed();
@@ -172,7 +186,8 @@
 	const redo = () => history.redo();
 
 	function restore(s: Snap) {
-		value = JSON.parse(s.blocks);
+		// fresh objects: the editor changes its blocks in place, the step's copies stay as they are
+		value = s.blocks.map((b) => JSON.parse(JSON.stringify(b)) as Block);
 		selA = selH = null;
 		slash = null;
 		if (s.id && idx(s.id) >= 0) focusBlock(s.id, s.off);

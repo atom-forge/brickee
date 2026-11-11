@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The undo history shares unchanged blocks between its steps: a step costs only the blocks that changed, not a copy of the whole document (in a 2000-block document about 320 KB a step before, 300 steps kept).
 - The editor's accent (selection, active menu row, checked to-do, links, the focused table cell, the toggles) follows the `@atom-forge/ui` theme's accent colour instead of a fixed blue (blue remains the fallback), and the editor and the table use the page's typeface (the editor keeps its 17px size), so they read like the preview beside them.
 - **Breaking:** the editor is styled with Tailwind classes (with the `@atom-forge/ui` theme's colours) and SCSS instead of scoped CSS, so a host must add the package's `dist` folder as a Tailwind `@source`, like the `@atom-forge/ui` one; otherwise the editor loses its look. The preview is unaffected (its styles still travel with its markup). The slash and turn-into menus and the formatting bar are their own components, and the undo history its own class. See the upgrading chapter.
 - The editor's internal context keys are `brickee:*` (were `block-editor:*`); an "Unknown block" note is translatable (`Unknown block: {type}`, also in the Hungarian locale).
