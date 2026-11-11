@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-11-11
+
 ### Added
 
 - Table cells show their text formatted (bold, italic, code, links…) while they are not edited, instead of the raw markdown; while editing, `Ctrl/Cmd` + `B`, `I`, `E`, `Shift+X` and `K` wrap the selected text in the mark (a link with its address selected to type over).
