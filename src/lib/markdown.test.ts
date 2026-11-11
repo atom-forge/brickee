@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { fromMarkdown, fromStored, inline, toMarkdown, toStored } from './markdown';
 import { table } from './plugins';
+import { math } from './math';
 import type { Block, StoredBlock } from './types';
 
 /** Blocks as short strings: type, +indent, (lang) or {props}, then the html. */
@@ -106,7 +107,14 @@ describe('fromMarkdown', () => {
 		]);
 		expect(md('text[^1]\n\n[^1]: the note')).toEqual(['p: text<sup>1</sup>', 'p: <sup>1</sup> the note']);
 	});
-	it('rules and html lines', () => {
+	it('$$ formulas go to a plugin that takes them, or stay text', () => {
+		const show2 = (src: string) => fromMarkdown(src, { plugins: [math] }).map((b) => (b.type === 'plugin' ? `${b.plugin}:${b.props?.tex}` : `${b.type}:${b.html}`));
+		expect(show2('$$\nE = mc^2\n$$\n\nafter')).toEqual(['math:E = mc^2', 'p:after']);
+		expect(show2('$$a^2 + b^2$$')).toEqual(['math:a^2 + b^2']);
+		expect(show2('```\n$$x$$\n```')).toEqual(['code:$$x$$']);
+		expect(md('$$x$$')).toEqual(['p: $$x$$']);
+	});
+		it('rules and html lines', () => {
 		expect(md('a\n\n* * *\n\n<div>\nb\n</div>')).toEqual(['p: a', 'hr: ', 'p: b']);
 	});
 	it('GFM tables go to a plugin that takes them, or stay text', () => {

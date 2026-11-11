@@ -1,6 +1,6 @@
 import {
 	Blocks, Braces, Code, Columns2, FileText, Image, Languages, MapPin, MonitorSmartphone, MousePointerClick, PenLine,
-	Replace, SquarePlay, StickyNote, Table, UnfoldVertical
+	Replace, Sigma, SquarePlay, StickyNote, Table, UnfoldVertical
 } from '@lucide/svelte';
 import type { MenuItem } from './nav-types';
 
@@ -36,6 +36,7 @@ export const NAV_GROUPS: NavGroup[] = [
 			{ value: '/plugins/table', label: 'Table', group: 'Bundled plugins', icon: Table, description: 'Rows and columns of inline text', keywords: ['table', 'grid', 'gfm'] },
 			{ value: '/plugins/youtube', label: 'YouTube', group: 'Bundled plugins', icon: SquarePlay, description: 'A video from a link', keywords: ['youtube', 'video', 'embed'] },
 			{ value: '/plugins/map', label: 'Map', group: 'Bundled plugins', icon: MapPin, description: 'Google Maps for a place', keywords: ['map', 'google', 'address'] },
+			{ value: '/plugins/math', label: 'Formula', group: 'Bundled plugins', icon: Sigma, description: 'A LaTeX formula ($$…$$)', keywords: ['math', 'formula', 'equation', 'latex'] },
 			{ value: '/plugins/gap', label: 'Gap', group: 'Bundled plugins', icon: UnfoldVertical, description: 'Empty space between blocks', keywords: ['gap', 'space', 'spacer'] }
 		]
 	},

@@ -152,6 +152,8 @@ export interface BlockPlugin<P extends Props = Props> {
 	 * that has it gets the table; without one, the table stays text.
 	 */
 	fromTable?(table: MarkdownTable): P;
+	/** Takes a `$$…$$` formula block of pasted or imported markdown (its LaTeX); the bundled `math` does. */
+	fromMath?(tex: string): P;
 	/**
 	 * Takes files pasted into the editor or dropped on it (an image, a PDF…): returns the new block's props, or null to
 	 * leave them to the next plugin. Uploading and storing them is the plugin's own business; it may take its time (a

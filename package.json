@@ -61,6 +61,11 @@
 			"svelte": "./dist/plugins/index.js",
 			"default": "./dist/plugins/index.js"
 		},
+		"./math": {
+			"types": "./dist/math/index.d.ts",
+			"svelte": "./dist/math/index.js",
+			"default": "./dist/math/index.js"
+		},
 		"./schema": {
 			"types": "./dist/schema.d.ts",
 			"default": "./dist/schema.js"
@@ -78,9 +83,13 @@
 		"@atom-forge/ui": ">=0.0.37",
 		"@lucide/svelte": ">=1.0.0",
 		"svelte": "^5.0.0",
+		"temml": ">=0.13.0",
 		"zod": "^4.0.0"
 	},
 	"peerDependenciesMeta": {
+		"temml": {
+			"optional": true
+		},
 		"zod": {
 			"optional": true
 		}
@@ -105,6 +114,7 @@
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.4.2",
 		"tailwindcss": "^4.3.5",
+		"temml": "^0.14.0",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
 		"vitest": "^5.1.0",

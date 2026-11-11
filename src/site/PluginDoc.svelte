@@ -18,7 +18,7 @@
 	} = $props();
 
 	const usage = $derived(`import { Editor, Preview } from '@atom-forge/brickee';
-import { ${name} } from '@atom-forge/brickee/plugins';
+import { ${name} } from '@atom-forge/brickee/${name === 'math' ? 'math' : 'plugins'}';
 
 const plugins = [${name}];
 // <Editor bind:value {plugins} />  ·  <Preview blocks={value} {plugins} />`);

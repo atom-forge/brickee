@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A formula block: `math` in the new entry point `@atom-forge/brickee/math`, written in LaTeX and drawn as MathML by `temml` (an optional peer dependency; it also renders on the server). Its markdown form is a `$$…$$` block, and a pasted or imported one becomes a formula through the new optional `BlockPlugin.fromMath(tex)`.
 - Plan for formulas and inline plugins in `notes/` (not shipped), linked from `TODO.md`.
 
 ## [0.0.3] - 2026-11-11

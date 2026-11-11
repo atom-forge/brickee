@@ -3,6 +3,16 @@
 Döntések: blokk-képlet egyszerű pluginként, Temml-lel (MathML); jelölő a GitHub/Obsidian-szabvány: `$…$` inline,
 `$$…$$` blokk; az inline képlet egy új, általános bővítési pont (inline plugin) első felhasználója.
 
+## Haladás
+
+- [x] 1. `math` blokk-plugin, `@atom-forge/brickee/math` belépési pont, `$$…$$` beolvasása (`fromMath`)
+- [ ] 2. inline markdown gépelés közben (átalakítás saját visszavonási lépéssel)
+- [ ] 3. inline plugin bővítési pont (`InlinePlugin`, `inlinePlugins` prop, `inline()`, `walk()`, szerkesztő ablak, formázósáv)
+- [ ] 4. `inlineMath` (`$…$`) az inline pluginra
+- [ ] dokumentáció (könyv, en/hu, README-AI), bemutatóoldal, changelog
+
+Döntések a nyitott kérdésekben: külön `inlinePlugins` prop; beszúrás a formázósávból és gépeléssel (saját menü nélkül).
+
 ## 1. Blokk-képlet: `math` plugin
 
 - Belépési pont: `@atom-forge/brickee/math` (külön, mert saját függősége van). A `temml` opcionális peer függőség;

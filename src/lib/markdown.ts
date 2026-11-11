@@ -345,6 +345,7 @@ export function fromMarkdown(src: string, opts: { plugins?: BlockPlugin[] } = {}
 						return url ? `[${text}](${url})` : all;
 					});
 	const tableTaker = opts.plugins?.find((p) => p.fromTable);
+	const mathTaker = opts.plugins?.find((p) => p.fromMath);
 
 	const out: Block[] = [];
 	// The open list items, by the column of their marker: a line indented past an item's marker is inside it.
@@ -378,6 +379,21 @@ export function fromMarkdown(src: string, opts: { plugins?: BlockPlugin[] } = {}
 			for (i++; i < lines.length && !close.test(lines[i].trim()); i++) body.push(dedent(lines[i], lead));
 			const lang = fence[2].replace(/[^\w+#.-]/g, '');
 			push(newBlock('code', codeHtml(body.join('\n')), { indent, ...(lang ? { props: { lang } } : {}) }));
+			open = null;
+			continue;
+		}
+
+		// A $$…$$ formula, on one line or over several, to a plugin that takes formulas.
+		if (mathTaker && lead < 4 && line.startsWith('$$')) {
+			const one = /^\$\$(.+)\$\$$/.exec(line);
+			const body: string[] = [];
+			if (one) body.push(one[1]);
+			else {
+				body.push(line.slice(2));
+				for (i++; i < lines.length && !lines[i].trim().endsWith('$$'); i++) body.push(lines[i]);
+				if (i < lines.length) body.push(lines[i].trim().slice(0, -2));
+			}
+			push(newBlock('plugin', '', { plugin: mathTaker.type, props: mathTaker.fromMath!(body.join('\n').trim()), indent: depth(lead) }));
 			open = null;
 			continue;
 		}

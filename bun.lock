@@ -24,6 +24,7 @@
         "svelte": "^5.57.1",
         "svelte-check": "^4.4.2",
         "tailwindcss": "^4.3.5",
+        "temml": "^0.14.0",
         "typescript": "^5.9.3",
         "vite": "^7.3.1",
         "vitest": "^5.1.0",
@@ -438,6 +439,8 @@
     "tailwindcss": ["tailwindcss@4.3.5", "", {}, "sha512-FcQk9BuffmEHJP2G0XmB2SplU1aLTI7j07Kunk+U74Ny+XiWOtzXz9aujFZ/avntw1e2cOv/3PkgzflQ7gX2vQ=="],
 
     "tapable": ["tapable@2.3.3", "", {}, "sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A=="],
+
+    "temml": ["temml@0.14.0", "", {}, "sha512-tz1LW/5IZpThK8c7ZpdTSH/n56eAj+ThirLieErtKxYC3EKCIiB4sKdRUehAgH+fQmvIKqMfP3gqTLBdLpy9zw=="],
 
     "tinybench": ["tinybench@6.2.3", "", {}, "sha512-Al01C2JIBnO2CXCAPbpAl6sUiOZHeThGtHYNTa51JRw9PyWOCdr+9Ong05R4qg/Sk3+H645E8ov1h2c58ityNw=="],
 
