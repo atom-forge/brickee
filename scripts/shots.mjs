@@ -49,7 +49,7 @@ const shots = [
 	},
 	{ name: 'toolbar', path: '/dev/states', act: async (p) => (await row(p, 1).locator('.ce b').dblclick(), await p.waitForTimeout(200)) },
 	{ name: 'link-prompt', path: '/dev/states', act: async (p) => (await row(p, 1).locator('.ce b').dblclick(), await p.keyboard.press('Control+k'), await p.waitForTimeout(300)) },
-	{ name: 'fields-button', path: '/dev/states', clip: () => '.editor .row[data-type="plugin"]:has(.bar) >> nth=2', act: (p) => openBar(p, 'button') },
+	{ name: 'fields-button', path: '/dev/states', act: (p) => openBar(p, 'button') },
 	{ name: 'fields-gap', path: '/dev/states', act: (p) => openBar(p, 'gap') },
 	{ name: 'fields-table', path: '/dev/states', act: async (p) => (await openBar(p, 'table'), await editor(p).locator('textarea').nth(3).click()) },
 	{ name: 'fields-code', path: '/dev/states', act: (p) => openBar(p, 'code') },
@@ -60,7 +60,7 @@ const editor = (p) => p.locator('[data-shot="editor"] > .editor');
 const row = (p, n) => editor(p).locator(':scope > .row').nth(n);
 /** Opens the fields bar of the first block whose tag starts with `tag`, and keeps it in view. */
 async function openBar(p, tag) {
-	const head = editor(p).locator(':scope > .row .bar > button.head', { hasText: tag }).first();
+	const head = editor(p).locator(':scope > .row [data-fields-head], :scope > .row .bar > button.head', { hasText: tag }).first();
 	await head.scrollIntoViewIfNeeded();
 	await head.click();
 	await p.mouse.move(0, 0);

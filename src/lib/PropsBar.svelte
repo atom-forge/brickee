@@ -113,26 +113,36 @@
 	const long = $derived(fields.filter((f) => f.kind === 'textarea'));
 </script>
 
-<div class="bar" class:open>
-	<button type="button" class="head" aria-expanded={open} title={tr(open ? 'Hide settings' : 'Settings')} onmousedown={(e) => e.preventDefault()} onclick={() => (open = !open)}>
-		<span class="tag">{tag}</span>
-		<ChevronDown size={13} class="chev" />
+<div
+	data-fields
+	class="grid gap-1.5 rounded-lg font-sans text-xs leading-[1.4] text-surface-contrast transition-[padding,background] duration-[180ms] {open
+		? 'mb-2 justify-items-stretch bg-[rgb(120_120_140/0.07)] px-2 pt-1.5 pb-2'
+		: 'mb-1 justify-items-start'}"
+>
+	<button type="button" data-fields-head class="group flex cursor-pointer items-center gap-0.5 justify-self-start border-0 bg-transparent p-0 text-muted-contrast" aria-expanded={open} title={tr(open ? 'Hide settings' : 'Settings')} onmousedown={(e) => e.preventDefault()} onclick={() => (open = !open)}>
+		<span class="rounded-[5px] bg-[rgb(120_120_140/0.12)] px-1.5 py-px font-mono text-[11px] leading-[1.5] font-medium whitespace-nowrap text-muted-contrast select-none group-hover:bg-[rgb(120_120_140/0.2)] group-hover:text-surface-contrast">{tag}</span>
+		<ChevronDown size={13} class="transition-[rotate] duration-150 {open ? 'rotate-180' : ''}" />
 	</button>
 	{#if open}
-	<div class="body" transition:slide={{ duration: 180 }}>
-	<div class="grid">
+	<div transition:slide={{ duration: 180 }}>
+	<!-- the fields in columns as wide as the box allows; text fields carry their label as placeholder, the others a short
+	     label beside the control; the bar's small type in the controls too -->
+	<div class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-x-2.5 gap-y-1.5 pt-1.5 [&_input:not([type=range])]:text-[12px] [&_select]:text-[12px] [&_textarea]:text-[12px]">
 		{#each short as f (f.key)}
 			{#if f.kind === 'text'}
 				<!-- the field shows the value as kept (a YouTube link becomes its id); its label is the placeholder -->
-				<label class="field" title={tr(f.label)}>
-					<span class="sr">{tr(f.label)}</span>
+				<label class="grid min-w-0 content-start" title={tr(f.label)}>
+					<span class="sr-only">{tr(f.label)}</span>
 					<Input small monospace placeholder={hint(f)} bind:value={() => text(f), (v: string) => setProp(block, f, v)} />
 				</label>
 			{:else}
 			<!-- not a label around buttons (a slider's view buttons, a colour's clear, toggles): a click on a label goes to its first button -->
-			<svelte:element this={f.kind === 'select' ? 'label' : 'div'} class="field inline" role={f.kind === 'toggles' ? 'group' : undefined} aria-label={f.kind === 'toggles' ? tr(f.label) : undefined}>
-				<span class="name"
-					>{tr(f.label)}{#if viewLabel(f)}<span class="view" class:own={current(f).mine}>{viewLabel(f)}</span>{/if}</span
+			<svelte:element this={f.kind === 'select' ? 'label' : 'div'} class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] content-start items-center gap-2" role={f.kind === 'toggles' ? 'group' : undefined} aria-label={f.kind === 'toggles' ? tr(f.label) : undefined}>
+				<span class="text-[11.5px] font-semibold whitespace-nowrap text-muted-contrast select-none"
+					>{tr(f.label)}{#if viewLabel(f)}<!-- the view a per-view field edits; dashed while it only takes a wider view's value --><span
+							class="ml-1.5 rounded border px-[5px] font-medium {current(f).mine ? 'border-solid border-surface-contrast text-surface-contrast' : 'border-dashed border-frame text-muted-contrast'}"
+							>{viewLabel(f)}</span
+						>{/if}</span
 				>
 				{#if f.kind === 'select'}
 					<NativeSelect
@@ -142,12 +152,13 @@
 					/>
 				{:else if f.kind === 'toggles'}
 					{@const on = toggled(f)}
-					<span class="toggles">
+					<span class="inline-flex gap-px justify-self-start rounded-[7px] bg-muted p-0.5">
 						{#each f.options ?? [] as opt (opt.value)}
 							<button
 								type="button"
-								class="toggle"
-								class:on={on.includes(opt.value)}
+								class="inline-grid h-6 min-w-[26px] cursor-pointer place-items-center rounded-[5px] border-0 px-1 {on.includes(opt.value)
+									? 'bg-surface text-[#3b82f6] shadow-[0_1px_2px_rgb(0_0_0/0.08)]'
+									: 'bg-transparent text-muted-contrast hover:text-surface-contrast'}"
 								aria-pressed={on.includes(opt.value)}
 								title={tr(opt.label)}
 								aria-label={tr(opt.label)}
@@ -158,8 +169,8 @@
 						{/each}
 					</span>
 				{:else if f.kind === 'slider'}
-					<span class="line">
-					<span class="slider">
+					<span class="flex min-w-0 items-center gap-2">
+					<span class="block min-w-20 flex-1">
 						<Slider
 							small
 							drawStops={!free(f) && (f.options?.length ?? 0) <= 10}
@@ -169,19 +180,20 @@
 							bind:value={() => pos(f), (v: number) => setPos(f, v)}
 						/>
 					</span>
-					<span class="value">{posLabel(f)}</span>
+					<span class="min-w-[4.5em] whitespace-nowrap text-surface-contrast tabular-nums">{posLabel(f)}</span>
 					</span>
 				{:else if f.kind === 'color'}
 					<!-- with `none`: an unset colour shows as "none" (a click sets one); a set one can be cleared -->
-					<span class="line">
+					<span class="flex min-w-0 items-center gap-2">
 					{#if f.none && !text(f)}
-						<button type="button" class="nocolor" onclick={() => setProp(block, f, f.placeholder || '#000000')}>
-							<span class="swatch" aria-hidden="true"></span>{tr(f.none)}
+						<button type="button" class="flex h-[30px] cursor-pointer items-center gap-1.5 rounded-[7px] border border-dashed border-frame bg-surface pr-2.5 pl-1.5 text-muted-contrast hover:border-accent hover:text-surface-contrast" onclick={() => setProp(block, f, f.placeholder || '#000000')}>
+							<!-- an empty swatch, struck through -->
+							<span class="size-4 rounded border border-frame bg-[linear-gradient(to_top_right,transparent_calc(50%-1px),#e5484d_calc(50%-1px),#e5484d_calc(50%+1px),transparent_calc(50%+1px))]" aria-hidden="true"></span>{tr(f.none)}
 						</button>
 					{:else}
 						<ColorPicker small bind:value={() => text(f) || '#000000', (v: string) => setProp(block, f, v)} />
 						{#if f.none}
-							<button type="button" class="clear" title={tr(f.none)} aria-label={tr(f.none)} onclick={() => setProp(block, f, '')}>×</button>
+							<button type="button" class="size-[22px] cursor-pointer rounded-md border-0 bg-transparent p-0 text-base leading-none text-muted-contrast hover:bg-[rgb(120_120_140/0.14)] hover:text-surface-contrast" title={tr(f.none)} aria-label={tr(f.none)} onclick={() => setProp(block, f, '')}>×</button>
 						{/if}
 					{/if}
 					</span>
@@ -190,8 +202,8 @@
 			{/if}
 		{/each}
 	{#each long as f (f.key)}
-		<label class="field long" title={tr(f.label)} onfocusin={() => (editing = { key: f.key, text: text(f) })} onfocusout={() => (editing = null)}>
-				<span class="sr">{tr(f.label)}</span>
+		<label class="col-span-full grid min-w-0 content-start" title={tr(f.label)} onfocusin={() => (editing = { key: f.key, text: text(f) })} onfocusout={() => (editing = null)}>
+				<span class="sr-only">{tr(f.label)}</span>
 				<Textarea
 					small
 					rows={2}
@@ -207,199 +219,3 @@
 	</div>
 	{/if}
 </div>
-
-<style>
-	.bar {
-		display: grid;
-		justify-items: start;
-		gap: 6px;
-		margin-bottom: 4px;
-		border-radius: 8px;
-		font: 12px/1.4 system-ui, sans-serif;
-		color: var(--color-surface-contrast, #1d1d1f);
-	}
-	.bar.open {
-		justify-items: stretch;
-		margin-bottom: 8px;
-		padding: 6px 8px 8px;
-		background: rgba(120, 120, 140, 0.07);
-	}
-	.bar {
-		transition:
-			padding 0.18s,
-			background 0.18s;
-	}
-	/* the fields in columns as wide as the box allows; text fields carry their label as placeholder, the others a short
-	   label beside the control */
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		gap: 6px 10px;
-		padding-top: 6px;
-	}
-	.head {
-		display: flex;
-		align-items: center;
-		gap: 2px;
-		padding: 0;
-		border: 0;
-		background: none;
-		color: var(--color-muted-contrast, #8e8e96);
-		cursor: pointer;
-		justify-self: start;
-	}
-	.head:hover .tag {
-		background: rgba(120, 120, 140, 0.2);
-		color: var(--color-surface-contrast, #1d1d1f);
-	}
-	.head :global(.chev) {
-		transition: rotate 0.15s;
-	}
-	.open .head :global(.chev) {
-		rotate: 180deg;
-	}
-	.tag {
-		padding: 1px 6px;
-		border-radius: 5px;
-		background: rgba(120, 120, 140, 0.12);
-		color: var(--color-muted-contrast, #6e6e76);
-		font: 500 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
-		white-space: nowrap;
-		user-select: none;
-	}
-	.field {
-		display: grid;
-		align-content: start;
-		min-width: 0;
-	}
-	.field.inline {
-		grid-template-columns: auto minmax(0, 1fr);
-		align-items: center;
-		gap: 8px;
-	}
-	/* compact controls: the bar's small type in the inputs too */
-	.field :global(input:not([type='range'])),
-	.field :global(textarea),
-	.field :global(select) {
-		font-size: 12px;
-	}
-	/* the label of a field whose placeholder shows it */
-	.sr {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-	}
-	.toggles {
-		display: inline-flex;
-		justify-self: start;
-		gap: 1px;
-		padding: 2px;
-		border-radius: 7px;
-		background: var(--color-muted, #f4f4f6);
-	}
-	.toggle {
-		display: inline-grid;
-		place-items: center;
-		min-width: 26px;
-		height: 24px;
-		padding: 0 4px;
-		border: 0;
-		border-radius: 5px;
-		background: none;
-		color: var(--color-muted-contrast, #6e6e76);
-		cursor: pointer;
-	}
-	.toggle:hover {
-		color: var(--color-surface-contrast, #1d1d1f);
-	}
-	.toggle.on {
-		background: var(--color-surface, #fff);
-		color: #3b82f6;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-	}
-	/* text areas take a whole row */
-	.field.long {
-		grid-column: 1 / -1;
-	}
-	.line {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		min-width: 0;
-	}
-	.name {
-		font-size: 11.5px;
-		font-weight: 600;
-		color: var(--color-muted-contrast, #8e8e96);
-		white-space: nowrap;
-		user-select: none;
-	}
-	/* the view a per-view field edits (the host's current one); dashed while it only takes a wider view's value */
-	.view {
-		margin-left: 6px;
-		padding: 0 5px;
-		border: 1px dashed var(--color-frame, #c8c8d0);
-		border-radius: 4px;
-		color: var(--color-muted-contrast, #6e6e76);
-		font-weight: 500;
-	}
-	.view.own {
-		border-style: solid;
-		border-color: var(--color-surface-contrast, #1d1d1f);
-		color: var(--color-surface-contrast, #1d1d1f);
-	}
-	.slider {
-		display: block;
-		flex: 1;
-		min-width: 80px;
-	}
-	.value {
-		min-width: 4.5em;
-		color: var(--color-surface-contrast, #3a3a40);
-		font-variant-numeric: tabular-nums;
-		white-space: nowrap;
-	}
-	.nocolor {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		height: 30px;
-		padding: 0 10px 0 6px;
-		border: 1px dashed var(--color-frame, #c8c8d0);
-		border-radius: 7px;
-		background: var(--color-surface, #fff);
-		color: var(--color-muted-contrast, #8e8e96);
-		cursor: pointer;
-	}
-	.nocolor:hover {
-		border-color: var(--color-accent, #ea580c);
-		color: var(--color-surface-contrast, #3a3a40);
-	}
-	/* an empty swatch, struck through */
-	.swatch {
-		width: 16px;
-		height: 16px;
-		border: 1px solid var(--color-frame, #c8c8d0);
-		border-radius: 4px;
-		background: linear-gradient(to top right, transparent calc(50% - 1px), #e5484d calc(50% - 1px), #e5484d calc(50% + 1px), transparent calc(50% + 1px));
-	}
-	.clear {
-		width: 22px;
-		height: 22px;
-		padding: 0;
-		border: 0;
-		border-radius: 6px;
-		background: none;
-		color: var(--color-muted-contrast, #8e8e96);
-		font-size: 16px;
-		line-height: 1;
-		cursor: pointer;
-	}
-	.clear:hover {
-		background: rgba(120, 120, 140, 0.14);
-		color: var(--color-surface-contrast, #1d1d1f);
-	}
-</style>
