@@ -29,7 +29,7 @@
 		{ type: 'md:p', indent: 0, text: '' }
 	];
 	let value = $state(doc());
-	const readonly = doc().slice(0, 12);
+	const readonly = [...doc().slice(0, 12), doc()[16]];
 </script>
 
 <div class="space-y-8 p-6">
