@@ -7,14 +7,17 @@ import {
 	type Block,
 	type BlockPlugin,
 	type BlockType,
+	type InlineOptions,
+	type InlinePlugin,
 	type MarkdownTable,
 	type StoredBlock
 } from './types';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** Characters escaped in plain text so they never turn into inline markup (`_` only at a word's edge, see walk()). */
-const SPECIAL = /[\\`*~[\]<]/g;
+/** Characters escaped in plain text so they never turn into inline markup (`_` only at a word's edge, see walk());
+ * `$` too, so a typed "$x$" never becomes a formula of an inline plugin later. */
+const SPECIAL = /[\\`*~[\]<$]/g;
 /** A backslash escape: any ASCII punctuation (CommonMark). */
 const ESCAPE = /\\([!-/:-@[-`{-~])/g;
 const MARK = '\u0000';
@@ -90,7 +93,7 @@ function codeSpans(s: string): { code: boolean; text: string }[] {
 /** Inline markdown -> inline html (b, i, u, sub, sup, strike, code, a, br). Backslash escapes are honoured; links are
  * http(s), mailto, tel or site-relative only. Images become links (the package has no notion of images), footnote
  * references superscripts, and inline HTML its marks (other tags are dropped). */
-export function inline(md: string): string {
+export function inline(md: string, opts: InlineOptions = {}): string {
 	const kept: string[] = [];
 	const guarded = md.replace(ESCAPE, (_, c: string) => `${MARK}${kept.push(c) - 1}${MARK}`);
 	const restore = (s: string, raw: boolean) =>
@@ -104,8 +107,19 @@ export function inline(md: string): string {
 		return SAFE_URL.test(href) ? stash(`<a href="${esc(href).replace(/"/g, '&quot;')}">`) + (text || esc(href)) + stash('</a>') : null;
 	};
 	const htmlTags = htmlTag(stash);
+	// Inline plugins (a formula…) on the text outside code spans, before anything else reads it.
+	const raw = (s: string) => s.replace(/\u0000(\d+)\u0000/g, (_, n: string) => '\\' + kept[+n]);
+	const plugged = (text: string) =>
+		(opts.inlinePlugins ?? []).reduce(
+			(t, p) =>
+				t.replace(new RegExp(p.pattern.source, p.pattern.flags.includes('g') ? p.pattern.flags : p.pattern.flags + 'g'), (...a) => {
+					const groups = a.slice(0, a.findIndex((x) => typeof x === 'number')).map((g) => (g == null ? '' : raw(String(g))));
+					return stash(inlineElement(p, p.parse(groups), opts.editing));
+				}),
+			text
+		);
 	let html = codeSpans(guarded)
-		.map(({ code, text }) => (code ? stash(`<code>${restore(esc(text), true)}</code>`) : esc(text)))
+		.map(({ code, text }) => (code ? stash(`<code>${restore(esc(text), true)}</code>`) : esc(plugged(text))))
 		.join('')
 		.replace(LINK, (all, bang: string, label: string, url: string) => link(url, bang && !label ? '' : label) ?? all)
 		.replace(/&lt;((?:https?:\/\/|mailto:)(?:[^\s&]|&amp;){1,2000})&gt;/gi, (all, url: string) => link(url, '') ?? all)
@@ -116,6 +130,16 @@ export function inline(md: string): string {
 	for (const [re, to] of EMPHASIS) html = html.replace(re, to);
 	html = html.replace(/\n/g, '<br>').replace(/\u0001(\d+)\u0001/g, (_, n: string) => tags[+n]);
 	return restore(html, false);
+}
+
+const attr = (s: string) => esc(s).replace(/"/g, '&quot;');
+
+/**
+ * An inline plugin's element: its HTML in a span that carries its markdown form (`data-md`), so the editor's HTML
+ * converts back to markdown without the plugin. In the editor it is not editable text: it moves and deletes as one.
+ */
+export function inlineElement<D extends Record<string, string>>(p: InlinePlugin<D>, data: D, editing = false): string {
+	return `<span data-inline="${attr(p.type)}" data-md="${attr(p.markdown(data))}"${editing ? ' contenteditable="false"' : ''}>${p.render(data)}</span>`;
 }
 
 /** A link target as markdown reads it back: spaces and unbalanced parentheses encoded. */
@@ -146,6 +170,9 @@ function walk(n: Node, code: boolean): string {
 		return code ? t : escText(t);
 	}
 	if (!(n instanceof HTMLElement)) return '';
+	// An inline plugin's element: its markdown form as it is.
+	const md = n.getAttribute('data-md');
+	if (md != null && n.hasAttribute('data-inline')) return md;
 	const inCode = code || n.tagName === 'CODE';
 	const inner = [...n.childNodes].map((c) => walk(c, inCode)).join('');
 	switch (n.tagName) {
@@ -243,7 +270,8 @@ export function blockToMd(b: Block, n = 1): string {
 }
 
 /** One markdown line -> block fields (a heading, a list item, a quote, a rule or a paragraph). */
-export function mdToBlock(md: string): Pick<Block, 'type' | 'html' | 'checked' | 'props'> {
+export function mdToBlock(md: string, opts: InlineOptions = {}): Pick<Block, 'type' | 'html' | 'checked' | 'props'> {
+	const inline = (t: string) => inlineHtml(t, { ...opts, editing: true });
 	if (RULE.test(md)) return { type: 'hr', html: '' };
 	const h = heading(md);
 	if (h) return { type: `h${h.level}` as BlockType, html: inline(h.text) };
@@ -284,8 +312,11 @@ export function toStored(b: Block): StoredBlock {
 	return out;
 }
 
-/** Stored block -> editor block with a fresh id. Unknown types (md: or plugin) are kept as they are. */
-export function fromStored(s: StoredBlock): Block {
+/** Stored block -> editor block with a fresh id. Unknown types (md: or plugin) are kept as they are. With `opts`, the
+ * inline plugins of its text become their elements. */
+export function fromStored(s: StoredBlock, opts?: InlineOptions | number): Block {
+	// `doc.map(fromStored)` passes an index here: no options then.
+	const inline = (t: string) => inlineHtml(t, { ...(typeof opts === 'object' ? opts : {}), editing: true });
 	const kind = s.type.slice(MD.length) as BlockType;
 	if (!s.type.startsWith(MD) || !BUILT_IN.includes(kind))
 		return newBlock('plugin', '', { plugin: s.type, indent: s.indent, props: s.props ?? {}, blocks: s.blocks });
@@ -323,7 +354,9 @@ const hardEnd = (line: string) => {
  * lines are kept as line breaks. Reference links are resolved, footnotes become superscripts. A GFM table goes to the
  * first of `plugins` that takes it (`fromTable`), or stays text.
  */
-export function fromMarkdown(src: string, opts: { plugins?: BlockPlugin[] } = {}): Block[] {
+export function fromMarkdown(src: string, opts: { plugins?: BlockPlugin[]; inlinePlugins?: InlinePlugin<any>[] } = {}): Block[] {
+	const io: InlineOptions = { inlinePlugins: opts.inlinePlugins, editing: true };
+	const inline = (t: string) => inlineHtml(t, io);
 	const all = src.replace(/\r\n?/g, '\n').split('\n');
 	// Reference definitions ([id]: url) are taken out and used by the links; footnote definitions stay as text.
 	const refs = new Map<string, string>();
@@ -458,7 +491,7 @@ export function fromMarkdown(src: string, opts: { plugins?: BlockPlugin[] } = {}
 		}
 
 		const indent = depth(lead);
-		const { type, html, ...extra } = mdToBlock(resolve(hardEnd(line)));
+		const { type, html, ...extra } = mdToBlock(resolve(hardEnd(line)), io);
 		if (item) items.push(lead);
 		else if (!indent) items.length = 0;
 		// A footnote definition ([^1]: …) reads as the note after its number.
@@ -531,3 +564,6 @@ export function toMarkdown(blocks: Block[], opts: { plugins?: BlockPlugin[] } = 
 	}
 	return out;
 }
+
+/** `inline` under another name, for the functions that shadow it with their own options. */
+const inlineHtml = (md: string, opts: InlineOptions) => inline(md, opts);

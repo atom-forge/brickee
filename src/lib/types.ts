@@ -101,6 +101,42 @@ export interface PluginPreviewProps<P extends Props = Props> {
 }
 
 /** A custom block for the slash menu. */
+/**
+ * An inline plugin: an element inside a block's text (a formula, a mention…) that moves and deletes as one, while the
+ * stored text stays inline markdown (`$x^2$`). Its data is a few strings.
+ */
+export interface InlinePlugin<D extends Record<string, string> = Record<string, string>> {
+	/** Its name, unique among the inline plugins. */
+	type: string;
+	label: string;
+	icon: Icon;
+	/**
+	 * Finds it in inline markdown: a global regex whose match is the element's whole markdown form. Keep it bounded (no
+	 * unbounded `.*` before a fixed end), so a long text stays fast; it never runs inside code spans or on `\`-escaped
+	 * characters.
+	 */
+	pattern: RegExp;
+	/** The data from a match of `pattern` (`[whole, ...groups]`, escapes already undone). */
+	parse(match: string[]): D;
+	/** The data as inline markdown; `parse` of a match of it gives the same data back. */
+	markdown(data: D): string;
+	/** The data as HTML, for the editor and the preview. Must be safe: escape whatever comes from the data. */
+	render(data: D): string;
+	/** The data's fields, edited in a small window when the element is clicked (`text` and `textarea`). */
+	fields: PropField[];
+	/** The data for a new element from the selected (or typed) text. */
+	create(text: string): D;
+	/** Typing `open`…`close` (and a space or punctuation after it) makes one, like `**bold**`. */
+	typing?: { open: string; close: string };
+}
+
+/** How inline markdown becomes HTML: the inline plugins to look for, and whether it is for the editor. */
+export interface InlineOptions {
+	inlinePlugins?: InlinePlugin<any>[];
+	/** The editor's form: inline plugin elements are not editable text (`contenteditable="false"`). */
+	editing?: boolean;
+}
+
 /** A GFM table read from markdown: the cells as inline markdown, row by row (the first row is the header), and the
  * alignment of each column. */
 export interface MarkdownTable {

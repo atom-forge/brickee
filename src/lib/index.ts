@@ -12,7 +12,8 @@ export { inline, fromStored, toStored, fromMarkdown, toMarkdown } from './markdo
 export { fromHtml } from './html';
 export { provideView, useView } from './view';
 export { provideCodeLanguages, useCodeLanguages, type CodeLanguage } from './code';
+export { provideInlinePlugins, useInlinePlugins } from './inline-plugins';
 export { scrollSync, scrollFraction, setScrollFraction, type ScrollSync } from './scroll';
 export { provideText, useText, translator, type Messages, type Translate } from './i18n';
 export { PALETTE_ITEMS, BUILT_IN_IDS, narrowPalette, type Icon, type PaletteItem } from './palette';
-export type { MarkdownContext, MarkdownTable, Block, BlockType, Content, PluginPreviewProps, PluginViewProps, PropField, Props, BlockPlugin } from './types';
+export type { MarkdownContext, MarkdownTable, InlinePlugin, InlineOptions, Block, BlockType, Content, PluginPreviewProps, PluginViewProps, PropField, Props, BlockPlugin } from './types';

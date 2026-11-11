@@ -22,6 +22,23 @@ Egyikük sem tartalmaz beágyazott blokkokat. A képblokkok, a dobozok és a tö
 
 A pluginok mellett a belépési pont exportálja a props-típusaikat (`TableProps`, `YouTubeProps`, `MapProps`, `GapProps`) és az előnézeteik által használt segédfüggvényeket, amelyek saját előnézetek írásakor jól jönnek: `youtubeId` (videóazonosító bármely YouTube-hivatkozásból), `mapSrc` (egy hely beágyazási címe), `gapLines`, `GAP_LINES` és `GAP_MAX`, valamint a táblázatokhoz `tableHeads`, `rowHead`, `HEADS` és `square`.
 
+## Képletek
+
+Az `@atom-forge/brickee/math` tartalmazza a képlet-pluginokat, saját belépési pontban, mert kell hozzájuk a `temml` (opcionális peer függőség: `bun add temml`). A Temml a LaTeX-et MathML-lé alakítja, amelyet a böngészők natívan megjelenítenek, és szerveren is renderelhető.
+
+| Export | Fajta | Tárolt alak | Markdown alak |
+|---|---|---|---|
+| `math` | blokkplugin | `{ tex }` | `$$…$$` blokk; a beillesztett `math` blokk lesz (`fromMath`) |
+| `inlineMath` | inline plugin | `$…$` a szövegben | ugyanaz |
+
+```ts
+import { inlineMath, math } from '@atom-forge/brickee/math';
+// <Editor bind:value plugins={[math]} inlinePlugins={[inlineMath]} />
+// <Preview blocks={value} plugins={[math]} inlinePlugins={[inlineMath]} />
+```
+
+Az inline képlet a GitHub és az Obsidian szabályát követi: a dollárjelek belső oldalán nincs szóköz, a záró után nem jön számjegy, így a „$5 és $10” szöveg marad. A `$a^2$` és egy szóköz begépelése képletet csinál, a formázósáv a kijelölt szövegből készít egyet, kattintásra pedig szerkeszthető. A `tex(source, display)` ugyanígy rendereli a LaTeX-et a saját komponenseidhez.
+
 ## Előnézet felülírása
 
 A plugin egyszerű objektum, így az átalakítása egy spread. A leggyakoribb változtatás az előnézet: a szerkesztőnézet a csomagé marad, az oldal pedig a saját komponenseddel rendereli a blokkot – így a szerkesztő előnézete és a közzétett oldal pontosan ugyanaz.

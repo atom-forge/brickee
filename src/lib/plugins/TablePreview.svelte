@@ -2,10 +2,12 @@
 
 <script lang="ts">
 	import { inline } from '../markdown';
+	import { useInlinePlugins } from '../inline-plugins';
 	import type { PluginPreviewProps } from '../types';
 	import { rowHead, square, tableHeads, type TableProps } from './Table.svelte';
 
 	let { props }: PluginPreviewProps<TableProps> = $props();
+	const inlinePlugins = useInlinePlugins();
 	const rows = $derived(square(props.rows ?? []).filter((r) => r.some((c) => c.trim())));
 	const heads = $derived(tableHeads(props));
 	const align = (c: number) => (props.align?.[c] === 'center' || props.align?.[c] === 'right' ? props.align[c] : undefined);
@@ -20,9 +22,9 @@
 						{#each row as cell, c (c)}
 							{@const head = rowHead(heads, r, rows.length)}
 							{#if head}
-								<th class={head} scope={head === 'top' ? 'col' : undefined} style:text-align={align(c)}>{@html inline(cell)}</th>
+								<th class={head} scope={head === 'top' ? 'col' : undefined} style:text-align={align(c)}>{@html inline(cell, { inlinePlugins: inlinePlugins() })}</th>
 							{:else}
-								<td style:text-align={align(c)}>{@html inline(cell)}</td>
+								<td style:text-align={align(c)}>{@html inline(cell, { inlinePlugins: inlinePlugins() })}</td>
 							{/if}
 						{/each}
 					</tr>

@@ -2,7 +2,7 @@
 // everything fromMarkdown does (list nesting, tables for a plugin that takes them, safe links); the HTML is only read,
 // never inserted. Browser only (DOMParser).
 import { codeSpan, escLine, escText, fromMarkdown, mdUrl } from './markdown';
-import type { Block, BlockPlugin } from './types';
+import type { Block, BlockPlugin, InlinePlugin } from './types';
 
 /** Never read: no text of theirs belongs in a document. */
 const SKIP = new Set(['SCRIPT', 'STYLE', 'HEAD', 'TITLE', 'META', 'LINK', 'TEMPLATE', 'NOSCRIPT', 'SVG', 'CANVAS', 'IFRAME', 'OBJECT', 'EMBED', 'BUTTON', 'SELECT', 'TEXTAREA', 'INPUT', 'VIDEO', 'AUDIO']);
@@ -51,6 +51,12 @@ function inline(nodes: Iterable<Node>): string {
 			continue;
 		}
 		if (!(n instanceof HTMLElement) || SKIP.has(n.tagName)) continue;
+		// An inline plugin's element copied from a Brickee editor: its markdown form (read again, and made safe, later).
+		const md = n.getAttribute('data-md');
+		if (md != null && n.hasAttribute('data-inline')) {
+			out.add(md);
+			continue;
+		}
 		const tag = n.tagName;
 		if (tag === 'BR') {
 			out.add('\n');
@@ -191,6 +197,6 @@ export function markdownFromHtml(html: string): string {
  * Google Docs' styled spans. A table goes to the first of `plugins` that takes tables (`fromTable`). Images become
  * links; scripts, styles and form controls are dropped. Browser only.
  */
-export function fromHtml(html: string, opts: { plugins?: BlockPlugin[] } = {}): Block[] {
+export function fromHtml(html: string, opts: { plugins?: BlockPlugin[]; inlinePlugins?: InlinePlugin<any>[] } = {}): Block[] {
 	return fromMarkdown(markdownFromHtml(html), opts);
 }

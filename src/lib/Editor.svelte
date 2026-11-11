@@ -2,10 +2,11 @@
 	import { tick, untrack } from 'svelte';
 	import { ArrowDown, ArrowUp, Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
 	import { rich, clean, textLen, splitAtCaret, atStart, atEnd, caretOffset, caretRect, caretAt, setCaret, removeBeforeCaret, onEdgeLine, focusAtEdge, toggleCode, plainText, portal } from './dom';
-	import { fromMarkdown, fromStored, plainHtml, toMarkdown, toStored } from './markdown';
+	import { fromMarkdown, fromStored, inlineElement, plainHtml, toMarkdown, toStored } from './markdown';
 	import { fromHtml } from './html';
 	import { useCodeLanguages } from './code';
 	import { provideText, useText, type Messages } from './i18n';
+	import { provideInlinePlugins, useInlinePlugins } from './inline-plugins';
 	import { PopupContainer, createPopupManager, getPopupManager } from '@atom-forge/ui';
 	import LinkPrompt from './LinkPrompt.svelte';
 	import PluginHost from './PluginHost.svelte';
@@ -14,10 +15,11 @@
 	import FormatBar from './editor/FormatBar.svelte';
 	import { History } from './editor/history';
 	import { matchMark } from './editor/automark';
+	import InlineEdit from './editor/InlineEdit.svelte';
 	import { createSweep } from './editor/sweep.svelte';
 	import { createDrag, useHub } from './editor/drag.svelte';
 	import { acceptsId, BUILT_IN_IDS, PALETTE_ITEMS, type Icon, type PaletteItem } from './palette';
-	import { MAX_INDENT, newBlock, numbering, uid, type Block, type BlockPlugin, type BlockType, type StoredBlock, type PropField, type Content, BUILT_IN_CONTENT, isMd, MD } from './types';
+	import { MAX_INDENT, newBlock, numbering, uid, type Block, type BlockPlugin, type BlockType, type InlinePlugin, type StoredBlock, type PropField, type Content, BUILT_IN_CONTENT, isMd, MD } from './types';
 
 
 	interface Props {
@@ -33,6 +35,8 @@
 		nested?: boolean;
 		/** UI text in the host's language (English text -> translation); nested editors share their parent's. */
 		messages?: Messages;
+		/** Inline plugins (a formula inside the text…); nested editors share their parent's. */
+		inlinePlugins?: InlinePlugin<any>[];
 	}
 	let {
 		value: doc = $bindable([]),
@@ -41,10 +45,15 @@
 		palette: paletteProp,
 		plugins = [],
 		nested = false,
-		messages
+		messages,
+		inlinePlugins: inlineProp
 	}: Props = $props();
 
 	provideText(() => messages);
+	provideInlinePlugins(() => inlineProp);
+	const inlinePlugins = useInlinePlugins();
+	/** A stored block as the editor's block, its inline plugins as their elements. */
+	const blockOf = (s: StoredBlock) => fromStored(s, { inlinePlugins: inlinePlugins() });
 	// Popups (the link field) are atom-forge popups; the top editor has their container, nested editors share it.
 	// svelte-ignore state_referenced_locally
 	const popups = nested ? getPopupManager() : createPopupManager(getPopupManager());
@@ -69,7 +78,7 @@
 
 	// The editor works on html blocks; `doc` is their markdown form, written back on every change (not when read-only:
 	// showing a document must not change it).
-	const load = (d: StoredBlock[]) => (d.length ? d.map(fromStored) : [newBlock()]);
+	const load = (d: StoredBlock[]) => (d.length ? d.map(blockOf) : [newBlock()]);
 	let value = $state<Block[]>(load(doc));
 
 	// The stored form of a built-in block, kept while the block does not change: typing in one block converts only that
@@ -627,7 +636,7 @@
 			};
 			if (clip?.v !== 1 || !Array.isArray(clip.blocks) || clip.blocks.length > 2000 || !clip.blocks.every((x: unknown) => ok(x, 0))) return null;
 			const md: unknown[] = Array.isArray(clip.md) ? clip.md : [];
-			return (clip.blocks as StoredBlock[]).map((s, n) => ({ ...fromStored(s), md: typeof md[n] === 'string' ? (md[n] as string) : undefined }));
+			return (clip.blocks as StoredBlock[]).map((s, n) => ({ ...blockOf(s), md: typeof md[n] === 'string' ? (md[n] as string) : undefined }));
 		} catch {
 			return null;
 		}
@@ -648,7 +657,7 @@
 					if (p.unique) has.add(p.type);
 					return [b];
 				}
-				return fromMarkdown(md ?? toMarkdown([b], { plugins }), { plugins: offered }).map((x) => ({ ...x, indent: Math.min(MAX_INDENT, x.indent + b.indent) }));
+				return fromMarkdown(md ?? toMarkdown([b], { plugins }), { plugins: offered, inlinePlugins: inlinePlugins() }).map((x) => ({ ...x, indent: Math.min(MAX_INDENT, x.indent + b.indent) }));
 			})
 		);
 	}
@@ -660,11 +669,76 @@
 	function pasted(data: DataTransfer | null): Block[] | null {
 		const own = fromClip(data?.getData(CLIP));
 		if (own) return admit(own);
-		const offered = { plugins: plugins.filter((p) => allowed.has(p.type)) };
+		const offered = { plugins: plugins.filter((p) => allowed.has(p.type)), inlinePlugins: inlinePlugins() };
 		const html = data?.getData('text/html');
 		if (html) return fit(fromHtml(html, offered));
 		const text = data?.getData('text/plain');
 		return text == null ? null : fit(fromMarkdown(text.replace(/\r/g, ''), offered));
+	}
+
+	/** An inline plugin's element (a not editable span carrying its markdown form), ready to go into a block. */
+	function elementOf(p: InlinePlugin<any>, data: Record<string, string>): HTMLElement {
+		const t = document.createElement('template');
+		t.innerHTML = inlineElement(p, data, true);
+		return t.content.firstElementChild as HTMLElement;
+	}
+
+	/** The data of an inline element, read back from its markdown form. */
+	function dataOf(p: InlinePlugin<any>, md: string): Record<string, string> | null {
+		const m = new RegExp(p.pattern.source, p.pattern.flags.replace('g', '')).exec(md);
+		return m ? p.parse([...m].map((g) => g ?? '')) : null;
+	}
+
+	/**
+	 * Edits an inline element in its popup: new data replaces it, '' removes it. A new element (from the toolbar, with
+	 * nothing selected) that is left empty goes away.
+	 */
+	async function editInline(span: HTMLElement, b: Block, fresh = false) {
+		const p = inlinePlugins().find((x) => x.type === span.dataset.inline);
+		const ce = span.closest<HTMLElement>('.ce');
+		const data = p && dataOf(p, span.dataset.md ?? '');
+		if (!p || !ce || !data) return;
+		const r = span.getBoundingClientRect();
+		const next: Record<string, string> | '' | undefined = await popups.open.component(InlineEdit, { plugin: p, data, fresh, tr }, { pos: { clientX: r.left, clientY: r.bottom } });
+		const remove = next === '' || (fresh && next === undefined) || (next && Object.values(next).every((v) => !v.trim()));
+		if (next === undefined && !remove) return;
+		mutate(() => {
+			if (remove) span.remove();
+			else if (next) span.replaceWith(elementOf(p, next));
+			b.html = ce.innerHTML;
+		});
+		ce.focus({ preventScroll: true });
+	}
+
+	/** A click on an inline element (a formula) opens its popup. */
+	function onInlineClick(e: MouseEvent, b: Block) {
+		const span = (e.target as Element).closest<HTMLElement>('[data-inline]');
+		if (!span || readonly || !e.currentTarget || !(e.currentTarget as Element).contains(span)) return;
+		e.preventDefault();
+		void editInline(span, b);
+	}
+
+	/** The toolbar's button of an inline plugin: the selected text becomes its element (an empty one opens its popup). */
+	function insertInline(p: InlinePlugin<any>, ce: HTMLElement, b: Block) {
+		const sel = getSelection();
+		if (!sel?.rangeCount) return;
+		const range = sel.getRangeAt(0);
+		const text = range.toString();
+		const el = elementOf(p, p.create(text));
+		mutate(() => {
+			range.deleteContents();
+			range.insertNode(el);
+			const after = document.createTextNode('\u200B');
+			el.after(after);
+			const at = document.createRange();
+			at.setStart(after, 1);
+			at.collapse(true);
+			sel.removeAllRanges();
+			sel.addRange(at);
+			b.html = ce.innerHTML;
+		});
+		toolbar = null;
+		if (!text.trim()) void editInline(el, b, true);
 	}
 
 	/**
@@ -679,16 +753,19 @@
 		const caret = sel.getRangeAt(0);
 		const node = caret.startContainer;
 		if (!(node instanceof Text) || !ce.contains(node) || node.parentElement?.closest('code')) return false;
-		const m = matchMark(node.data.slice(0, caret.startOffset), closing);
+		const typing = inlinePlugins().flatMap((p) => (p.typing ? [{ type: p.type, ...p.typing }] : []));
+		const m = matchMark(node.data.slice(0, caret.startOffset), closing, typing);
 		if (!m || (m.tag === 'a' && node.parentElement?.closest('a'))) return false;
+		const plugin = m.tag === 'inline' ? inlinePlugins().find((p) => p.type === m.type) : undefined;
+		if (m.tag === 'inline' && !plugin) return false;
 		mutate(() => {
 			const range = document.createRange();
 			range.setStart(node, m.start);
 			range.setEnd(node, m.end);
 			range.deleteContents();
-			const el = document.createElement(m.tag);
+			const el = plugin ? elementOf(plugin, plugin.create(m.text)) : document.createElement(m.tag);
 			if (m.href) el.setAttribute('href', m.href);
-			el.textContent = m.text;
+			if (!plugin) el.textContent = m.text;
 			range.insertNode(el);
 			// The caret after the mark (and after the space or punctuation that closed it), outside the mark: a zero-width
 			// space holds it there when nothing follows (the markdown conversion drops it).
@@ -796,10 +873,14 @@
 
 	/* ---------------------------------------------------------- inline format */
 
-	function fmt(cmd: Cmd) {
+	function fmt(cmd: Cmd | `inline:${string}`) {
 		const ce = focusedId ? el(focusedId) : null;
 		const b = focusedId ? value[idx(focusedId)] : null;
 		if (!ce || !b) return;
+		if (cmd.startsWith('inline:')) {
+			const p = inlinePlugins().find((x) => `inline:${x.type}` === cmd);
+			return void (p && insertInline(p, ce, b));
+		}
 		typed();
 		if (cmd === 'code') toggleCode(ce);
 		else if (cmd === 'plain') plainText(ce);
@@ -1189,7 +1270,7 @@
 		mutate(() => {
 			const next = value.flatMap((b) => {
 				if (!ids.has(b.id)) return [b];
-				return fit((b.blocks ?? []).map(fromStored)).map((k) => {
+				return fit((b.blocks ?? []).map(blockOf)).map((k) => {
 					k.indent = Math.min(MAX_INDENT, k.indent + b.indent);
 					return k;
 				});
@@ -1289,7 +1370,7 @@
 				value = [...rest.slice(0, t), ...moving, ...rest.slice(t)];
 			}),
 		insert: (payload, over, after) => {
-			const incoming = fit(payload.map(fromStored));
+			const incoming = fit(payload.map(blockOf));
 			mutate(() => insertAt(idx(over) + (after ? 1 : 0), ...incoming));
 		},
 		takesFiles: () => fileTakers().length > 0,
@@ -1494,6 +1575,7 @@
 						onbeforeinput={onBeforeInput}
 						oninput={(e) => onInput(e, b)}
 						onpaste={(e) => onPaste(e, b)}
+						onclick={(e) => onInlineClick(e, b)}
 						onfocus={() => {
 							focusedId = b.id;
 							hub.active = token;
@@ -1527,7 +1609,13 @@
 	{/if}
 
 	{#if toolbar}
-		<FormatBar x={toolbar.x} y={toolbar.y} tools={tools.map((t) => ({ ...t, title: tr(t.title) }))} label={tr('Formatting')} onpick={(cmd) => fmt(cmd as Cmd)} />
+		<FormatBar
+			x={toolbar.x}
+			y={toolbar.y}
+			tools={[...tools.map((t) => ({ ...t, title: tr(t.title) })), ...inlinePlugins().map((p) => ({ cmd: `inline:${p.type}`, icon: p.icon, title: tr(p.label) }))]}
+			label={tr('Formatting')}
+			onpick={(cmd) => fmt(cmd as Cmd)}
+		/>
 	{/if}
 
 	{#if turn}

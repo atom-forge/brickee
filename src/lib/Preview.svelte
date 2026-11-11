@@ -51,7 +51,8 @@
 	import { useText } from './i18n';
 	import { inline } from './markdown';
 	import { provideText, type Messages } from './i18n';
-	import type { BlockPlugin } from './types';
+	import { provideInlinePlugins, useInlinePlugins } from './inline-plugins';
+	import type { BlockPlugin, InlinePlugin } from './types';
 
 	interface Props {
 		blocks: StoredBlock[];
@@ -60,16 +61,20 @@
 		nested?: boolean;
 		/** UI text in the host's language; nested previews share their parent's. */
 		messages?: Messages;
+		/** Inline plugins (a formula inside the text…), the same as the editor's; nested previews share their parent's. */
+		inlinePlugins?: InlinePlugin<any>[];
 	}
-	let { blocks, plugins, nested = false, messages }: Props = $props();
+	let { blocks, plugins, nested = false, messages, inlinePlugins: inlineProp }: Props = $props();
 
 	provideText(() => messages);
+	provideInlinePlugins(() => inlineProp);
+	const inlinePlugins = useInlinePlugins();
 	const tr = useText();
 
 	const pluginOf = (type: string) => plugins.find((p) => p.type === type);
 
 	// Inline markdown -> html: text is escaped first, links are http(s), mailto, tel or site-relative only (see inline()).
-	const html = (b: StoredBlock) => inline(b.text ?? '');
+	const html = (b: StoredBlock) => inline(b.text ?? '', { inlinePlugins: inlinePlugins() });
 	const indent = (b: StoredBlock) => (b.indent ? `${b.indent * 1.5}em` : undefined);
 </script>
 

@@ -24,6 +24,23 @@ None of them holds nested blocks. Image blocks, boxes and other containers are a
 
 Besides the plugins, the entry point exports their props types (`TableProps`, `YouTubeProps`, `MapProps`, `GapProps`) and the helpers their previews use, which are useful when you write your own previews: `youtubeId` (a video id from any YouTube link), `mapSrc` (the embed address of a place), `gapLines`, `GAP_LINES` and `GAP_MAX`, and `tableHeads`, `rowHead`, `HEADS` and `square` for tables.
 
+## Formulas
+
+`@atom-forge/brickee/math` holds the formula plugins, in their own entry point because they need `temml` (an optional peer dependency: `bun add temml`). Temml turns LaTeX into MathML, which browsers show natively and which also renders on the server.
+
+| Export | Kind | Stored as | Markdown form |
+|---|---|---|---|
+| `math` | block plugin | `{ tex }` | a `$$…$$` block; a pasted one becomes a `math` block (`fromMath`) |
+| `inlineMath` | inline plugin | `$…$` in the text | the same |
+
+```ts
+import { inlineMath, math } from '@atom-forge/brickee/math';
+// <Editor bind:value plugins={[math]} inlinePlugins={[inlineMath]} />
+// <Preview blocks={value} plugins={[math]} inlinePlugins={[inlineMath]} />
+```
+
+An inline formula follows the GitHub and Obsidian rule: no space just inside the dollars and no digit after the closing one, so "$5 and $10" stays text. Typing `$a^2$` and a space makes one, the toolbar turns the selected text into one, and a click opens it for editing. `tex(source, display)` renders LaTeX the same way for your own components.
+
 ## Overriding a preview
 
 A plugin is a plain object, so adapting one is a spread. The most common change is the preview: the editor view stays the package's, and the site renders the block with your own component — so the editor's preview and the published page are exactly the same.

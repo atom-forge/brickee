@@ -293,6 +293,25 @@ fromTable?(table: MarkdownTable): P;
 
 The bundled `table` has it (`fromTable: ({ rows, align }) => ({ rows, heads: ['top'], align })`), so a table pasted into an editor that offers it becomes a table block. Without such a plugin the table stays text.
 
+## Inline plugins
+
+An inline plugin is an element inside a block's text — a formula, a mention, a variable — that moves and deletes as one, while the stored text stays inline markdown. Give the same list to the editor and the preview (`inlinePlugins`); nested editors and plugin views (a table's cells) get it through a context (`useInlinePlugins()`).
+
+```ts
+interface InlinePlugin<D extends Record<string, string>> {
+	type: string; label: string; icon: Icon;
+	pattern: RegExp;                 // its markdown form in the text (global, bounded)
+	parse(match: string[]): D;       // a match → the data
+	markdown(data: D): string;       // the data → its markdown form (parse of it gives the same data)
+	render(data: D): string;         // the data → safe HTML (escape what comes from the data)
+	fields: PropField[];             // edited in a popup when the element is clicked
+	create(text: string): D;         // a new one from the selected or typed text
+	typing?: { open: string; close: string }; // typing open…close and a space makes one
+}
+```
+
+How it works: `inline()` looks for the patterns outside code spans and escaped characters, and puts `render`'s HTML in a span that carries the markdown form (`data-md`); the editor's span is not editable text. Converting back to markdown takes the `data-md`, so a document saves the same even where the plugin is missing (its markdown form then shows as text). The toolbar gets a button per inline plugin, a click on an element opens its fields, and `typing` works like `**bold**`. `inlineMath` in `@atom-forge/brickee/math` is the bundled example.
+
 ## Taking files
 
 When files are pasted into the editor (a copied image, a screenshot) or dropped on it from outside the page, the first plugin the editor offers that has `fromFiles` and returns props gets one block of its own:

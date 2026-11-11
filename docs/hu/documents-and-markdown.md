@@ -67,6 +67,7 @@ A beépített blokkok szövege a markdown egy kicsi, biztonságos részhalmaza:
 | kód | `` `text` `` (hosszabb backtick-sorozattal, ha a kód backticket tartalmaz: ``` `` a`b `` ```) |
 | hivatkozás | `[text](url)` – csak a `http:`, `https:`, `mailto:`, `tel:` és a webhelyen belüli `/…` célok lesznek hivatkozások; a célban a zárójeleknek párosnak kell lenniük. Beolvasva a cím (elhagyva), a `<https://…>` autolink és a kép (`![alt](url)`) hivatkozásként is |
 | sortörés | egy újsor karakter (markdown-kimenetben: visszaperjel a sor végén) |
+| inline plugin | a saját markdown-alakja, például `$x^2$` az `inlineMath`-nál (csak `inlinePlugins`-szel); a szövegként begépelt `$` `\$`-ként tárolódik |
 
 Az egyszerű szövegben a speciális karakterek visszaperjeles escape-elést kapnak, így soha nem válnak jelöléssé; bármely ASCII írásjel escape-elhető. A beolvasás bármilyen bemeneten lineáris időben fut, ezekkel a korlátokkal: egy jelölt szakasz legfeljebb 2000 karakter, egy link címkéjében nem lehet saját szögletes zárójel, és legfeljebb 1000 karakter, egy link célja legfeljebb 2000. Beolvasáskor az inline HTML a jelölésekre képeződik le (`<strong>`, `<em>`, `<del>`, `<br>`…), a többi tag elmarad (a szövege megmarad), a `[^1]` lábjegyzet-hivatkozásból pedig felső index lesz. Az `inline(md)` az inline markdownt HTML-lé alakítja: előbb escape-eli a szöveget, és csak utána teszi hozzá a fenti tageket, így a kimenete biztonságosan megjeleníthető `{@html}`-lel – az előnézet is így tesz.
 

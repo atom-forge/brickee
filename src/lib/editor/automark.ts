@@ -3,7 +3,7 @@
 // closing parenthesis. The same rules as reading markdown, stricter: a `*` or `_` opens only at a word's edge (2*3*4
 // and snake_case stay text), and a backslash before the opening marker keeps it text.
 
-export type Mark = 'b' | 'i' | 'strike' | 'code' | 'a';
+export type Mark = 'b' | 'i' | 'strike' | 'code' | 'a' | 'inline';
 
 export interface MarkMatch {
 	/** Where the marked source (markers included) starts and ends in the text. */
@@ -14,7 +14,18 @@ export interface MarkMatch {
 	text: string;
 	/** A link's address. */
 	href?: string;
+	/** An inline plugin's type (`tag: 'inline'`). */
+	type?: string;
 }
+
+/** An inline plugin typed between its own markers (`$x^2$`). */
+export interface TypedMark {
+	type: string;
+	open: string;
+	close: string;
+}
+
+const re = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** Characters after a closing marker that make it a mark. */
 const BOUNDARY = /[\s.,;:!?)\]}'"»”’…]/;
@@ -43,7 +54,7 @@ const found = (text: string, m: RegExpExecArray, tag: Mark, href?: string): Mark
  * A mark the typed text ends in, or null. `text` is what stands before the caret in one text node, the character just
  * typed last; with `closing`, the text is complete as it is (Enter was pressed after it).
  */
-export function matchMark(text: string, closing = false): MarkMatch | null {
+export function matchMark(text: string, closing = false, typed: TypedMark[] = []): MarkMatch | null {
 	// Only the end matters: a long paragraph costs no more than its last part.
 	const cut = Math.max(0, text.length - 2600);
 	const tail = text.slice(cut);
@@ -65,6 +76,13 @@ export function matchMark(text: string, closing = false): MarkMatch | null {
 	for (const [tag, re] of DELIMITED) {
 		const m = re.exec(body);
 		if (m) return at(found(body, m, tag));
+	}
+	// Inline plugins: their own markers, the same rules (nothing blank inside the edges, not after a backslash).
+	for (const t of typed) {
+		const o = re(t.open);
+		const c = re(t.close);
+		const m = new RegExp(`(?:^|[^\\\\])(${o}(?!\\s)((?:(?!${c}).){1,500}?)(?<![\\s\\\\])${c})$`, 'u').exec(body);
+		if (m) return at({ ...found(body, m, 'inline'), type: t.type });
 	}
 	return null;
 }

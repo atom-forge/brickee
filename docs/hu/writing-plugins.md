@@ -291,6 +291,25 @@ fromTable?(table: MarkdownTable): P;
 
 A beépített `table` pluginnak van ilyen (`fromTable: ({ rows, align }) => ({ rows, heads: ['top'], align })`), így egy olyan szerkesztőbe beillesztett táblázat, amely felkínálja, táblázat blokk lesz. Ilyen plugin nélkül a táblázat szöveg marad.
 
+## Inline pluginok
+
+Az inline plugin egy blokk szövegén belüli elem – képlet, említés, változó –, amely egységként mozog és törlődik, miközben a tárolt szöveg inline markdown marad. Ugyanazt a listát add a szerkesztőnek és az előnézetnek (`inlinePlugins`); a beágyazott szerkesztők és a plugin-nézetek (egy táblázat cellái) kontextuson keresztül kapják meg (`useInlinePlugins()`).
+
+```ts
+interface InlinePlugin<D extends Record<string, string>> {
+	type: string; label: string; icon: Icon;
+	pattern: RegExp;                 // a markdown-alakja a szövegben (globális, korlátos)
+	parse(match: string[]): D;       // találat → adat
+	markdown(data: D): string;       // adat → markdown-alak (ennek parse-a ugyanazt az adatot adja)
+	render(data: D): string;         // adat → biztonságos HTML (escape-eld, ami az adatból jön)
+	fields: PropField[];             // kattintásra egy kis ablakban szerkeszthető
+	create(text: string): D;         // új elem a kijelölt vagy begépelt szövegből
+	typing?: { open: string; close: string }; // open…close és egy szóköz begépelése elemet csinál
+}
+```
+
+Működése: az `inline()` a kódszakaszokon és az escape-elt karaktereken kívül keresi a mintákat, és a `render` HTML-jét egy olyan spanbe teszi, amely hordozza a markdown-alakot (`data-md`); a szerkesztőben ez a span nem szerkeszthető szöveg. A markdownra visszaalakítás a `data-md`-t veszi, így a dokumentum akkor is ugyanúgy mentődik, ha a plugin hiányzik (a markdown-alakja ilyenkor szövegként látszik). A formázósáv pluginonként kap egy gombot, az elemre kattintva megnyílnak a mezői, a `typing` pedig úgy működik, mint a `**félkövér**`. Az `@atom-forge/brickee/math` `inlineMath`-ja a mellékelt példa.
+
 ## Fájlok fogadása
 
 Ha fájlokat illesztenek be a szerkesztőbe (egy kimásolt kép, egy képernyőkép), vagy az oldalon kívülről dobnak rá, a szerkesztő által felkínált pluginok közül az első, amelynek van `fromFiles` függvénye és propokat ad vissza, kap egy saját blokkot:

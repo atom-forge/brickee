@@ -63,9 +63,11 @@
 	} from '@lucide/svelte';
 	import { tick } from 'svelte';
 	import { inline } from '../markdown';
+	import { useInlinePlugins } from '../inline-plugins';
 	import type { PluginViewProps } from '../types';
 
 	let { props = $bindable(), readonly }: PluginViewProps<TableProps> = $props();
+	const inlinePlugins = useInlinePlugins();
 	const tr = useText();
 
 	let root: HTMLDivElement;
@@ -339,7 +341,7 @@
 										onpaste={(e) => onPaste(e, r, c)}
 									></textarea>
 									{#if !editing && cell.trim()}
-										<div class="shown" style:text-align={align[c]} aria-hidden="true">{@html inline(cell)}</div>
+										<div class="shown" style:text-align={align[c]} aria-hidden="true">{@html inline(cell, { inlinePlugins: inlinePlugins() })}</div>
 									{/if}
 								</td>
 							{/each}

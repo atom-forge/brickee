@@ -7,9 +7,9 @@ Döntések: blokk-képlet egyszerű pluginként, Temml-lel (MathML); jelölő a 
 
 - [x] 1. `math` blokk-plugin, `@atom-forge/brickee/math` belépési pont, `$$…$$` beolvasása (`fromMath`)
 - [x] 2. inline markdown gépelés közben (átalakítás saját visszavonási lépéssel)
-- [ ] 3. inline plugin bővítési pont (`InlinePlugin`, `inlinePlugins` prop, `inline()`, `walk()`, szerkesztő ablak, formázósáv)
-- [ ] 4. `inlineMath` (`$…$`) az inline pluginra
-- [ ] dokumentáció (könyv, en/hu, README-AI), bemutatóoldal, changelog
+- [x] 3. inline plugin bővítési pont (`InlinePlugin`, `inlinePlugins` prop, `inline()`, `walk()`, szerkesztő ablak, formázósáv)
+- [x] 4. `inlineMath` (`$…$`) az inline pluginra
+- [x] dokumentáció (könyv, en/hu, README-AI), bemutatóoldal, changelog
 
 Döntések a nyitott kérdésekben: külön `inlinePlugins` prop; beszúrás a formázósávból és gépeléssel (saját menü nélkül).
 

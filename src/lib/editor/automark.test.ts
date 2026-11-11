@@ -41,3 +41,13 @@ describe('matchMark', () => {
 		expect(performance.now() - t).toBeLessThan(500);
 	});
 });
+
+describe('matchMark with inline plugins', () => {
+	const math = [{ type: 'math', open: '$', close: '$' }];
+	it('their own markers, the same rules', () => {
+		expect(matchMark('so $x^2$ ', false, math)).toMatchObject({ tag: 'inline', type: 'math', text: 'x^2' });
+		expect(matchMark('so $x^2$', true, math)).toMatchObject({ tag: 'inline', type: 'math', text: 'x^2' });
+		expect(matchMark('costs $5 and $', false, math)).toBeNull();
+		expect(matchMark('so \\$x$ ', false, math)).toBeNull();
+	});
+});

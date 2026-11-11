@@ -10,6 +10,7 @@
 | `plugins` | `BlockPlugin[]` | `[]` | The plugin blocks this editor can show and offer. |
 | `palette` | `string[]` | every built-in block, then every plugin | The block types the slash menu offers, in this order (see below). |
 | `messages` | `Messages` | — | UI text in the host's language: English text → translation. |
+| `inlinePlugins` | `InlinePlugin[]` | — | Elements inside the text, such as a formula (see [Inline plugins](writing-plugins.md#inline-plugins)); nested editors share their parent's. |
 | `readonly` | `boolean` | `false` | Shows the document without editing; plugin fields are hidden. A read-only editor never writes `value`. |
 | `placeholder` | `string` | `Write something, or press '/' for blocks…` | The hint of an empty block. |
 | `nested` | `boolean` | `false` | Set by plugins with nested blocks for their inner editor; a host never sets it. |
@@ -23,6 +24,7 @@ An empty document is shown as one empty paragraph, so the value the editor write
 | `blocks` | `StoredBlock[]` | — | The document to render. |
 | `plugins` | `BlockPlugin[]` | — | The plugins whose previews render the plugin blocks. |
 | `messages` | `Messages` | — | UI text in the host's language. |
+| `inlinePlugins` | `InlinePlugin[]` | — | The same inline plugins as the editor's. |
 | `nested` | `boolean` | `false` | Set by plugin previews that render their nested blocks. |
 
 The preview renders built-in blocks as plain HTML (`p`, `h1`…`h6`, `ul`/`ol` with nested items, `blockquote`, `pre > code` with a `language-<lang>` class, `hr`) and each plugin block with its plugin's `preview`. A block whose type has no plugin in `plugins`, or whose plugin has no `preview`, is not rendered.

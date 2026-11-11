@@ -67,6 +67,7 @@ The text of a built-in block is a small, safe subset of markdown:
 | code | `` `text` `` (a longer backtick run when the code holds backticks: ``` `` a`b `` ```) |
 | link | `[text](url)` — only `http:`, `https:`, `mailto:`, `tel:` and site-relative `/…` targets become links; parentheses in a target must be balanced. Read also: a title (dropped), `<https://…>` autolinks, and an image `![alt](url)` as a link |
 | line break | a newline (in markdown out: a backslash at the line's end) |
+| inline plugin | its own markdown form, e.g. `$x^2$` for `inlineMath` (only with `inlinePlugins`); a `$` typed as text is stored as `\$` |
 
 Special characters in plain text are backslash-escaped, so they never turn into markup; any ASCII punctuation can be escaped. Reading stays linear on any input, with these limits: a marked span is at most 2000 characters, a link label has no brackets of its own and is at most 1000 characters, a link target at most 2000. When reading, inline HTML maps onto the marks (`<strong>`, `<em>`, `<del>`, `<br>`…), other tags are dropped with their text kept, and a footnote reference `[^1]` becomes a superscript. `inline(md)` turns inline markdown into HTML: it escapes the text first and only then adds the tags above, so its output is safe to render with `{@html}` — this is what the preview does.
 

@@ -10,6 +10,7 @@
 | `plugins` | `BlockPlugin[]` | `[]` | A pluginblokkok, amelyeket ez a szerkesztő megjeleníthet és felkínálhat. |
 | `palette` | `string[]` | minden beépített blokk, utána minden plugin | A perjeles menü által felkínált blokktípusok, ebben a sorrendben (lásd lent). |
 | `messages` | `Messages` | — | Felületi szövegek az alkalmazás nyelvén: angol szöveg → fordítás. |
+| `inlinePlugins` | `InlinePlugin[]` | — | Szövegen belüli elemek, például képlet (lásd [Inline pluginok](writing-plugins.md#inline-pluginok)); a beágyazott szerkesztők a szülőjükét használják. |
 | `readonly` | `boolean` | `false` | Szerkesztés nélkül mutatja a dokumentumot; a pluginmezők rejtve vannak. Az írásvédett szerkesztő soha nem írja a `value`-t. |
 | `placeholder` | `string` | `Write something, or press '/' for blocks…` | Az üres blokk tippszövege. |
 | `nested` | `boolean` | `false` | A beágyazott blokkokat tartalmazó pluginok állítják be a belső szerkesztőjükön; a befogadó alkalmazás soha nem állítja be. |
@@ -23,6 +24,7 @@ Az üres dokumentum egyetlen üres bekezdésként jelenik meg, így a szerkeszt�
 | `blocks` | `StoredBlock[]` | — | A megjelenítendő dokumentum. |
 | `plugins` | `BlockPlugin[]` | — | A pluginok, amelyek előnézetei a pluginblokkokat renderelik. |
 | `messages` | `Messages` | — | Felületi szövegek az alkalmazás nyelvén. |
+| `inlinePlugins` | `InlinePlugin[]` | — | Ugyanazok az inline pluginok, mint a szerkesztőé. |
 | `nested` | `boolean` | `false` | A beágyazott blokkjaikat renderelő plugin-előnézetek állítják be. |
 
 Az előnézet a beépített blokkokat sima HTML-ként rendereli (`p`, `h1`…`h6`, `ul`/`ol` beágyazott elemekkel, `blockquote`, `pre > code` `language-<lang>` osztállyal, `hr`), a pluginblokkokat pedig a pluginjuk `preview` komponensével. Az a blokk, amelynek típusához nincs plugin a `plugins` listában, vagy amelynek pluginjának nincs `preview`-ja, nem renderelődik.

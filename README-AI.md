@@ -29,7 +29,7 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`�
 // <Editor bind:value={StoredBlock[]} plugins?={BlockPlugin[]} palette?={string[]} messages?={Messages}
 //         readonly?={boolean} placeholder?={string} />   // `nested` is for Frame only
 // <Preview blocks={StoredBlock[]} plugins={BlockPlugin[]} messages?={Messages}
-//          nested?={boolean} />
+//          inlinePlugins?={InlinePlugin[]} nested?={boolean} />
 // <Frame bind:blocks {readonly} {palette} {plugins} heading?={string} empty?={string} image?={string} placeholder?={string} />
 // <Empty icon={Icon} text={string} />
 
@@ -121,6 +121,14 @@ interface PropField {
 // types: TableProps, YouTubeProps, MapProps, GapProps, Head
 // helpers: youtubeId, mapSrc, gapLines, GAP_LINES, GAP_MAX, tableHeads, rowHead, HEADS, square
 // Image blocks, boxes and other containers are app plugins you write yourself (see docs/en/writing-plugins.md).
+
+// inline plugins: elements inside the text (stored as their markdown form, e.g. `$x^2$`); same list to Editor and Preview
+interface InlinePlugin<D extends Record<string, string>> { type: string; label: string; icon: Icon; pattern: RegExp /* global, bounded */;
+	parse(match: string[]): D; markdown(data: D): string; render(data: D): string /* safe HTML */; fields: PropField[]; create(text: string): D; typing?: { open: string; close: string } }
+function useInlinePlugins(): () => InlinePlugin[]; // in plugin views (e.g. rendering cells with inline())
+function inline(md: string, opts?: { inlinePlugins?: InlinePlugin[] }): string;
+
+// @atom-forge/brickee/math (needs `temml`, optional peer): math (block, `$$…$$`, fromMath), inlineMath (`$…$`), tex(source, display)
 
 // @atom-forge/brickee/schema (zod)
 const blocksSchema: ZodType<StoredBlock[]>;
