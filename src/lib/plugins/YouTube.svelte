@@ -15,38 +15,10 @@
 </script>
 
 {#if id}
-	<div class="yt">
-		<img src="https://i.ytimg.com/vi/{id}/hqdefault.jpg" alt={props.title} draggable="false" />
-		<span class="play"><Play size={22} /></span>
+	<div class="relative overflow-hidden rounded-[10px] bg-black">
+		<img class="block aspect-video w-full object-cover opacity-85" src="https://i.ytimg.com/vi/{id}/hqdefault.jpg" alt={props.title} draggable="false" />
+		<span class="absolute inset-0 m-auto grid h-10 w-14 place-items-center rounded-[10px] bg-red-600 text-white"><Play size={22} /></span>
 	</div>
 {:else}
 	<Empty icon={SquarePlay} text="Paste a YouTube link above" />
 {/if}
-
-<style>
-	.yt {
-		position: relative;
-		border-radius: 10px;
-		overflow: hidden;
-		background: #000;
-	}
-	img {
-		display: block;
-		width: 100%;
-		aspect-ratio: 16 / 9;
-		object-fit: cover;
-		opacity: 0.85;
-	}
-	.play {
-		position: absolute;
-		inset: 0;
-		margin: auto;
-		width: 56px;
-		height: 40px;
-		display: grid;
-		place-items: center;
-		border-radius: 10px;
-		background: #dc2626;
-		color: #fff;
-	}
-</style>

@@ -23,25 +23,10 @@
 </script>
 
 {#if src}
-	<div class="map">
+	<div class="overflow-hidden rounded-[10px] border border-frame">
 		<!-- Not interactive inside the editor, so selecting and dragging the block keep working. -->
-		<iframe title={tr('Map: {place}', { place: String(props.q ?? '') })} {src} loading="lazy"></iframe>
+		<iframe class="pointer-events-none block h-[260px] w-full border-0" title={tr('Map: {place}', { place: String(props.q ?? '') })} {src} loading="lazy"></iframe>
 	</div>
 {:else}
 	<Empty icon={MapPin} text="Set a place or an address above" />
 {/if}
-
-<style>
-	.map {
-		border: 1px solid var(--color-frame, #e5e5ea);
-		border-radius: 10px;
-		overflow: hidden;
-	}
-	iframe {
-		display: block;
-		width: 100%;
-		height: 260px;
-		border: 0;
-		pointer-events: none;
-	}
-</style>

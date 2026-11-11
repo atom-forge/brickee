@@ -18,11 +18,8 @@
 	let { props = $bindable() }: PluginViewProps<GapProps> = $props();
 </script>
 
-<div class="gap" style:height="{gapLines(props.lines)}lh" aria-hidden="true"></div>
-
-<style>
-	.gap {
-		border-radius: 6px;
-		background: repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in srgb, currentColor 7%, transparent) 6px 12px);
-	}
-</style>
+<div
+	class="rounded-md bg-[repeating-linear-gradient(-45deg,transparent_0_6px,color-mix(in_srgb,currentColor_7%,transparent)_6px_12px)]"
+	style:height="{gapLines(props.lines)}lh"
+	aria-hidden="true"
+></div>
