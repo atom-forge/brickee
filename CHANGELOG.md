@@ -18,10 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `fromMarkdown` reads much more of CommonMark and GFM: fences of any length and `~~~` (closed only by a fence at least as long), indented code, setext headings and closing `#`s, nested quotes, list nesting by the items' markers (also under `1. ` and with four-space indents), reference links, footnotes (as superscripts), and the lines of a paragraph, list item or quote as one block with line breaks instead of one block per line.
 - `inline` reads `_italic_`, `__bold__` and `***both***` (now valid HTML), code spans of any backtick length, link targets with balanced parentheses and titles, `<https://…>` autolinks, images (as links), every ASCII punctuation escape, and inline HTML (marks kept, other tags dropped). A stored text with a word wrapped in single underscores (`_word_`) now shows it in italics.
+- Typing converts only the edited block to its stored form: the other blocks keep their objects in `value`, so the editor and a `<Preview>` beside it do much less work per keystroke (a 2000-block document with a preview: about 50 ms → 33 ms per keystroke). A document from outside is reloaded when `value` is replaced with a new array that differs from the current one; changing the array in place is not picked up.
 - `toMarkdown` writes markdown other readers read the same way: items nested under a numbered item indented to its content, code fenced longer than any backtick run in it, consecutive quotes as one quote, line breaks as a backslash at the line's end, `_` and line starts that would read as markup escaped.
 
 ### Fixed
 
+- A read-only editor no longer writes its normalized document back into `value` on mount, so a host does not see a change nobody made.
 - Inline markdown and `fromMarkdown` stay fast on hostile text: many unclosed HTML tags, a long run of `[`, unclosed `**` or `_`, or long runs of spaces could freeze the tab for seconds to minutes; every pattern is now linear (100 000 characters take milliseconds). Limits that come with it: a marked span is at most 2000 characters, a link label has no brackets of its own (at most 1000 characters), a link target at most 2000. Inline HTML marks are now always balanced (an unclosed `<b>` is closed, a stray closing tag dropped).
 
 ## [0.0.2] - 2026-11-10

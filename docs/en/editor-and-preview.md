@@ -6,11 +6,11 @@
 
 | Prop | Type | Default | Meaning |
 |---|---|---|---|
-| `value` | `StoredBlock[]` (bindable) | `[]` | The document. Written back on every change; a document replaced from outside is loaded again. |
+| `value` | `StoredBlock[]` (bindable) | `[]` | The document. Written back on every change (unchanged blocks keep their objects); a document replaced from outside — a new array, not one changed in place — is loaded again, unless it equals the current one. |
 | `plugins` | `BlockPlugin[]` | `[]` | The plugin blocks this editor can show and offer. |
 | `palette` | `string[]` | every built-in block, then every plugin | The block types the slash menu offers, in this order (see below). |
 | `messages` | `Messages` | — | UI text in the host's language: English text → translation. |
-| `readonly` | `boolean` | `false` | Shows the document without editing; plugin fields are hidden. |
+| `readonly` | `boolean` | `false` | Shows the document without editing; plugin fields are hidden. A read-only editor never writes `value`. |
 | `placeholder` | `string` | `Write something, or press '/' for blocks…` | The hint of an empty block. |
 | `nested` | `boolean` | `false` | Set by plugins with nested blocks for their inner editor; a host never sets it. |
 

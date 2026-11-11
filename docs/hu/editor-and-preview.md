@@ -6,11 +6,11 @@
 
 | Prop | Típus | Alapérték | Jelentés |
 |---|---|---|---|
-| `value` | `StoredBlock[]` (bindable) | `[]` | A dokumentum. Minden változáskor visszaíródik; a kívülről lecserélt dokumentum újra betöltődik. |
+| `value` | `StoredBlock[]` (bindable) | `[]` | A dokumentum. Minden változáskor visszaíródik (a változatlan blokkok megtartják az objektumukat); a kívülről lecserélt dokumentum – új tömb, nem helyben módosított – újra betöltődik, hacsak nem egyezik a mostanival. |
 | `plugins` | `BlockPlugin[]` | `[]` | A pluginblokkok, amelyeket ez a szerkesztő megjeleníthet és felkínálhat. |
 | `palette` | `string[]` | minden beépített blokk, utána minden plugin | A perjeles menü által felkínált blokktípusok, ebben a sorrendben (lásd lent). |
 | `messages` | `Messages` | — | Felületi szövegek az alkalmazás nyelvén: angol szöveg → fordítás. |
-| `readonly` | `boolean` | `false` | Szerkesztés nélkül mutatja a dokumentumot; a pluginmezők rejtve vannak. |
+| `readonly` | `boolean` | `false` | Szerkesztés nélkül mutatja a dokumentumot; a pluginmezők rejtve vannak. Az írásvédett szerkesztő soha nem írja a `value`-t. |
 | `placeholder` | `string` | `Write something, or press '/' for blocks…` | Az üres blokk tippszövege. |
 | `nested` | `boolean` | `false` | A beágyazott blokkokat tartalmazó pluginok állítják be a belső szerkesztőjükön; a befogadó alkalmazás soha nem állítja be. |
 

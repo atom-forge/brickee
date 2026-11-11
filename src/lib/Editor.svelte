@@ -75,18 +75,42 @@
 
 	/* ------------------------------------------------------------ document io */
 
-	// The editor works on html blocks; `doc` is their markdown form, written back on every change.
+	// The editor works on html blocks; `doc` is their markdown form, written back on every change (not when read-only:
+	// showing a document must not change it).
 	const load = (d: StoredBlock[]) => (d.length ? d.map(fromStored) : [newBlock()]);
 	let value = $state<Block[]>(load(doc));
-	let written = '';
+
+	// The stored form of a built-in block, kept while the block does not change: typing in one block converts only that
+	// block (its inline html goes through the DOM), and the others keep their objects, so a preview re-renders only it.
+	// Plugin blocks are cheap to convert and keep their `props` and `blocks` objects anyway.
+	const stored = new Map<string, { key: string; out: StoredBlock }>();
+	function storedOf(b: Block): StoredBlock {
+		if (b.type === 'plugin') return toStored(b);
+		const key = `${b.type}|${b.indent}|${b.checked ?? ''}|${b.props?.lang ?? ''}|${b.props?.start ?? ''}|${b.html}`;
+		const hit = stored.get(b.id);
+		if (hit?.key === key) return hit.out;
+		const out = toStored(b);
+		stored.set(b.id, { key, out });
+		return out;
+	}
+
+	// What we wrote last, and `doc` as read back after writing it (the host's state may wrap it in its own proxy).
+	let written: StoredBlock[] | null = null;
+	let readBack: unknown = untrack(() => doc);
 	$effect(() => {
-		const out = value.map(toStored);
-		written = JSON.stringify(out);
+		const out = value.map(storedOf);
+		if (stored.size > out.length * 2) for (const id of [...stored.keys()]) if (!value.some((b) => b.id === id)) stored.delete(id);
+		if (untrack(() => readonly)) return;
+		written = out;
 		doc = out;
+		readBack = untrack(() => doc);
 	});
-	// A document replaced from outside (not by our own write) is loaded again.
+	// A document replaced from outside (not by our own write) is loaded again; an equal copy is not.
 	$effect(() => {
-		if (JSON.stringify(doc) !== written) value = load(doc);
+		const d = doc;
+		if (d === readBack) return;
+		readBack = d;
+		if (JSON.stringify(d) !== JSON.stringify(written ?? untrack(() => value.map(storedOf)))) value = load(d);
 	});
 
 	/* ------------------------------------------------------------------ state */

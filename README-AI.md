@@ -7,7 +7,7 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`â
 ## Rules
 
 - Peers: `svelte` 5, `@atom-forge/ui` (popups and field controls), `@lucide/svelte`; `zod` only for `@atom-forge/brickee/schema`. The app must set up `@atom-forge/ui` (Tailwind 4, its theme CSS and `@source`, the app beneath its `Root`).
-- Store the editor's `value` (`StoredBlock[]`) as it is. Built-in types start with `md:`; any other `type` is a plugin's. Never rename a plugin's `type`: stored documents refer to it.
+- Store the editor's `value` (`StoredBlock[]`) as it is. To change it from outside, assign a new array (an in-place change is not picked up); a read-only editor never writes it. Built-in types start with `md:`; any other `type` is a plugin's. Never rename a plugin's `type`: stored documents refer to it.
 - Pass the same `plugins` to the `Editor` and the `Preview` of a document type. Restrict what an editor offers with `palette` (palette ids: `md:*` kinds and plugin types), not by dropping plugins.
 - The editor's colours come from the `@atom-forge/ui` theme tokens (light/dark follow the host). Its block handles sit ~22 px left of its box: leave that much left padding around it.
 - No app-specific editor props: app data reaches plugins through contexts (`provideView`, `provideCodeLanguages`, `messages` / `provideText`), plugin fields, or the app's own modules and contexts.
