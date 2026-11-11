@@ -6,7 +6,7 @@ Ez a fejezet azokat a változásokat sorolja fel, amelyek teendőt igényelhetne
 
 A tőled semmit nem igénylő változások – új exportok, javítások, dokumentációfrissítések – csak a változásnaplóban (`CHANGELOG.md`, a csomaggal együtt szállítva) szerepelnek.
 
-## A 0.0.3-ról a következő változatra (Unreleased)
+## A 0.0.3-ról a 0.0.4-re
 
 ### Megszűntek a nézetenkénti mezőértékek
 

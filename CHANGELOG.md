@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The book is listed on the AtomForge documentation site (https://books.atom-forge.eu).
+
 - A plugin's own fields form: the new optional `BlockPlugin.form`, any Svelte component shown in the block's fields bar below the generated fields (or alone), with the block's props bound (`PluginFormProps`: `props`, `readonly`); assigning a new props object is one edit with its own undo step. For what the generated fields cannot do: the app's own pickers, data, contexts and scripts. Documented in *Writing plugins → Custom fields form*.
 - Showcase: a *Custom fields form* page (a photo block whose form picks from the album an app context names, with its own upload), replacing the *Image blocks* page.
 - Inline plugins: elements inside a block's text (a formula, a mention…) that move and delete as one while the stored text stays inline markdown. `InlinePlugin` (pattern, parse, markdown, render, fields, create, typing), the `inlinePlugins` prop of `Editor` and `Preview` (inherited by nested editors; `useInlinePlugins()` / `provideInlinePlugins()` for plugin views), and `inline(md, { inlinePlugins })`. The toolbar gets a button per inline plugin, a click opens an element's fields, typing its markers makes one.
@@ -24,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The upgrading chapter's *Unreleased* section is now *From 0.0.3 to 0.0.4*.
 - A `$` typed as text is stored escaped (`\$`), so it never turns into a formula of an inline plugin later.
 
 ## [0.0.3] - 2026-11-11
