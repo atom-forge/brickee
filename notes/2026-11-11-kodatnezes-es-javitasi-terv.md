@@ -5,6 +5,30 @@ könyvtár: minden pont a böngészőben futó szerkesztőre és előnézetre vo
 
 Jelölés: **[mért]** = lefuttatva, mérve; **[kód]** = a kódból olvasva, élesben nem próbálva.
 
+## Haladás
+
+Minden lépés után frissül; a kész lépések commitolva vannak (helyben, kiadás nélkül).
+
+- [x] 1.1 `inline()` lefagyás lezáratlan HTML-tageknél (H1)
+- [x] 1.2 a többi négyzetes minta korlátozása (link, kiemelés, címsor, sorvég, hivatkozások)
+- [x] 2.1 tárolt alak gyorsítótára (P1) + read-only nem ír vissza (H4)
+- [x] 2.2 pluginváltozások a visszavonásban (H2)
+- [x] 2.3 saját vágólap-formátum (H3)
+- [x] 2.4 `gate` eltávolítása, gamer365-maradványok (H5, S2)
+- [x] 2.5 CI teszt-workflow, figyelők takarítása (S5, S6)
+- [x] — közben talált: SSR 500-as hiba és üres szerveroldali szerkesztő javítva, SSR-teszt, CI build
+- [x] 3.0 stílusok: sima CSS sehol (Tailwind + SCSS), pixelre egyezően; `@source` dokumentálva (S7)
+- [x] — közben talált: a tábla összezsugorodott Tailwindes oldalon (`table` osztály ütközés)
+- [ ] 2.6 kiemelőszín a témából, öröklött betűtípus (S3)
+- [ ] 3.4 menük az `@atom-forge/ui` popup-kezelőjén, ui gombok (F6)
+- [ ] 3.6 bontás maradéka: húzás és sweep külön modulban (S1) — előzmény, menük, formázósáv: kész
+- [ ] 3.1 formázott (HTML) beillesztés (F1)
+- [ ] 3.2 fájlok fogadása pluginnal: `fromFiles` (F4)
+- [ ] 3.3 érintés és billentyűzet a blokkműveletekhez (F2, F3)
+- [ ] 3.5 formázás a táblacellákban (F5)
+- [ ] 3.7 hosszabb távú: `execCommand`, előzmény különbségekkel (S4, P2) — mérés és döntés
+- [ ] kiadás (0.0.3): verzió, changelog, upgrading-címek, publikálás — csak jóváhagyással
+
 ## Döntések (2026-11-11)
 
 - **Függőségek:** az `@atom-forge/ui` kötelező függőség marad, és bővíthető is: ahol a ui-nak van megfelelő komponense
