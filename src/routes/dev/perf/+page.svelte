@@ -21,6 +21,7 @@
 	let deep = $state<StoredBlock[]>(raw ? [] : doc());
 	let flat = $state.raw<StoredBlock[]>(raw ? doc() : []);
 	// ?raw: is the host's array still the one it passed in (no write back)?
+	// svelte-ignore state_referenced_locally
 	const initial = flat;
 	$effect(() => {
 		void flat;
