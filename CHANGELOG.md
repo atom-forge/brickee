@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Table cells show their text formatted (bold, italic, code, links…) while they are not edited, instead of the raw markdown; while editing, `Ctrl/Cmd` + `B`, `I`, `E`, `Shift+X` and `K` wrap the selected text in the mark (a link with its address selected to type over).
 - Touch and keyboard: *Move up* / *Move down* in the Turn-into menu (moving without dragging); the Turn-into menu opens from the keyboard (`/`, `Ctrl/Cmd+/`, the menu key or `Shift+F10` on selected blocks, `Ctrl/Cmd+/` in a block's text); on a touch screen a tapped block shows its actions beside its handle; the handle is a button (with a label for screen readers) and its actions also show on focus.
 - Files pasted into the editor or dropped on it from outside the page go to a plugin that takes them: the new optional `BlockPlugin.fromFiles(files)` returns the block's props (or a promise of them, after its own upload) or `null` for the next plugin. A drop line shows where a dropped file lands; the step is undoable.
 - Formatted paste: text pasted from a web page, Google Docs or Word keeps its headings, paragraphs, lists (nested, numbered, to-dos), quotes, code, rules, tables (for a plugin that takes them) and inline marks, instead of arriving as plain text. Exported as `fromHtml(html, { plugins })` (browser only); it reads the HTML through markdown, so the result is as safe as any other text.

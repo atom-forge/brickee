@@ -62,6 +62,7 @@
 		Trash2
 	} from '@lucide/svelte';
 	import { tick } from 'svelte';
+	import { inline } from '../markdown';
 	import type { PluginViewProps } from '../types';
 
 	let { props = $bindable(), readonly }: PluginViewProps<TableProps> = $props();
@@ -158,9 +159,38 @@
 	}
 	const setAlign = (c: number, a: Align) => set({ align: align.map((x, j) => (j === c ? a : x)) });
 
+	/**
+	 * Wraps the selected text of a cell in a mark (Ctrl+B and the like); then selects the text again, or, for a link,
+	 * the address to type over.
+	 */
+	async function mark(t: HTMLTextAreaElement, r: number, c: number, open: string, close: string, link = false) {
+		const { selectionStart: a, selectionEnd: b, value } = t;
+		const text = value.slice(a, b);
+		edit(r, c, value.slice(0, a) + open + text + close + value.slice(b));
+		await tick();
+		const cell = root.querySelector<HTMLTextAreaElement>(`textarea[data-cell="${r}:${c}"]`);
+		if (!cell) return;
+		cell.focus();
+		if (link) cell.setSelectionRange(a + open.length + text.length + 2, a + open.length + text.length + close.length - 1);
+		else cell.setSelectionRange(a + open.length, a + open.length + text.length);
+	}
+	const MARKS: Record<string, [string, string]> = { b: ['**', '**'], i: ['*', '*'], e: ['`', '`'] };
+
 	function onKey(e: KeyboardEvent, r: number, c: number) {
 		const t = e.currentTarget as HTMLTextAreaElement;
 		const last = r === rows.length - 1;
+		const k = e.key.toLowerCase();
+		if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+			const m = e.shiftKey ? (k === 'x' ? (['~~', '~~'] as [string, string]) : null) : MARKS[k];
+			if (m) {
+				e.preventDefault();
+				return void mark(t, r, c, m[0], m[1]);
+			}
+			if (k === 'k' && !e.shiftKey) {
+				e.preventDefault();
+				return void mark(t, r, c, '[', '](https://)', true);
+			}
+		}
 		if (e.key === 'Enter' && !e.shiftKey) {
 			// Enter goes down a row (a new one after the last); Shift+Enter breaks the line inside the cell.
 			e.preventDefault();
@@ -285,12 +315,16 @@
 								</td>
 							{/if}
 							{#each row as cell, c (c)}
+								{@const editing = at?.r === r && at?.c === c}
 								<td
 									class={dropMark('col', c, width) ? 'c-' + dropMark('col', c, width) : ''}
 									class:col-on={at?.c === c}
 									class:moving={drag?.kind === 'col' && drag.from === c}
 								>
+									<!-- Out of editing a cell shows its text formatted (sizing the cell, over its textarea); editing shows the
+									     markdown. -->
 									<textarea
+										class:hidden-text={!editing && !!cell.trim()}
 										rows="1"
 										value={cell}
 										{readonly}
@@ -304,6 +338,9 @@
 										onkeydown={(e) => onKey(e, r, c)}
 										onpaste={(e) => onPaste(e, r, c)}
 									></textarea>
+									{#if !editing && cell.trim()}
+										<div class="shown" style:text-align={align[c]} aria-hidden="true">{@html inline(cell)}</div>
+									{/if}
 								</td>
 							{/each}
 						</tr>
@@ -364,17 +401,23 @@
 			background: var(--color-muted, #f1f1f4);
 			border-top: 2px solid var(--color-frame, #d8d8de);
 		}
-		&.h-top textarea {
+		&.h-top textarea,
+		&.h-top .shown {
 			font-weight: 600;
 			font-size: 13px;
 			letter-spacing: 0.04em;
 			text-transform: uppercase;
 			color: var(--color-surface-contrast, #3a3a44);
 		}
-		&.h-bottom textarea {
+		&.h-bottom textarea,
+		&.h-bottom .shown {
 			font-weight: 600;
 			color: var(--color-surface-contrast, #1d1d1f);
 		}
+	}
+
+	td {
+		position: relative;
 	}
 
 	textarea {
@@ -398,6 +441,37 @@
 		&:focus {
 			background: var(--color-surface, #fff);
 			box-shadow: inset 0 0 0 2px $accent;
+		}
+		// Under the formatted text, which sizes the cell: fills it, shows nothing, still takes the click.
+		&.hidden-text {
+			position: absolute;
+			inset: 0;
+			min-height: 0 !important;
+			color: transparent;
+		}
+	}
+
+	// A cell's text, formatted, while it is not edited (over its textarea; clicks go through to it).
+	.shown {
+		position: relative;
+		box-sizing: border-box;
+		// as wide as an edited cell's textarea, so the columns keep their widths
+		min-width: 6em;
+		padding: 8px 11px;
+		overflow: hidden;
+		pointer-events: none;
+		white-space: pre-wrap;
+		word-break: break-word;
+
+		:global(code) {
+			padding: 0.1em 0.35em;
+			border-radius: 4px;
+			background: rgba(120, 120, 140, 0.14);
+			font: 0.88em ui-monospace, SFMono-Regular, Menlo, monospace;
+		}
+		:global(a) {
+			color: $accent;
+			text-decoration: underline;
 		}
 	}
 
