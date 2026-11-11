@@ -68,7 +68,7 @@ A plain paragraph (`md:p`) is always allowed as the fallback.
 |---|---|
 | Insert a block | `/` opens the slash menu (searchable by label, hint, keywords and their translations); the `+` button adds a block below. |
 | Markdown shortcuts | At the start of a paragraph: `# `…`###### `, `- ` / `* ` / `+ `, `1. `, `[] `, `> `. |
-| Inline formatting | Select text for the toolbar, or `Ctrl/Cmd` + `B` bold, `I` italic, `U` underline, `Shift+X` strikethrough, `E` code, `K` link, `\` remove formatting. Subscript and superscript are on the toolbar. |
+| Inline formatting | Select text for the toolbar, or `Ctrl/Cmd` + `B` bold, `I` italic, `U` underline, `Shift+X` strikethrough, `E` code, `K` link, `\` remove formatting. Subscript and superscript are on the toolbar. Typed markdown turns into its mark: `**bold**`, `*italic*` / `_italic_`, `~~strike~~` once a space, a punctuation mark or `Enter` follows; `` `code` `` and `[text](url)` on their closing character. `Ctrl/Cmd+Z` right after brings back the text as typed. |
 | Indent | `Tab` / `Shift+Tab` (at most 6 levels). |
 | Line break | `Shift+Enter`; in a code block `Enter` breaks the line and `Shift+Enter` or `Ctrl/Cmd+Enter` starts a new block. |
 | Select blocks | Click (or tap) a block's handle, `Esc` in a block, `Shift+↑/↓` past the edge of a block, or drag a text selection across blocks. `Ctrl/Cmd+A` in an empty block selects every block. |

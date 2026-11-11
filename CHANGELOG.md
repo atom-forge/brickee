@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Inline markdown while typing: `**bold**`, `*italic*` / `_italic_` and `~~strike~~` turn into their mark when a space, a punctuation mark or Enter follows; `` `code` `` on its closing backtick, `[text](url)` on its closing parenthesis. A `*` or `_` opens only at a word's edge (`2*3*4`, `snake_case` stay text); `Ctrl/Cmd+Z` right after brings back the text as typed.
 - A formula block: `math` in the new entry point `@atom-forge/brickee/math`, written in LaTeX and drawn as MathML by `temml` (an optional peer dependency; it also renders on the server). Its markdown form is a `$$…$$` block, and a pasted or imported one becomes a formula through the new optional `BlockPlugin.fromMath(tex)`.
 - Plan for formulas and inline plugins in `notes/` (not shipped), linked from `TODO.md`.
 

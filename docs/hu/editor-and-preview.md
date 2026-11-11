@@ -68,7 +68,7 @@ A `PALETTE_ITEMS` a beépített blokkokat sorolja fel a címkéikkel, tippjeikke
 |---|---|
 | Blokk beszúrása | A `/` megnyitja a perjeles menüt (címke, tipp, kulcsszavak és ezek fordításai alapján kereshető); a `+` gomb egy blokkot ad hozzá alul. |
 | Markdown-gyorsbillentyűk | Bekezdés elején: `# `…`###### `, `- ` / `* ` / `+ `, `1. `, `[] `, `> `. |
-| Szövegformázás | Jelölj ki szöveget az eszköztárhoz, vagy `Ctrl/Cmd` + `B` félkövér, `I` dőlt, `U` aláhúzott, `Shift+X` áthúzott, `E` kód, `K` link, `\` formázás eltávolítása. Az alsó és a felső index az eszköztáron érhető el. |
+| Szövegformázás | Jelölj ki szöveget az eszköztárhoz, vagy `Ctrl/Cmd` + `B` félkövér, `I` dőlt, `U` aláhúzott, `Shift+X` áthúzott, `E` kód, `K` link, `\` formázás eltávolítása. Az alsó és a felső index az eszköztáron érhető el. A begépelt markdown jelöléssé alakul: a `**félkövér**`, `*dőlt*` / `_dőlt_`, `~~áthúzott~~`, ha szóköz, írásjel vagy `Enter` követi; a `` `kód` `` és a `[szöveg](url)` a záró karakterére. Közvetlenül utána a `Ctrl/Cmd+Z` visszaadja a begépelt szöveget. |
 | Behúzás | `Tab` / `Shift+Tab` (legfeljebb 6 szint). |
 | Sortörés | `Shift+Enter`; kódblokkban az `Enter` töri a sort, a `Shift+Enter` vagy a `Ctrl/Cmd+Enter` pedig új blokkot kezd. |
 | Blokkok kijelölése | Kattints (vagy koppints) egy blokk fogantyújára, nyomj `Esc`-et egy blokkban, `Shift+↑/↓` a blokk szélén túl, vagy húzz szövegkijelölést több blokkon át. Üres blokkban a `Ctrl/Cmd+A` minden blokkot kijelöl. |

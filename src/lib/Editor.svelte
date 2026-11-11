@@ -13,6 +13,7 @@
 	import BlockMenu, { type MenuRow } from './editor/BlockMenu.svelte';
 	import FormatBar from './editor/FormatBar.svelte';
 	import { History } from './editor/history';
+	import { matchMark } from './editor/automark';
 	import { createSweep } from './editor/sweep.svelte';
 	import { createDrag, useHub } from './editor/drag.svelte';
 	import { acceptsId, BUILT_IN_IDS, PALETTE_ITEMS, type Icon, type PaletteItem } from './palette';
@@ -480,7 +481,10 @@
 					focusBlock(nb.id, 'start');
 				} else document.execCommand('insertLineBreak');
 			} else if (e.shiftKey) document.execCommand('insertLineBreak');
-			else enter(b, ce);
+			else {
+				autoMark(ce, b, true);
+				enter(b, ce);
+			}
 			return;
 		}
 
@@ -597,6 +601,7 @@
 		}
 		typed();
 		b.html = ce.innerHTML;
+		if ((e as InputEvent).inputType === 'insertText' && autoMark(ce, b)) return;
 		detectSlash(ce, b);
 	}
 
@@ -660,6 +665,45 @@
 		if (html) return fit(fromHtml(html, offered));
 		const text = data?.getData('text/plain');
 		return text == null ? null : fit(fromMarkdown(text.replace(/\r/g, ''), offered));
+	}
+
+	/**
+	 * Inline markdown while typing (see editor/automark.ts): the marked text the caret ends turns into its mark. Only
+	 * within the caret's text node, so it never reaches across an existing mark, and never in code. The text as typed is
+	 * an undo step of its own: Ctrl+Z right after brings back the `**…**`.
+	 */
+	function autoMark(ce: HTMLElement, b: Block, closing = false): boolean {
+		if (b.type === 'code' || readonly) return false;
+		const sel = getSelection();
+		if (!sel?.rangeCount || !sel.isCollapsed) return false;
+		const caret = sel.getRangeAt(0);
+		const node = caret.startContainer;
+		if (!(node instanceof Text) || !ce.contains(node) || node.parentElement?.closest('code')) return false;
+		const m = matchMark(node.data.slice(0, caret.startOffset), closing);
+		if (!m || (m.tag === 'a' && node.parentElement?.closest('a'))) return false;
+		mutate(() => {
+			const range = document.createRange();
+			range.setStart(node, m.start);
+			range.setEnd(node, m.end);
+			range.deleteContents();
+			const el = document.createElement(m.tag);
+			if (m.href) el.setAttribute('href', m.href);
+			el.textContent = m.text;
+			range.insertNode(el);
+			// The caret after the mark (and after the space or punctuation that closed it), outside the mark: a zero-width
+			// space holds it there when nothing follows (the markdown conversion drops it).
+			let next = el.nextSibling;
+			if (!(next instanceof Text)) el.after((next = document.createTextNode('\u200B')));
+			else if (!next.data) next.data = '\u200B';
+			const at = document.createRange();
+			const t = next as Text;
+			at.setStart(t, Math.min(t.length, m.tag === 'code' || m.tag === 'a' || closing ? (t.data[0] === '\u200B' ? 1 : 0) : 1));
+			at.collapse(true);
+			sel.removeAllRanges();
+			sel.addRange(at);
+			b.html = ce.innerHTML;
+		});
+		return true;
 	}
 
 	function onPaste(e: ClipboardEvent, b: Block) {
