@@ -14,7 +14,7 @@
 	<iframe class="map" title={tr('Map: {place}', { place: String(props.q ?? '') })} {src} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 {/if}
 
-<style>
+<style lang="scss">
 	.map {
 		display: block;
 		width: 100%;

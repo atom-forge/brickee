@@ -32,8 +32,13 @@
 	</div>
 {/if}
 
-<style>
-	/* Wide tables scroll on their own instead of the page. */
+<style lang="scss">
+	// The lines are drawn from the text colour, so the table fits any page.
+	@function line($share) {
+		@return color-mix(in srgb, currentColor $share, transparent);
+	}
+
+	// Wide tables scroll on their own instead of the page.
 	.wrap {
 		margin: 0 0 1em;
 		overflow-x: auto;
@@ -46,17 +51,18 @@
 	th,
 	td {
 		padding: 0.45em 0.7em;
-		border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+		border-bottom: 1px solid line(15%);
 		text-align: left;
 		vertical-align: top;
 	}
 	th {
 		font-weight: 600;
-	}
-	th.top {
-		border-bottom-width: 2px;
-	}
-	th.bottom {
-		border-top: 2px solid color-mix(in srgb, currentColor 22%, transparent);
+
+		&.top {
+			border-bottom-width: 2px;
+		}
+		&.bottom {
+			border-top: 2px solid line(22%);
+		}
 	}
 </style>

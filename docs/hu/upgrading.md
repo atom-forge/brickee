@@ -8,6 +8,12 @@ A tőled semmit nem igénylő változások – új exportok, javítások, dokume
 
 ## A 0.0.2-ről a következő változatra
 
+### A szerkesztő `dist` mappájának Tailwind `@source`-nak kell lennie
+
+A szerkesztő saját stílusai scoped CSS-ből Tailwind-osztályokba (az `@atom-forge/ui` téma színeivel) és SCSS-be kerültek. A Tailwind 4 nem néz bele a `node_modules`-ba, így a csomagra mutató `@source` nélkül a szerkesztő sorai, menüi, mezősávja és táblázata elveszítik a kinézetüket. Az előnézetet ez nem érinti: a stílusai továbbra is a jelölésével utaznak.
+
+**Teendő:** abban a CSS-fájlban, ahol az `@atom-forge/ui`-t beállítod, vedd fel az `@source "../node_modules/@atom-forge/brickee/dist";` sort (az attól a fájltól vett útvonallal) az `@atom-forge/ui`-é mellé. A csak `Preview`-t mutató oldalakon nincs teendő.
+
 ### A kapus blokkok megszűntek
 
 A tartalom védése (támogatói vagy fizetőfalas elválasztó) az alkalmazás fogalma, nem a szerkesztőé. Kikerült a `BlockPlugin.gate`, a `Preview` `markGated` propja, a „For supporters only” szakasza a `.supporters` és `.supporters-label` osztályokkal, valamint a magyar fordítás `For supporters only` szövege. A `Preview` mostantól minden kapott blokkot renderel. A `unique` marad.

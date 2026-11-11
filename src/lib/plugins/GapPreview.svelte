@@ -9,7 +9,8 @@
 
 <div class="gap" style:height="{gapLines(props.lines)}lh" aria-hidden="true"></div>
 
-<style>
+<style lang="scss">
+	// Empty space; it also ends floats above it.
 	.gap {
 		clear: both;
 		margin: 0;

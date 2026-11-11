@@ -33,6 +33,14 @@ bun add @atom-forge/brickee @atom-forge/ui @lucide/svelte
 The block fields and popups are `@atom-forge/ui` components, so the application must be set up the way `@atom-forge/ui` requires:
 
 - Tailwind CSS 4 with the `@atom-forge/ui` theme CSS imported and its `dist` folder added as a Tailwind `@source`;
+- the `dist` folder of `@atom-forge/brickee` added as a Tailwind `@source` too: the editor is styled with Tailwind classes and the `@atom-forge/ui` theme's colours, so Tailwind has to see them:
+
+  ```css
+  @source "../node_modules/@atom-forge/ui/dist";
+  @source "../node_modules/@atom-forge/brickee/dist";
+  ```
+
+  The preview needs neither: its few styles travel with its markup, so a public page without Tailwind can show documents;
 - the application rendered beneath the `@atom-forge/ui` `Root` component, which provides the theme and the overlay contexts.
 
 The top-level `Editor` creates its own popup manager and renders its own popup container; editors nested in plugin blocks share it.

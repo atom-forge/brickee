@@ -198,6 +198,8 @@ egyezzen az előnézettel; ez látható változás, a changelogba kerül.
 
 #### 3.0 S7: stílusok — Tailwind, ahol lehet; SCSS a maradékra; sima CSS sehol
 
+KÉSZ (a 2.6 nélkül): 1–7. lépés pixelre egyezően (`scripts/shots.mjs` + `shots-diff.mjs`, `/dev/states`), egy szándékos javítással (a tábla `table` osztálya ütközött a Tailwind `display: table`-jével). Előnézetek: SCSS + `css="injected"`. Dokumentálva a `@source` lépés (getting-started, buktatók, upgrading, README-AI).
+
 Döntés (2026-11-11). Szabály az új és az átírt kódra:
 
 - **Tailwind** minden, ami utility osztályokkal olvashatóan kifejezhető: elrendezés, térköz, szín, betű, keret,
@@ -286,6 +288,8 @@ A cella `textarea` helyett `contenteditable`, a szerkesztő `rich` akciójával 
 a formázósáv megosztásával. Nagyobb átírás; előtte eldönteni, kell-e.
 
 #### 3.6 S1: az `Editor.svelte` bontása
+
+RÉSZBEN KÉSZ: `editor/history.ts`, `editor/BlockMenu.svelte` (perjeles + turn-into), `editor/FormatBar.svelte`, `insertAt`. Nincs még: `drag.ts`, `sweep.ts`.
 
 A viselkedés változtatása nélkül, lépésenként, mindegyik után `bun run check` + a bemutatóoldal kipróbálása:
 1. `history.svelte.ts`: `take` / `typed` / `mutate` / `undo` / `redo` egy osztályban.

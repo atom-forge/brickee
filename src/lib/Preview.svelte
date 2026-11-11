@@ -134,27 +134,32 @@
 	{@render run(blocks)}
 </div>
 
-<style>
-	/* Only what the renderer itself adds; the article typography comes from the page that shows it. */
-	.preview :global(ul.todo) {
-		list-style: none;
-		padding-left: 0.2em;
-	}
-	.preview :global(ul.todo input) {
-		margin-right: 0.5em;
-	}
-	.preview :global(img) {
-		max-width: 100%;
-	}
-	/* The content starts at its top edge, whatever its first block is (pages often align it with a sidebar). */
-	.preview:not(.nested) > :global(:first-child),
-	.preview:not(.nested) > :global(:first-child > :first-child) {
-		margin-top: 0;
-	}
-	/* Floating images and side boxes stay inside the content. */
-	.preview:not(.nested)::after {
-		content: '';
-		display: block;
-		clear: both;
+<style lang="scss">
+	// Only what the renderer itself adds; the article typography comes from the page that shows it.
+	.preview {
+		:global(ul.todo) {
+			list-style: none;
+			padding-left: 0.2em;
+		}
+		:global(ul.todo input) {
+			margin-right: 0.5em;
+		}
+		:global(img) {
+			max-width: 100%;
+		}
+
+		&:not(.nested) {
+			// The content starts at its top edge, whatever its first block is (pages often align it with a sidebar).
+			> :global(:first-child),
+			> :global(:first-child > :first-child) {
+				margin-top: 0;
+			}
+			// Floating images and side boxes stay inside the content.
+			&::after {
+				content: '';
+				display: block;
+				clear: both;
+			}
+		}
 	}
 </style>

@@ -104,6 +104,7 @@ Az alkalmazás a csomag lefordított `dist/` mappáját olvassa, ezért minden v
 
 | Tünet | Ok | Megoldás |
 |---|---|---|
+| A szerkesztő sorai, menüi vagy táblázata stílus nélküliek vagy összezsugorodnak | Az `@atom-forge/brickee` `dist` mappája nem Tailwind `@source` | Vedd fel az `@source "../node_modules/@atom-forge/brickee/dist";` sort az `@atom-forge/ui`-é mellé. |
 | A blokkmezők és a popupok stílus nélkülinek tűnnek | Hiányzik az `@atom-forge/ui` téma CSS-e vagy a Tailwind `@source`-a | Állítsd be az `@atom-forge/ui`-t a dokumentációja szerint, és az alkalmazást a `Root`-ja alatt rendereld. |
 | A blokkfogantyúk balra kilógnak | A fogantyúk a szerkesztő dobozától balra jelennek meg | Adj a szerkesztőt körülvevő elemnek kb. 22 px bal oldali paddinget. |
 | A popupok nem nyílnak meg, vagy „context not found” hibák linkelt csomaggal | A `svelte` vagy az `@atom-forge/ui` két példányban van jelen | Vedd fel őket a Vite `resolve.dedupe` listájába. |

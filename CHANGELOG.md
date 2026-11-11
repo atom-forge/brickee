@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** the editor is styled with Tailwind classes (with the `@atom-forge/ui` theme's colours) and SCSS instead of scoped CSS, so a host must add the package's `dist` folder as a Tailwind `@source`, like the `@atom-forge/ui` one; otherwise the editor loses its look. The preview is unaffected (its styles still travel with its markup). The slash and turn-into menus and the formatting bar are their own components, and the undo history its own class. See the upgrading chapter.
 - The editor's internal context keys are `brickee:*` (were `block-editor:*`); an "Unknown block" note is translatable (`Unknown block: {type}`, also in the Hungarian locale).
 - `fromMarkdown` reads much more of CommonMark and GFM: fences of any length and `~~~` (closed only by a fence at least as long), indented code, setext headings and closing `#`s, nested quotes, list nesting by the items' markers (also under `1. ` and with four-space indents), reference links, footnotes (as superscripts), and the lines of a paragraph, list item or quote as one block with line breaks instead of one block per line.
 - `inline` reads `_italic_`, `__bold__` and `***both***` (now valid HTML), code spans of any backtick length, link targets with balanced parentheses and titles, `<https://…>` autolinks, images (as links), every ASCII punctuation escape, and inline HTML (marks kept, other tags dropped). A stored text with a word wrapped in single underscores (`_word_`) now shows it in italics.

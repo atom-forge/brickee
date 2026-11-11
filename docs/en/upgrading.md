@@ -8,6 +8,12 @@ Changes that need no action from you — new exports, fixes, documentation updat
 
 ## From 0.0.2 to Unreleased
 
+### The editor needs its `dist` folder as a Tailwind `@source`
+
+The editor's own styles moved from scoped CSS to Tailwind classes (with the `@atom-forge/ui` theme's colours) and SCSS. Tailwind 4 does not look into `node_modules`, so without a `@source` for the package the editor's rows, menus, fields bar and table lose their look. The preview is unaffected: its styles still travel with its markup.
+
+**What to do:** in the CSS file where you set up `@atom-forge/ui`, add `@source "../node_modules/@atom-forge/brickee/dist";` (with the path from that file) beside the `@atom-forge/ui` one. Nothing changes for pages that only show the `Preview`.
+
 ### Gate blocks are gone
 
 Gating content (a supporters-only or paywall divider) is an application's concept, not the editor's. `BlockPlugin.gate`, the `Preview`'s `markGated` prop, its "For supporters only" section with the `.supporters` and `.supporters-label` classes, and the `For supporters only` text of the Hungarian locale are removed. The `Preview` now renders every block it gets. `unique` stays.

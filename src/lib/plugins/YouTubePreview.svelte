@@ -31,7 +31,7 @@
 	</figure>
 {/if}
 
-<style>
+<style lang="scss">
 	.yt {
 		margin: 0 0 1em;
 	}
@@ -43,17 +43,19 @@
 		border: 0;
 		border-radius: 8px;
 	}
+	// The poster: the player loads only on a click.
 	button {
 		position: relative;
 		padding: 0;
 		overflow: hidden;
 		background: #000;
 		cursor: pointer;
-	}
-	img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
 	}
 	.play {
 		position: absolute;

@@ -33,6 +33,14 @@ bun add @atom-forge/brickee @atom-forge/ui @lucide/svelte
 A blokkmezők és a felugró ablakok `@atom-forge/ui` komponensek, ezért az alkalmazást úgy kell beállítani, ahogy az `@atom-forge/ui` megköveteli:
 
 - Tailwind CSS 4, importált `@atom-forge/ui` téma-CSS-sel, a `dist` mappáját pedig add hozzá Tailwind `@source`-ként;
+- az `@atom-forge/brickee` `dist` mappája is legyen Tailwind `@source`: a szerkesztő Tailwind-osztályokkal és az `@atom-forge/ui` téma színeivel van stílusozva, ezért a Tailwindnek látnia kell őket:
+
+  ```css
+  @source "../node_modules/@atom-forge/ui/dist";
+  @source "../node_modules/@atom-forge/brickee/dist";
+  ```
+
+  Az előnézetnek egyik sem kell: a kevés stílusa a jelölésével együtt utazik, így Tailwind nélküli nyilvános oldal is mutathat dokumentumokat;
 - az alkalmazás az `@atom-forge/ui` `Root` komponense alatt renderelődjön, amely a témát és az overlay-kontextusokat biztosítja.
 
 A legfelső szintű `Editor` saját felugróablak-kezelőt hoz létre, és saját felugróablak-tárolót renderel; a pluginblokkokba ágyazott szerkesztők ezt használják közösen.

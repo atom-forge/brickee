@@ -104,6 +104,7 @@ The application reads the package's built `dist/`, so rebuild the package after 
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| The editor's rows, menus or table look unstyled or shrunk | The `@atom-forge/brickee` `dist` folder is not a Tailwind `@source` | Add `@source "../node_modules/@atom-forge/brickee/dist";` beside the `@atom-forge/ui` one. |
 | Block fields and popups look unstyled | The `@atom-forge/ui` theme CSS or its Tailwind `@source` is missing | Set up `@atom-forge/ui` as its documentation describes and render the app beneath its `Root`. |
 | Block handles stick out on the left | The handles are drawn left of the editor's box | Give the element around the editor about 22 px of left padding. |
 | Popups do not open, or "context not found" errors with a linked package | Two copies of `svelte` or `@atom-forge/ui` | Add them to Vite's `resolve.dedupe`. |
