@@ -110,7 +110,10 @@
 		const d = doc;
 		if (d === readBack) return;
 		readBack = d;
-		if (JSON.stringify(d) !== JSON.stringify(written ?? untrack(() => value.map(storedOf)))) value = load(d);
+		if (JSON.stringify(d) === JSON.stringify(written ?? untrack(() => value.map(storedOf)))) return;
+		value = load(d);
+		// Another document (or this one reverted by the editor around a nested one): the old steps no longer apply.
+		untrack(() => forget());
 	});
 
 	/* ------------------------------------------------------------------ state */
@@ -205,6 +208,15 @@
 		if (past.length > 300) past.shift();
 		future = [];
 		fn();
+		last = take();
+	}
+
+	/** Drops the undo and redo steps (a document loaded from outside). */
+	function forget() {
+		clearTimeout(timer);
+		pending = false;
+		past = [];
+		future = [];
 		last = take();
 	}
 
@@ -793,6 +805,16 @@
 	}
 
 	function onRootKey(e: KeyboardEvent) {
+		// Undo and redo pressed inside a plugin's own field (a table cell): this editor's history, not the field's
+		// native one (which the next re-render would lose anyway). A nested editor handles its own and prevents this.
+		const mod0 = e.metaKey || e.ctrlKey;
+		const k0 = e.key.toLowerCase();
+		if (mod0 && (k0 === 'z' || k0 === 'y') && !e.defaultPrevented && e.target !== root && !(e.target as Element).closest?.('.ce')) {
+			e.preventDefault();
+			if (k0 === 'y' || e.shiftKey) redo();
+			else undo();
+			return;
+		}
 		if (e.target !== root || !selSet.size || !selH) return;
 		if (onTurnKey(e)) return;
 		const mod = e.metaKey || e.ctrlKey;
@@ -890,6 +912,17 @@
 		const v = b.props?.[f.key];
 		return f.format ? f.format(v) : v == null ? '' : String(v);
 	};
+
+	/**
+	 * A change from a plugin's view (a table cell, a nested editor): an undo step like typing, but only when the value
+	 * really differs (a nested editor writes its document back when it mounts).
+	 */
+	function pluginChange(b: Block, key: 'props' | 'blocks', v: Block['props'] | StoredBlock[]) {
+		if (JSON.stringify(v) === JSON.stringify(b[key])) return;
+		typed();
+		if (key === 'props') b.props = v as Block['props'];
+		else b.blocks = v as StoredBlock[];
+	}
 
 	/** Sets one property to a value as it is ('' or undefined removes it). */
 	function setValue(b: Block, key: string, v: unknown) {
@@ -1298,8 +1331,8 @@
 							{/snippet}
 							<PluginHost
 								{plugin}
-								bind:props={() => b.props ?? {}, (p) => (b.props = p)}
-								bind:blocks={() => b.blocks ?? [], (v) => (b.blocks = v)}
+								bind:props={() => b.props ?? {}, (p) => pluginChange(b, 'props', p)}
+								bind:blocks={() => b.blocks ?? [], (v) => pluginChange(b, 'blocks', v)}
 								{readonly}
 								{palette}
 								{plugins}
