@@ -284,6 +284,21 @@ A `markdown(props, { inner })` markdownként adja vissza a blokkot; ezt használ
 | `mdJoin(...parts)` | Különálló blokkokként fűzi össze a részeket (köztük üres sorral), kihagyva az üreseket és a hamis értékűeket. |
 | `mdQuote(md)` | Minden sor elé `> `-t tesz, idézetblokként renderelt dobozhoz. |
 
+## Beillesztett táblázatok fogadása
+
+Ha GFM-táblázatot tartalmazó markdownt illesztenek be a szerkesztőbe, vagy a `fromMarkdown(text, { plugins })` olvassa be, a táblázatot az első olyan plugin kapja, amelynek van `fromTable` függvénye. Megkapja a táblázatot, és visszaadja az új blokk propjait:
+
+```ts
+interface MarkdownTable {
+	rows: string[][]; // a cellák inline markdownként, soronként; az első sor a fejléc
+	align: ('left' | 'center' | 'right')[]; // oszloponként, az elválasztó sorból (:--, :-:, --:)
+}
+
+fromTable?(table: MarkdownTable): P;
+```
+
+A beépített `table` pluginnak van ilyen (`fromTable: ({ rows, align }) => ({ rows, heads: ['top'], align })`), így egy olyan szerkesztőbe beillesztett táblázat, amely felkínálja, táblázat blokk lesz. Ilyen plugin nélkül a táblázat szöveg marad.
+
 ## Képek
 
 A szerkesztő nem ismeri a kép fogalmát: nincs képmező, nincs képválasztó, nincs médialista. Hogy egy blokk a kép URL-jét vagy az alkalmazás saját médiatárában lévő kép azonosítóját tárolja, hogyan választja ki a felhasználó, és hogyan lesz a tárolt értékből cím, az az alkalmazás döntése, így a képblokk az alkalmazás egy közönséges pluginja.

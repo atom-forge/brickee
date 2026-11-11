@@ -234,7 +234,7 @@
 		blocks
 			.filter((b) => b.type !== 'hr' || allowed.has('hr'))
 			.map((b) => {
-				if (!allowed.has(b.type)) convert(b, 'p');
+				if (b.type !== 'plugin' && !allowed.has(b.type)) convert(b, 'p');
 				return b;
 			});
 
@@ -630,7 +630,8 @@
 			});
 			return;
 		}
-		const parsed = fit(fromMarkdown(norm));
+		// A pasted GFM table becomes a block of a plugin that takes tables (fromTable), if this editor offers one.
+		const parsed = fit(fromMarkdown(norm, { plugins: plugins.filter((p) => allowed.has(p.type)) }));
 		if (!parsed.length) return;
 		const parts = splitAtCaret(ce);
 		if (!parts) return;
@@ -641,7 +642,7 @@
 		let rest = parsed;
 		const first = parsed[0];
 		let curHtml = pre;
-		if (!pre && first.type !== 'hr') {
+		if (!pre && first.type !== 'hr' && first.type !== 'plugin') {
 			b.type = first.type;
 			b.indent = first.indent;
 			if (first.type === 'todo') b.checked = first.checked;
@@ -651,6 +652,8 @@
 			curHtml = pre + first.html;
 			rest = parsed.slice(1);
 		}
+		// Text after the caret goes into the last pasted block, or a new paragraph after a pasted plugin block.
+		if (post && rest.length && rest[rest.length - 1].type === 'plugin') rest = [...rest, newBlock('p', '')];
 		const target = rest.length ? rest[rest.length - 1] : b;
 		const off = textLen(target === b ? curHtml : target.html);
 		mutate(() => {

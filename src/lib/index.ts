@@ -14,4 +14,4 @@ export { provideCodeLanguages, useCodeLanguages, type CodeLanguage } from './cod
 export { scrollSync, scrollFraction, setScrollFraction, type ScrollSync } from './scroll';
 export { provideText, useText, translator, type Messages, type Translate } from './i18n';
 export { PALETTE_ITEMS, BUILT_IN_IDS, narrowPalette, type Icon, type PaletteItem } from './palette';
-export type { MarkdownContext, Block, BlockType, Content, PluginPreviewProps, PluginViewProps, PropField, Props, BlockPlugin } from './types';
+export type { MarkdownContext, MarkdownTable, Block, BlockType, Content, PluginPreviewProps, PluginViewProps, PropField, Props, BlockPlugin } from './types';

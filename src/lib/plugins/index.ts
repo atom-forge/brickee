@@ -9,7 +9,7 @@ import Gap, { GAP_LINES, type GapProps } from './Gap.svelte';
 import GapPreview from './GapPreview.svelte';
 import MapView, { type MapProps } from './Map.svelte';
 import MapPreview from './MapPreview.svelte';
-import TableView, { tableHeads, type TableProps } from './Table.svelte';
+import TableView, { square, tableHeads, type TableProps } from './Table.svelte';
 import TablePreview from './TablePreview.svelte';
 import YouTube, { type YouTubeProps } from './YouTube.svelte';
 import YouTubePreview from './YouTubePreview.svelte';
@@ -64,6 +64,8 @@ export const table: BlockPlugin<TableProps> = {
 	],
 	tag: (p) => `table · ${p.rows?.length ?? 0}×${p.rows?.[0]?.length ?? 0}`,
 	content: 'none',
+	// A pasted or imported GFM table: its first row is the header.
+	fromTable: ({ rows, align }) => ({ rows: square(rows), heads: ['top'], ...(align.some((a) => a !== 'left') ? { align } : {}) }),
 	markdown: (p) => {
 		const rows = p.rows ?? [];
 		if (!rows.length) return '';

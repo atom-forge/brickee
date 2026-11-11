@@ -84,7 +84,7 @@ import { fromMarkdown, toStored, type StoredBlock } from '@atom-forge/brickee';
 export const fromText = (text: string): StoredBlock[] => fromMarkdown(text).map(toStored);
 ```
 
-Remember that every non-empty line becomes its own block.
+A paragraph's lines stay one block, with line breaks between them; a blank line starts a new block.
 
 ## Developing against a local copy
 

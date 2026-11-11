@@ -44,7 +44,7 @@ function blocksToPlainText(blocks: StoredBlock[]): string;
 function inline(md: string): string;                 // inline markdown -> safe inline HTML
 function fromStored(s: StoredBlock): Block;
 function toStored(b: Block): StoredBlock;           // browser only
-function fromMarkdown(src: string): Block[];        // one block per non-empty line; built-in blocks only
+function fromMarkdown(src: string, opts?: { plugins?: BlockPlugin[] }): Block[]; // CommonMark/GFM blocks; a paragraph's lines stay one block; a GFM table goes to the first plugin with fromTable
 function toMarkdown(blocks: Block[], opts?: { plugins?: BlockPlugin[] }): string; // browser only
 
 // contexts (call provide* in component init, above the editor/preview; use* in plugin components)
@@ -95,12 +95,14 @@ interface BlockPlugin<P extends Props = Props> {
 	preview?: Component<PluginPreviewProps<any>>; // optional: without it <Preview> renders nothing for the block
 	accepts?: string[];          // container content as palette ids; 'md:*'
 	markdown?(props: P, ctx: MarkdownContext): string; // '' = left out
+	fromTable?(table: MarkdownTable): P; // takes a pasted/imported GFM table (bundled `table` does)
 	unique?: boolean;
 	gate?: boolean;
 }
 interface PluginViewProps<P> { props: P; blocks: StoredBlock[]; readonly: boolean; palette: string[]; plugins: BlockPlugin[] }
 interface PluginPreviewProps<P> { props: P; blocks: StoredBlock[]; plugins: BlockPlugin[] }
 interface MarkdownContext { inner: string }
+interface MarkdownTable { rows: string[][] /* inline markdown, first row = header */; align: ('left' | 'center' | 'right')[] }
 interface PropField {
 	key: string; label: string;
 	kind: 'text' | 'textarea' | 'color' | 'select' | 'slider' | 'toggles'; // toggles: icon buttons, stores the list of the ones on

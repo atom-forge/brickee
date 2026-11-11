@@ -48,13 +48,13 @@ A short document with a paragraph, a list, a video and a box (the `note` contain
 | `md:p` | inline markdown | — | the text |
 | `md:h1` … `md:h6` | inline markdown | — | `#` … `######` |
 | `md:ul` | inline markdown | — | `- item` |
-| `md:ol` | inline markdown | — | `1. item` (numbered per run and indent level) |
+| `md:ol` | inline markdown | `{ start?: number }` on a list's first item | `1. item` (numbered per run and indent level, from `start` when given) |
 | `md:todo` | inline markdown | `{ checked: boolean }` | `- [x] item` |
 | `md:quote` | inline markdown | — | `> quote` |
 | `md:code` | raw text | `{ lang?: string }` | fenced block with the language |
 | `md:hr` | — | — | `---` |
 
-`indent` nests list items (consecutive list blocks become properly nested `ul`/`ol` elements in the preview) and indents paragraphs and quotes. Headings, code and dividers ignore it.
+`indent` nests list items (consecutive list blocks become properly nested `ul`/`ol` elements in the preview), puts paragraphs and code blocks under a list item, and nests quotes (`> > …`). Headings and dividers ignore it.
 
 ### Inline markdown
 
@@ -62,15 +62,15 @@ The text of a built-in block is a small, safe subset of markdown:
 
 | Mark | Stored as |
 |---|---|
-| bold | `**text**` |
-| italic | `*text*` |
+| bold | `**text**` (read also: `__text__`) |
+| italic | `*text*` (read also: `_text_`, not inside a word) |
 | underline, subscript, superscript | `<u>text</u>`, `<sub>text</sub>`, `<sup>text</sup>` |
 | strikethrough | `~~text~~` |
-| code | `` `text` `` |
-| link | `[text](url)` — only `http:`, `https:`, `mailto:`, `tel:` and site-relative `/…` targets become links |
-| line break | a newline |
+| code | `` `text` `` (a longer backtick run when the code holds backticks: ``` `` a`b `` ```) |
+| link | `[text](url)` — only `http:`, `https:`, `mailto:`, `tel:` and site-relative `/…` targets become links; parentheses in a target must be balanced. Read also: a title (dropped), `<https://…>` autolinks, and an image `![alt](url)` as a link |
+| line break | a newline (in markdown out: a backslash at the line's end) |
 
-Special characters in plain text are backslash-escaped, so they never turn into markup. `inline(md)` turns inline markdown into HTML: it escapes the text first and only then adds the tags above, so its output is safe to render with `{@html}` — this is what the preview does.
+Special characters in plain text are backslash-escaped, so they never turn into markup; any ASCII punctuation can be escaped. Reading stays linear on any input, with these limits: a marked span is at most 2000 characters, a link label has no brackets of its own and is at most 1000 characters, a link target at most 2000. When reading, inline HTML maps onto the marks (`<strong>`, `<em>`, `<del>`, `<br>`…), other tags are dropped with their text kept, and a footnote reference `[^1]` becomes a superscript. `inline(md)` turns inline markdown into HTML: it escapes the text first and only then adds the tags above, so its output is safe to render with `{@html}` — this is what the preview does.
 
 ## Markdown in and out
 
@@ -80,7 +80,7 @@ Markdown is a first-class format: the clipboard carries it, and a host can impor
 |---|---|---|
 | `fromStored(block)` | `StoredBlock` → `Block` | anywhere |
 | `toStored(block)` | `Block` → `StoredBlock` | browser only |
-| `fromMarkdown(text)` | markdown → `Block[]` | anywhere |
+| `fromMarkdown(text, { plugins })` | markdown → `Block[]` | anywhere |
 | `toMarkdown(blocks, { plugins })` | `Block[]` → markdown | browser only |
 | `inline(md)` | inline markdown → inline HTML | anywhere |
 
@@ -102,14 +102,17 @@ export const importMarkdown = (text: string): StoredBlock[] => fromMarkdown(text
 
 What `fromMarkdown` reads:
 
-- headings, bulleted, numbered and to-do items, quotes, fenced code blocks with their language, dividers, and the inline marks above;
-- leading spaces as indentation (two spaces or one tab per level);
-- every non-empty line as its own block — it does not join wrapped lines into one paragraph, and it creates built-in blocks only (no tables, images or plugin blocks).
+- headings (also setext: a line underlined with `===` or `---`, and with closing `#`s), bulleted, numbered (with their start number) and to-do items, quotes (nested ones one level deeper), fenced code (backticks or tildes, any length, closed by a fence at least as long) and indented code, dividers, and the inline marks above;
+- list nesting by the items' markers: a line indented past an item's marker is inside the item (so `1. ` items nest with two, three or four spaces);
+- the lines of a paragraph, a list item or a quote as one block, with line breaks between them; a blank line, or `>` alone in a quote, starts a new one;
+- reference links (`[text][id]` with `[id]: url`) resolved, footnote definitions as a paragraph after their number;
+- a GFM table as a block of the first of `plugins` that takes tables (`fromTable`, see [[writing-plugins#Taking pasted tables|Writing plugins]]; the bundled `table` does), otherwise as text. The editor passes the plugins it offers, so a pasted table becomes a table block.
 
 What `toMarkdown` writes:
 
-- consecutive list items on consecutive lines, every other block separated by a blank line;
-- list items and paragraphs indented by two spaces per level;
+- consecutive list items on consecutive lines, consecutive quotes as one quote (`>` between their paragraphs), every other block separated by a blank line;
+- nested items, and paragraphs and code under an item, indented to the item's content (two spaces under `- `, three under `1. `, four under `10. `);
+- code in a fence longer than any backtick run in it, and plain text escaped where markdown would read it as markup (`\_`, `1\.` at a line's start…);
 - a plugin block through its plugin's `markdown(props, { inner })`, where `inner` is its nested blocks already converted; a plugin without a markdown form, or one returning `''`, is left out.
 
 Writing a markdown form for your own plugin is covered in [[writing-plugins#Markdown form|Writing plugins]].

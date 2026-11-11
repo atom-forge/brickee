@@ -82,7 +82,7 @@ import { fromMarkdown, toStored, type StoredBlock } from '@atom-forge/brickee';
 export const fromText = (text: string): StoredBlock[] => fromMarkdown(text).map(toStored);
 ```
 
-Ne feledd, hogy minden nem üres sorból külön blokk lesz.
+Egy bekezdés sorai egy blokk maradnak, köztük sortöréssel; üres sor új blokkot kezd.
 
 ## Fejlesztés helyi másolattal
 

@@ -2,7 +2,7 @@
 <svelte:options css="injected" />
 
 <script lang="ts" module>
-	import type { StoredBlock } from './types';
+	import { olStart, type StoredBlock } from './types';
 
 	const LIST = new Set(['md:ul', 'md:ol', 'md:todo']);
 
@@ -81,7 +81,8 @@
 
 {#snippet list(node: ListNode)}
 	{#if node.type === 'md:ol'}
-		<ol>{@render items(node)}</ol>
+		{@const start = olStart(node.items[0]?.block.props)}
+		<ol start={start === 1 ? undefined : start}>{@render items(node)}</ol>
 	{:else}
 		<ul class:todo={node.type === 'md:todo'}>{@render items(node)}</ul>
 	{/if}

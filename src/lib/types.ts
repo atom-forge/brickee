@@ -101,6 +101,13 @@ export interface PluginPreviewProps<P extends Props = Props> {
 }
 
 /** A custom block for the slash menu. */
+/** A GFM table read from markdown: the cells as inline markdown, row by row (the first row is the header), and the
+ * alignment of each column. */
+export interface MarkdownTable {
+	rows: string[][];
+	align: ('left' | 'center' | 'right')[];
+}
+
 /** What a plugin's `markdown` gets beside its props. */
 export interface MarkdownContext {
 	/** The nested blocks as markdown ('' when it has none). */
@@ -139,6 +146,12 @@ export interface BlockPlugin<P extends Props = Props> {
 	 * when it gives '', the block is left out of the markdown.
 	 */
 	markdown?(props: P, ctx: MarkdownContext): string;
+	/**
+	 * Takes a GFM table when markdown is pasted or imported (`fromMarkdown(src, { plugins })`): returns the block's props
+	 * from the table's cells (inline markdown, the first row is the header) and its column alignments. The first plugin
+	 * that has it gets the table; without one, the table stays text.
+	 */
+	fromTable?(table: MarkdownTable): P;
 	/** At most one per document, and only at the top level (e.g. the supporters-only divider). */
 	unique?: boolean;
 	/** The blocks after it are gated (e.g. for supporters only): the preview marks them. Implies nothing about `unique`. */
@@ -157,14 +170,22 @@ export const newBlock = (type: BlockType = 'p', html = '', extra: Partial<Block>
 	...extra
 });
 
+/** The start number a numbered list's first item carries (`props.start`), or 1. */
+export const olStart = (props: Record<string, unknown> | undefined) => {
+	const n = Math.floor(Number(props?.start));
+	return n >= 0 && n < 1e9 ? n : 1;
+};
+
 /** Ordinal for every `ol` block, restarting after interruptions and per indent level. */
 export function numbering(blocks: Block[]): Record<string, number> {
 	const out: Record<string, number> = {};
 	const counters: number[] = [];
 	for (const b of blocks) {
 		if (b.type === 'ol') {
+			const fresh = counters[b.indent] === undefined;
 			counters.length = b.indent + 1;
-			counters[b.indent] = (counters[b.indent] ?? 0) + 1;
+			// A list's first item may carry its start number (an imported "5. …").
+			counters[b.indent] = fresh ? olStart(b.props) : counters[b.indent] + 1;
 			out[b.id] = counters[b.indent];
 		} else {
 			counters.length = Math.min(counters.length, b.indent);

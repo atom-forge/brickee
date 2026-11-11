@@ -22,7 +22,7 @@ Development rules of this package. Unlike `AGENTS/changelog.md` and `AGENTS/docu
 - Entry points (`package.json` `exports`): `.` → `index.ts`, `./plugins`, `./schema` (zod, optional peer), `./model`, `./locales/*`. Update `index.ts` or `plugins/index.ts` with every public API change.
 - UI text is English in the source; translations are `locales/<lang>.ts` (English text → translation), including plugin labels, hints, keys, field labels and tags.
 - `dist/` and `.svelte-kit/` are generated. Peer dependencies: `svelte` 5, `@atom-forge/ui`, `@lucide/svelte`, optionally `zod`.
-- Use `bun`. There is no test suite yet.
+- Use `bun`. Tests: `bun run test` (vitest; `src/lib/*.test.ts`, DOM through happy-dom), also run by the release checks and CI.
 - Typecheck: `bun run check` · Package: `bun run prepack` (SvelteKit sync, `svelte-package`, `publint`)
 - Release: `bun run pub <patch|minor|major>` · Verify: `bun run pub-check`
 - Local use in an app: `bun link` here, `"@atom-forge/brickee": "link:@atom-forge/brickee"` there, and `bun run prepack` after each change (the app reads `dist/`). The linked folder carries its own `node_modules`: the app must dedupe `svelte`, `@atom-forge/ui`, `@lucide/svelte` and `zod` in Vite (`resolve.dedupe`) and point the `svelte` types to its own copy.

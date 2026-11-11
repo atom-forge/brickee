@@ -46,13 +46,13 @@ Egy rövid dokumentum egy bekezdéssel, egy listával, egy videóval és egy dob
 | `md:p` | inline markdown | — | maga a szöveg |
 | `md:h1` … `md:h6` | inline markdown | — | `#` … `######` |
 | `md:ul` | inline markdown | — | `- item` |
-| `md:ol` | inline markdown | — | `1. item` (sorozatonként és behúzási szintenként számozva) |
+| `md:ol` | inline markdown | `{ start?: number }` a lista első elemén | `1. item` (sorozatonként és behúzási szintenként számozva, megadott `start`-tól) |
 | `md:todo` | inline markdown | `{ checked: boolean }` | `- [x] item` |
 | `md:quote` | inline markdown | — | `> quote` |
 | `md:code` | nyers szöveg | `{ lang?: string }` | kerített blokk a nyelvvel |
 | `md:hr` | — | — | `---` |
 
-Az `indent` egymásba ágyazza a listaelemeket (az egymást követő lista-blokkokból az előnézetben helyesen egymásba ágyazott `ul`/`ol` elemek lesznek), a bekezdéseket és az idézeteket pedig behúzza. A címsorok, a kódblokkok és az elválasztók figyelmen kívül hagyják.
+Az `indent` egymásba ágyazza a listaelemeket (az egymást követő lista-blokkokból az előnézetben helyesen egymásba ágyazott `ul`/`ol` elemek lesznek), a bekezdéseket és a kódblokkokat egy listaelem alá teszi, az idézeteket pedig egymásba ágyazza (`> > …`). A címsorok és az elválasztók figyelmen kívül hagyják.
 
 ### Inline markdown
 
@@ -60,15 +60,15 @@ A beépített blokkok szövege a markdown egy kicsi, biztonságos részhalmaza:
 
 | Jelölés | Tárolt alak |
 |---|---|
-| félkövér | `**text**` |
-| dőlt | `*text*` |
+| félkövér | `**text**` (beolvasva a `__text__` is) |
+| dőlt | `*text*` (beolvasva a `_text_` is, szón belül nem) |
 | aláhúzott, alsó index, felső index | `<u>text</u>`, `<sub>text</sub>`, `<sup>text</sup>` |
 | áthúzott | `~~text~~` |
-| kód | `` `text` `` |
-| hivatkozás | `[text](url)` – csak a `http:`, `https:`, `mailto:`, `tel:` és a webhelyen belüli `/…` célok lesznek hivatkozások |
-| sortörés | egy újsor karakter |
+| kód | `` `text` `` (hosszabb backtick-sorozattal, ha a kód backticket tartalmaz: ``` `` a`b `` ```) |
+| hivatkozás | `[text](url)` – csak a `http:`, `https:`, `mailto:`, `tel:` és a webhelyen belüli `/…` célok lesznek hivatkozások; a célban a zárójeleknek párosnak kell lenniük. Beolvasva a cím (elhagyva), a `<https://…>` autolink és a kép (`![alt](url)`) hivatkozásként is |
+| sortörés | egy újsor karakter (markdown-kimenetben: visszaperjel a sor végén) |
 
-Az egyszerű szövegben a speciális karakterek visszaperjeles escape-elést kapnak, így soha nem válnak jelöléssé. Az `inline(md)` az inline markdownt HTML-lé alakítja: előbb escape-eli a szöveget, és csak utána teszi hozzá a fenti tageket, így a kimenete biztonságosan megjeleníthető `{@html}`-lel – az előnézet is így tesz.
+Az egyszerű szövegben a speciális karakterek visszaperjeles escape-elést kapnak, így soha nem válnak jelöléssé; bármely ASCII írásjel escape-elhető. A beolvasás bármilyen bemeneten lineáris időben fut, ezekkel a korlátokkal: egy jelölt szakasz legfeljebb 2000 karakter, egy link címkéjében nem lehet saját szögletes zárójel, és legfeljebb 1000 karakter, egy link célja legfeljebb 2000. Beolvasáskor az inline HTML a jelölésekre képeződik le (`<strong>`, `<em>`, `<del>`, `<br>`…), a többi tag elmarad (a szövege megmarad), a `[^1]` lábjegyzet-hivatkozásból pedig felső index lesz. Az `inline(md)` az inline markdownt HTML-lé alakítja: előbb escape-eli a szöveget, és csak utána teszi hozzá a fenti tageket, így a kimenete biztonságosan megjeleníthető `{@html}`-lel – az előnézet is így tesz.
 
 ## Markdown be és ki
 
@@ -78,7 +78,7 @@ A markdown teljes értékű formátum: a vágólap ezt hordozza, és a befogadó
 |---|---|---|
 | `fromStored(block)` | `StoredBlock` → `Block` | bárhol |
 | `toStored(block)` | `Block` → `StoredBlock` | csak böngészőben |
-| `fromMarkdown(text)` | markdown → `Block[]` | bárhol |
+| `fromMarkdown(text, { plugins })` | markdown → `Block[]` | bárhol |
 | `toMarkdown(blocks, { plugins })` | `Block[]` → markdown | csak böngészőben |
 | `inline(md)` | inline markdown → inline HTML | bárhol |
 
@@ -101,14 +101,17 @@ export const importMarkdown = (text: string): StoredBlock[] => fromMarkdown(text
 
 Amit a `fromMarkdown` beolvas:
 
-- címsorok, felsorolás-, számozott és teendő-elemek, idézetek, kerített kódblokkok a nyelvükkel, elválasztók és a fenti inline jelölések;
-- a sor eleji szóközök behúzásként (szintenként két szóköz vagy egy tabulátor);
-- minden nem üres sor külön blokként – a tördelt sorokat nem vonja össze egy bekezdéssé, és csak beépített blokkokat hoz létre (táblázatot, képet vagy plugin-blokkot nem).
+- címsorok (setext alakban is: `===`-vel vagy `---`-val aláhúzott sor, és záró `#`-ekkel), felsorolás-, számozott (a kezdőszámukkal) és teendő-elemek, idézetek (a beágyazottak egy szinttel mélyebben), kerített kód (backtick vagy tilde, tetszőleges hosszal, legalább ugyanilyen hosszú kerítés zárja) és behúzott kód, elválasztók és a fenti inline jelölések;
+- a listák egymásba ágyazását az elemek jelölői szerint: az a sor, amely beljebb kezdődik egy elem jelölőjénél, az elemen belül van (így a `1. ` elemek alá két, három vagy négy szóközzel is lehet ágyazni);
+- egy bekezdés, listaelem vagy idézet sorait egy blokként, köztük sortöréssel; üres sor, idézetben a magában álló `>` új blokkot kezd;
+- a hivatkozásos linkeket (`[text][id]` és `[id]: url`) feloldva, a lábjegyzet-definíciókat a számuk utáni bekezdésként;
+- a GFM-táblázatot a `plugins` közül az első olyan plugin blokkjaként, amelyik fogad táblázatot (`fromTable`, lásd [Pluginok írása](writing-plugins.md#beillesztett-táblázatok-fogadása); a beépített `table` ilyen), különben szövegként. A szerkesztő átadja a felkínált pluginjait, így egy beillesztett táblázatból táblázat blokk lesz.
 
 Amit a `toMarkdown` kiír:
 
-- az egymást követő listaelemeket egymást követő sorokba, minden más blokkot üres sorral elválasztva;
-- a listaelemeket és a bekezdéseket szintenként két szóközzel behúzva;
+- az egymást követő listaelemeket egymást követő sorokba, az egymást követő idézeteket egyetlen idézetként (bekezdéseik között `>`), minden más blokkot üres sorral elválasztva;
+- a beágyazott elemeket, valamint egy elem alatti bekezdéseket és kódot az elem tartalmáig behúzva (`- ` alatt két, `1. ` alatt három, `10. ` alatt négy szóközzel);
+- a kódot minden benne lévő backtick-sorozatnál hosszabb kerítésben, az egyszerű szöveget pedig ott escape-elve, ahol a markdown jelölésnek olvasná (`\_`, sor elején `1\.`…);
 - a plugin-blokkot a pluginja `markdown(props, { inner })` függvényével, ahol az `inner` a már átalakított beágyazott blokkjai; a markdown alak nélküli plugin, illetve az, amelyik `''`-t ad vissza, kimarad.
 
 Saját pluginod markdown alakjának megírásáról a [Pluginok írása](writing-plugins.md#markdown-alak) fejezet szól.

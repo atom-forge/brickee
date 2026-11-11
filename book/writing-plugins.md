@@ -285,6 +285,21 @@ Return `''` to leave the block out. Plugins whose output has no meaning as text 
 | `mdJoin(...parts)` | Joins parts as separate blocks (blank line between), leaving out empty and falsy ones. |
 | `mdQuote(md)` | Prefixes every line with `> `, for a box rendered as a blockquote. |
 
+## Taking pasted tables
+
+When markdown with a GFM table is pasted into the editor, or imported with `fromMarkdown(text, { plugins })`, the table goes to the first plugin that has `fromTable`. It gets the table and returns the new block's props:
+
+```ts
+interface MarkdownTable {
+	rows: string[][]; // the cells as inline markdown, row by row; the first row is the header
+	align: ('left' | 'center' | 'right')[]; // per column, from the delimiter row (:--, :-:, --:)
+}
+
+fromTable?(table: MarkdownTable): P;
+```
+
+The bundled `table` has it (`fromTable: ({ rows, align }) => ({ rows, heads: ['top'], align })`), so a table pasted into an editor that offers it becomes a table block. Without such a plugin the table stays text.
+
 ## Images
 
 The editor has no notion of images: no image field, no picker, no list of media. Whether a block stores an image's URL or the id of an image in the app's own media library, how the user picks it, and how the stored value becomes an address are the application's decisions, so an image block is an ordinary plugin of the app.

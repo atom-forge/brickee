@@ -18,6 +18,7 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"prepack": "(svelte-kit sync || true) && svelte-package && publint",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"test": "vitest run",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"package": "svelte-package",
 		"prepublishOnly": "bun run prepack",
@@ -28,6 +29,7 @@
 	"ship": {
 		"verify": [
 			"bun run check",
+			"bun run test",
 			"bun run prepack",
 			"npm pack --dry-run --ignore-scripts"
 		]
@@ -94,12 +96,14 @@
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/typography": "^0.5.20",
 		"@tailwindcss/vite": "^4.3.5",
+		"happy-dom": "^21.0.4",
 		"publint": "^0.3.15",
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.4.2",
 		"tailwindcss": "^4.3.5",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
+		"vitest": "^5.1.0",
 		"zod": "^4.6.7"
 	},
 	"keywords": [
