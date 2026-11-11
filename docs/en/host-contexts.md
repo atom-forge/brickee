@@ -2,101 +2,16 @@
 
 [← Previous](writing-plugins.md) · [Contents](index.md) · [Next →](server-side.md)
 
-The editor has no props for application concepts. What a host knows — the page width it is showing, the code languages it highlights, its language — reaches the plugins through three Svelte contexts. Each has a `provide…` function, called in a component's initialization above the editor or preview, and a `use…` function for plugin components.
+The editor has no props for application concepts. Two things the editor itself uses come from the host through Svelte contexts: the code languages it highlights and its language. Each has a `provide…` function, called in a component's initialization above the editor or preview, and a `use…` function for plugin components.
 
 | Context | Provide | Read | Carries |
 |---|---|---|---|
-| View | `provideView(() => key)` | `useView()` | The view per-view fields edit. |
 | Code languages | `provideCodeLanguages(() => list)` | `useCodeLanguages()` | The languages a code block offers. |
 | Text | `messages` prop, or `provideText(() => messages)` | `useText()` | UI text in the host's language. |
 
-Nested editors and previews inherit all three from their parent.
+Nested editors and previews inherit both from their parent.
 
-Images are not a context: what an image block stores and where its pictures come from is decided by the app's own plugin (see [Images](writing-plugins.md#images)).
-
-## Per-view values
-
-Some settings depend on how the page is shown: an image may need a different aspect ratio on a phone than on a wide screen. A `slider` field with `views` stores a value per view. Here it is the height of the `photo` plugin from [Writing plugins](writing-plugins.md#images) and the bundled `gap`:
-
-```ts
-import type { BlockPlugin } from '@atom-forge/brickee';
-import { gap } from '@atom-forge/brickee/plugins';
-import { photo } from './photo';
-
-export const VIEWS = [
-	{ key: 'desktop', label: 'Desktop' },
-	{ key: 'tablet', label: 'Tablet' },
-	{ key: 'phone', label: 'Phone' }
-];
-
-/** The same plugin, with one of its fields set per view. */
-const perView = (plugin: BlockPlugin, key: string): BlockPlugin => ({
-	...plugin,
-	fields: plugin.fields?.map((f) => (f.key === key ? { ...f, views: VIEWS } : f))
-});
-
-export const plugins = [perView(photo, 'ratio'), perView(gap, 'lines')];
-```
-
-Which views exist and which one is shown is the host's business. The host tells the editor the current view with `provideView`, typically from a width switch beside the editor:
-
-```svelte
-<script lang="ts">
-	import { Editor, provideView, type StoredBlock } from '@atom-forge/brickee';
-	import { plugins } from './blocks';
-
-	let { value = $bindable(), view }: { value: StoredBlock[]; view: string } = $props();
-	provideView(() => view);
-</script>
-
-<Editor bind:value {plugins} />
-```
-
-How the values behave:
-
-- The first view is the **base**. Each other view, while it has no value of its own, takes the value of the view before it; the field then shows the value marked as inherited.
-- The field edits the value of the current view and shows that view's label beside its own. Without `provideView`, or with a key that is not in `views`, it edits the base value.
-- Stored: only a base value → stored alone, as a plain value (`"ratio": "56"`); own values for other views → an object keyed by view (`"ratio": { "desktop": "56", "phone": "100" }`). Documents written before a field became per-view stay valid.
-
-A preview reads them with `viewValues(value, keys)` — the value for each view, inheritance applied — or just the base with `baseValue(value)`. This version of the photo preview gives the browser one aspect ratio per width through CSS variables:
-
-```svelte
-<script lang="ts">
-	import { viewValues, type PluginPreviewProps } from '@atom-forge/brickee';
-	import { aspect, imageSrc, type PhotoProps } from './PhotoView.svelte';
-
-	let { props }: PluginPreviewProps<PhotoProps> = $props();
-	const src = $derived(imageSrc(props.url));
-	// desktop, tablet, phone: a CSS aspect-ratio each ('auto': the image's own shape)
-	const r = $derived(viewValues(props.ratio, ['desktop', 'tablet', 'phone']).map((v) => aspect(v) ?? 'auto'));
-</script>
-
-{#if src}
-	<img {src} alt={props.alt ?? ''} style:--r-desktop={r[0]} style:--r-tablet={r[1]} style:--r-phone={r[2]} />
-{/if}
-
-<style>
-	img {
-		width: 100%;
-		object-fit: cover;
-		aspect-ratio: var(--r-phone);
-	}
-	@media (min-width: 640px) {
-		img {
-			aspect-ratio: var(--r-tablet);
-		}
-	}
-	@media (min-width: 1024px) {
-		img {
-			aspect-ratio: var(--r-desktop);
-		}
-	}
-</style>
-```
-
-> **Sliders only**
->
-> `views` is supported on `slider` fields. Other field kinds ignore it.
+Everything else the app knows — the screen width it is showing, its media library, the current user — is not the editor's business. A plugin is the app's own code: it reads such things from the app's own modules, stores or contexts (provided above the editor and the preview), and shows its own controls in its view or in its own fields form (see [Custom fields form](writing-plugins.md#custom-fields-form)).
 
 ## Code languages
 
@@ -140,9 +55,7 @@ import { hu } from '@atom-forge/brickee/locales/hu';
 export const messages: Messages = {
 	...hu,
 	Button: 'Gomb',
-	'A link as a button': 'Egy link gombként',
-	Desktop: 'Asztali',
-	Phone: 'Telefon'
+	'A link as a button': 'Egy link gombként'
 };
 ```
 
@@ -150,7 +63,7 @@ What the editor translates by itself:
 
 - the built-in and plugin `label`, `hint` and `keys` (the slash menu searches the English and the translated words);
 - the parts of a plugin's `tag`, split at ` · `;
-- field labels, placeholders, option labels, `none` labels and view labels;
+- field labels, placeholders, option labels and `none` labels;
 - the text of `Empty`, and the editor's own interface.
 
 Text a plugin renders itself — in its view or preview — goes through `useText()`:

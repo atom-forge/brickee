@@ -3,7 +3,9 @@ import { mdText, type BlockPlugin } from '@atom-forge/brickee';
 import { addImage, findImage } from './images.svelte';
 
 // Images are this app's business, not Brickee's: the block stores an id from the app's library (it could just as well
-// store a URL), picks it in its own view (PhotoView) and resolves it with the app's own lookup.
+// store a URL), picks it in its own fields form (PhotoForm, from the album the app's context names) and resolves it
+// with the app's own lookup.
+import PhotoForm from './PhotoForm.svelte';
 import PhotoView, { type PhotoProps } from './PhotoView.svelte';
 import PhotoPreview from './PhotoPreview.svelte';
 
@@ -18,6 +20,7 @@ export const photo: BlockPlugin<PhotoProps> = {
 		{ key: 'alt', label: 'Alt text', kind: 'text', placeholder: 'What the image shows' },
 		{ key: 'ratio', label: 'Height', kind: 'slider', min: 20, max: 150, unit: '%', none: 'Original' }
 	],
+	form: PhotoForm,
 	tag: () => 'photo',
 	content: 'none',
 	markdown: (p) => {

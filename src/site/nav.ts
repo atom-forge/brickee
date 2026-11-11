@@ -1,6 +1,6 @@
 import {
-	Blocks, Braces, Code, Columns2, FileText, Image, Languages, MapPin, MonitorSmartphone, MousePointerClick, PenLine,
-	Replace, Sigma, SquarePlay, StickyNote, Table, UnfoldVertical
+	Blocks, Braces, Code, Columns2, FileText, Languages, MapPin, MonitorSmartphone, MousePointerClick, PenLine,
+	Replace, Sigma, SlidersHorizontal, SquarePlay, StickyNote, Table, UnfoldVertical
 } from '@lucide/svelte';
 import type { MenuItem } from './nav-types';
 
@@ -41,16 +41,15 @@ export const NAV_GROUPS: NavGroup[] = [
 		]
 	},
 	{
-		key: 'custom', label: 'Your own blocks', icon: MousePointerClick, description: 'Writing, nesting and overriding plugins, and image blocks.', items: [
+		key: 'custom', label: 'Your own blocks', icon: MousePointerClick, description: 'Writing, nesting and overriding plugins, and their own forms.', items: [
 			{ value: '/custom/plugin', label: 'Writing a plugin', group: 'Your own blocks', icon: MousePointerClick, description: 'A button block: view, preview, fields', keywords: ['plugin', 'block', 'custom', 'fields'] },
 			{ value: '/custom/container', label: 'Containers', group: 'Your own blocks', icon: StickyNote, description: 'A block holding blocks, with Frame', keywords: ['container', 'nested', 'frame', 'accepts'] },
-			{ value: '/custom/images', label: 'Image blocks', group: 'Your own blocks', icon: Image, description: 'Images are your app\'s business', keywords: ['image', 'photo', 'media', 'picture'] },
+			{ value: '/custom/form', label: 'Custom fields form', group: 'Your own blocks', icon: SlidersHorizontal, description: 'A form of your own in the fields bar', keywords: ['form', 'fields', 'picker', 'image', 'photo', 'context'] },
 			{ value: '/custom/override', label: 'Overriding a plugin', group: 'Your own blocks', icon: Replace, description: 'Own preview and extra fields', keywords: ['override', 'preview', 'extend'] }
 		]
 	},
 	{
-		key: 'contexts', label: 'Host contexts', icon: MonitorSmartphone, description: 'Views, code languages and UI text from the host app.', items: [
-			{ value: '/contexts/views', label: 'Per-view values', group: 'Host contexts', icon: MonitorSmartphone, description: 'A field value per screen width', keywords: ['view', 'responsive', 'desktop', 'phone'] },
+		key: 'contexts', label: 'Host contexts', icon: MonitorSmartphone, description: 'Code languages and UI text from the host app.', items: [
 			{ value: '/contexts/code', label: 'Code languages', group: 'Host contexts', icon: Code, description: 'A dropdown of languages for code blocks', keywords: ['code', 'language', 'syntax', 'highlight'] },
 			{ value: '/contexts/i18n', label: 'Localisation', group: 'Host contexts', icon: Languages, description: 'UI text in the host language', keywords: ['i18n', 'language', 'hungarian', 'messages'] }
 		]

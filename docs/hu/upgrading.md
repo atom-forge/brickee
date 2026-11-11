@@ -6,6 +6,22 @@ Ez a fejezet azokat a változásokat sorolja fel, amelyek teendőt igényelhetne
 
 A tőled semmit nem igénylő változások – új exportok, javítások, dokumentációfrissítések – csak a változásnaplóban (`CHANGELOG.md`, a csomaggal együtt szállítva) szerepelnek.
 
+## A 0.0.3-ról a következő változatra (Unreleased)
+
+### Megszűntek a nézetenkénti mezőértékek
+
+Hogy egy oldalnak milyen nézetei vannak (asztali, tablet, telefon…), és melyik látszik éppen, az az alkalmazás fogalma, ezért a szerkesztő többé nem kezeli. Eltávolítva: a `PropField.views`, a `provideView` és a `useView`, a kit `baseValue` és `viewValues` segédfüggvénye, a mezősáv nézetjelölője és „örökölt” jelölése, valamint a magyar nyelvi csomag `inherited` szövege. A csúszka mostantól mindig egyetlen érték.
+
+| Eltávolítva | Helyette |
+|---|---|
+| `views` egy csúszkamezőn | A plugin saját `form`-ja (`BlockPlugin.form`), amely nézetenként szerkeszt egy értéket, és az aktuális nézetet az alkalmazás saját kontextusából olvassa |
+| `provideView` / `useView` | Az alkalmazás saját Svelte-kontextusa (`setContext` / `getContext`) |
+| `viewValues` / `baseValue` | Az alkalmazás saját segédfüggvénye a pluginjában |
+
+A tárolt dokumentumok továbbra is betöltődnek: a nézetenként tárolt érték nézet szerint kulcsolt objektum (`{ "desktop": "56", "phone": "100" }`), amelyet mostantól a plugin maga olvas.
+
+**Teendő:** töröld a `views`-t a mezőidből és a `provideView`-t a szerkesztőidből. Ahol egy pluginnak nézetenkénti érték kell, adj neki egy `form` komponenst, amely az objektumot a `props`-ba írja, és az előnézetben egy saját segédfüggvénnyel olvasd ki (az eltávolított `viewValues` néhány sor volt: az első nézet értéke az alap, minden további nézet, amíg nincs sajátja, az előtte lévőét veszi át). Máshol az egyszerű értéket olvasd, mint eddig; a nézetenként tárolt értékekből az alapot a `typeof v === 'object' && v ? Object.values(v)[0] : v` adja.
+
 ## A 0.0.2-ről a 0.0.3-ra
 
 ### A szerkesztő `dist` mappájának Tailwind `@source`-nak kell lennie
@@ -24,7 +40,7 @@ A tartalom védése (támogatói vagy fizetőfalas elválasztó) az alkalmazás 
 
 ### A képek és a média már nem részei a csomagnak
 
-A csomag többé nem ismeri a kép fogalmát. Hogy egy blokk a kép URL-jét vagy egy azonosítót tárol, hogyan választja ki a felhasználó a képet, és hogyan lesz a tárolt értékből cím, azt az alkalmazás saját képpluginja dönti el (lásd [Képek](writing-plugins.md#képek)).
+A csomag többé nem ismeri a kép fogalmát. Hogy egy blokk a kép URL-jét vagy egy azonosítót tárol, hogyan választja ki a felhasználó a képet, és hogyan lesz a tárolt értékből cím, azt az alkalmazás saját képpluginja dönti el (lásd [Saját mezőűrlap](writing-plugins.md#saját-mezőűrlap)).
 
 | Eltávolítva | Mi volt |
 |---|---|

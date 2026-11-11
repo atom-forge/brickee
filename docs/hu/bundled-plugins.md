@@ -18,7 +18,7 @@ import { table, youtube } from '@atom-forge/brickee/plugins'; // vagy néhány
 | `map` | `map` | hely vagy cím, nagyításcsúszka | hivatkozás | Egy hely vagy cím beágyazott Google Maps-térképe. |
 | `gap` | `gap` | magasságcsúszka | nincs | Üres hely a blokkok között, 1–8 sor magas. |
 
-Egyikük sem tartalmaz beágyazott blokkokat. A képblokkok, a dobozok és a többi tároló megjelenése és viselkedése alkalmazásonként más, ezért a csomag ezeket rád hagyja: a [Pluginok írása](writing-plugins.md) egy tárolót mutat be, [Az alkalmazás kontextusai](host-contexts.md) pedig egy képblokkot.
+Egyikük sem tartalmaz beágyazott blokkokat. A dobozok, a tárolók és a többi oldalspecifikus blokk megjelenése és viselkedése alkalmazásonként más, ezért a csomag ezeket rád hagyja: a [Pluginok írása](writing-plugins.md) egy gombot, egy tárolót és egy saját mezőűrlappal rendelkező blokkot mutat be.
 
 A pluginok mellett a belépési pont exportálja a props-típusaikat (`TableProps`, `YouTubeProps`, `MapProps`, `GapProps`) és az előnézeteik által használt segédfüggvényeket, amelyek saját előnézetek írásakor jól jönnek: `youtubeId` (videóazonosító bármely YouTube-hivatkozásból), `mapSrc` (egy hely beágyazási címe), `gapLines`, `GAP_LINES` és `GAP_MAX`, valamint a táblázatokhoz `tableHeads`, `rowHead`, `HEADS` és `square`.
 
@@ -109,7 +109,7 @@ export const siteMap: BlockPlugin = {
 {/if}
 ```
 
-Ha a szerkesztő nem angol nyelvű, add hozzá az új mezőcímkéket a `messages`-hez (lásd [Felületi szövegek](host-contexts.md#felületi-szövegek)). Ha egy meglévő csúszkát nézetenkéntivé akarsz tenni, képezd le a `fields` tömböt, és adj hozzá `views`-t (lásd [Nézetenkénti értékek](host-contexts.md#nézetenkénti-értékek)).
+Ha a szerkesztő nem angol nyelvű, add hozzá az új mezőcímkéket a `messages`-hez (lásd [Felületi szövegek](host-contexts.md#felületi-szövegek)).
 
 > **Tartsd meg a típust**
 >

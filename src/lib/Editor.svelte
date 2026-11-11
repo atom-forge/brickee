@@ -1521,7 +1521,11 @@
 					{#if plugin}
 						<div class="my-[0.35em] min-w-0 flex-1">
 							{#snippet propsBar()}
-								<PropsBar block={b} tag={tagOf(b)} fields={plugin.fields ?? []} {tr} {setProp} {setValue} open={fresh.has(b.id)} />
+								<PropsBar block={b} tag={tagOf(b)} fields={plugin.fields ?? []} {tr} {setProp} {setValue} open={fresh.has(b.id)} form={plugin.form ? pluginForm : undefined} />
+							{/snippet}
+							{#snippet pluginForm()}
+								{@const Form = plugin.form!}
+								<Form bind:props={() => b.props ?? {}, (p) => pluginChange(b, 'props', p)} {readonly} />
 							{/snippet}
 							<PluginHost
 								{plugin}
@@ -1530,7 +1534,7 @@
 								{readonly}
 								{palette}
 								{plugins}
-								fields={!readonly && plugin.fields?.length ? propsBar : undefined}
+								fields={!readonly && (plugin.fields?.length || plugin.form) ? propsBar : undefined}
 							/>
 						</div>
 					{:else}
@@ -1594,7 +1598,7 @@
 						<span class={TAG}>{tr('code')}</span>
 						{#if b.props?.lang}<span class={TAG}>{b.props.lang}</span>{/if}
 					</div>
-				{:else if b.type === 'plugin' && (readonly || !pluginOf(b.plugin)?.fields?.length)}
+				{:else if b.type === 'plugin' && (readonly || !(pluginOf(b.plugin)?.fields?.length || pluginOf(b.plugin)?.form))}
 					<!-- readable over a map or an image -->
 					<div class="absolute top-[calc(0.35em+5px)] right-1.5 z-[2] flex items-center gap-0.5 rounded-md bg-[color-mix(in_srgb,var(--color-surface,#fff)_92%,transparent)]">
 						<span class={TAG}>{tagOf(b)}</span>

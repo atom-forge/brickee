@@ -7,6 +7,22 @@ This chapter lists the changes that may require action when you move to a newer 
 
 Changes that need no action from you — new exports, fixes, documentation updates — are listed only in the changelog (`CHANGELOG.md`, shipped with the package).
 
+## From 0.0.3 to Unreleased
+
+### Per-view field values are gone
+
+Which views a page has (desktop, tablet, phone…) and which one is shown is the app's concept, so the editor no longer handles it. Removed: `PropField.views`, `provideView` and `useView`, the kit helpers `baseValue` and `viewValues`, the view badge and the "inherited" mark of the fields bar, and the `inherited` text of the Hungarian locale. A slider is now always a single value.
+
+| Removed | Instead |
+|---|---|
+| `views` on a slider field | A plugin's own `form` (`BlockPlugin.form`) that edits a value per view, reading the current view from the app's own context |
+| `provideView` / `useView` | The app's own Svelte context (`setContext` / `getContext`) |
+| `viewValues` / `baseValue` | The app's own helper in its plugin |
+
+Stored documents still load: a value that was stored per view is an object keyed by view (`{ "desktop": "56", "phone": "100" }`), which the plugin now reads itself.
+
+**What to do:** remove `views` from your fields and `provideView` from your editors. Where a plugin needs a value per view, give it a `form` component that writes the object into `props`, and read it in the preview with a helper of your own (the removed `viewValues` was a few lines: the first view's value is the base, each other view takes the one before it while it has none). Elsewhere, read a plain value as before; for values stored per view, take the base with `typeof v === 'object' && v ? Object.values(v)[0] : v`.
+
 ## From 0.0.2 to 0.0.3
 
 ### The editor needs its `dist` folder as a Tailwind `@source`
@@ -25,7 +41,7 @@ Gating content (a supporters-only or paywall divider) is an application's concep
 
 ### Images and media are no longer part of the package
 
-The package has no notion of images any more. Whether a block stores an image's URL or an id, how the user picks the image, and how the stored value becomes an address are decided by the application's own image plugin (see [[writing-plugins#Images|Images]]).
+The package has no notion of images any more. Whether a block stores an image's URL or an id, how the user picks the image, and how the stored value becomes an address are decided by the application's own image plugin (see [[writing-plugins#Custom fields form|Custom fields form]]).
 
 | Removed | Was |
 |---|---|

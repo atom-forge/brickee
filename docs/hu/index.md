@@ -19,7 +19,7 @@ flowchart TB
 - **Mellékelt pluginok** (`@atom-forge/brickee/plugins`) — ugyanolyan pluginok, mint bármelyik más, és csak abból készültek, amit a mag exportál. Csak azokat kapcsolod be, amelyekre szükséged van.
 - **A saját pluginjaid** — ugyanaz a `BlockPlugin` alak, az alkalmazásodban.
 
-Maga a szerkesztő semmit sem tud az alkalmazásodról. Amire egy alkalmazásnak szüksége van — az oldalszélességei, a kódnyelvei, a nyelve —, az **kontextusokon** (nézet, kódnyelvek, szöveg) vagy a pluginok **mezőin** keresztül jut el a pluginokhoz, soha nem külön szerkesztő-propokon át. A képek sem kivételek: a képblokk a saját pluginod, amely úgy tárolja, választja ki és oldja fel a képeit, ahogy az alkalmazásod teszi.
+Maga a szerkesztő semmit sem tud az alkalmazásodról. A kódnyelvei és a nyelve **kontextusokon** keresztül jutnak el a szerkesztőhöz; minden más — a médiája, az oldalszélességei, a felhasználói — az alkalmazás saját pluginjaira tartozik, amelyek az alkalmazás saját kódjából olvassák, és saját **mezőűrlapot** is mutathatnak. Az alkalmazás fogalmaihoz nincsenek külön szerkesztő-propok.
 
 ## Tartalom
 
@@ -27,8 +27,8 @@ Maga a szerkesztő semmit sem tud az alkalmazásodról. Amire egy alkalmazásnak
 2. [A szerkesztő és az előnézet](editor-and-preview.md) — az `Editor` és a `Preview` propjai, a paletta, a szerkesztési funkciók és a görgetés-szinkron.
 3. [Dokumentumok és markdown](documents-and-markdown.md) — a tárolt alak (`StoredBlock`), a beépített blokkok, valamint az átalakítás markdownból és markdownba.
 4. [Mellékelt pluginok](bundled-plugins.md) — mit tartalmaz az `@atom-forge/brickee/plugins`, és hogyan írhatsz felül egy előnézetet vagy adhatsz hozzá mezőket.
-5. [Pluginok írása](writing-plugins.md) — a `BlockPlugin` felépítése, mezők, nézetek és előnézetek, tárolók, markdown alakok, képblokkok és a kit.
-6. [Az alkalmazás kontextusai](host-contexts.md) — nézetenkénti értékek, kódnyelvek és felületi szövegek.
+5. [Pluginok írása](writing-plugins.md) — a `BlockPlugin` felépítése, mezők és saját mezőűrlapok, nézetek és előnézetek, tárolók, markdown alakok, inline pluginok és a kit.
+6. [Az alkalmazás kontextusai](host-contexts.md) — kódnyelvek és felületi szövegek, és honnan jönnek az alkalmazás saját adatai.
 7. [A szerveren](server-side.md) — sémavalidálás, sima szöveg.
 8. [Receptek és buktatók](recipes-and-pitfalls.md) — teljes minták és az elkerülendő hibák.
 9. [Frissítés](upgrading.md) — mit kell módosítanod a kódodban, amikor újabb verzióra váltasz.

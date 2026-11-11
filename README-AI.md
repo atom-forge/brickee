@@ -10,8 +10,8 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`�
 - Store the editor's `value` (`StoredBlock[]`) as it is. To change it from outside, assign a new array (an in-place change is not picked up); a read-only editor never writes it. Built-in types start with `md:`; any other `type` is a plugin's. Never rename a plugin's `type`: stored documents refer to it.
 - Pass the same `plugins` to the `Editor` and the `Preview` of a document type. Restrict what an editor offers with `palette` (palette ids: `md:*` kinds and plugin types), not by dropping plugins.
 - The editor's colours come from the `@atom-forge/ui` theme tokens (light/dark follow the host). Its block handles sit ~22 px left of its box: leave that much left padding around it.
-- No app-specific editor props: app data reaches plugins through contexts (`provideView`, `provideCodeLanguages`, `messages` / `provideText`), plugin fields, or the app's own modules and contexts.
-- No image concept: no image field, picker or media list. An image block is an app plugin that stores what the app chooses (a URL, or an id of its own media library), picks it in its view or the app's own dialog, and resolves ids with the app's own data.
+- No app-specific editor props: the editor takes code languages (`provideCodeLanguages`) and UI text (`messages` / `provideText`) from the host; everything else (media, screen widths, users) is the app's plugins' business: they read it from the app's own modules and contexts, and show their own controls in their view or their own fields `form`.
+- No image, media or per-view concept: such blocks are app plugins that store what the app chooses (a URL, an id of its own library, a value per view) and resolve it with the app's own data, the same way in view, preview and `markdown`.
 - Plugin props are untrusted user input. Previews sanitize: `safeColor` for colours, check links and image addresses (`http(s)` or site-relative), clamp numbers, never `{@html}` with props.
 - A plugin view declares both `props` and `blocks` with `$bindable()`, even if unused.
 - Containers (`content: 'blocks'`) nest one level only; nested editors never offer containers or unique plugins. `accepts` narrows their content (`'md:*'` = every built-in).
@@ -49,8 +49,6 @@ function fromHtml(html: string, opts?: { plugins?: BlockPlugin[] }): Block[]; //
 function toMarkdown(blocks: Block[], opts?: { plugins?: BlockPlugin[] }): string; // browser only
 
 // contexts (call provide* in component init, above the editor/preview; use* in plugin components)
-function provideView(get: () => string | undefined): void;
-function useView(): () => string | undefined;
 interface CodeLanguage { value: string; label?: string }      // value: stored as the code block's props.lang
 function provideCodeLanguages(own: () => (string | CodeLanguage)[] | undefined): void; // list: the language field is a dropdown
 function useCodeLanguages(): () => CodeLanguage[];             // empty: free text
@@ -78,8 +76,6 @@ function narrowPalette(palette: string[], accepts: readonly string[] | undefined
 // kit helpers
 function safeColor(c: unknown, fallback: string): string;   // #hex (3–8 digits) or fallback
 function lines(s: string): string[];                        // trimmed non-empty lines
-function baseValue(v: unknown): unknown;                    // base of a per-view prop
-function viewValues(v: unknown, keys: string[]): unknown[]; // per-view prop, inheritance applied
 function mdText(s: unknown): string;                        // plain text safe in markdown
 function mdJoin(...parts: (string | false | null | undefined)[]): string; // blank-line join, empties dropped
 function mdQuote(md: string): string;                       // '> ' every line
@@ -90,6 +86,7 @@ interface BlockPlugin<P extends Props = Props> {
 	label: string; hint: string; keys: string; icon: Icon;
 	props: () => P;              // a new block's props
 	fields?: PropField[];
+	form?: Component<PluginFormProps<any>, {}, 'props'>; // own form in the fields bar, below the fields
 	tag(props: P): string;       // mini label; ' · ' parts translated separately
 	content: 'none' | 'text' | 'plain' | 'blocks'; // plugins use 'none' or 'blocks'
 	view: Component<PluginViewProps<any>, {}, 'props' | 'blocks'>;
@@ -101,6 +98,7 @@ interface BlockPlugin<P extends Props = Props> {
 	unique?: boolean;
 }
 interface PluginViewProps<P> { props: P; blocks: StoredBlock[]; readonly: boolean; palette: string[]; plugins: BlockPlugin[] }
+interface PluginFormProps<P> { props: P /* bindable: assign a new object = one undo step */; readonly: boolean }
 interface PluginPreviewProps<P> { props: P; blocks: StoredBlock[]; plugins: BlockPlugin[] }
 interface MarkdownContext { inner: string }
 interface MarkdownTable { rows: string[][] /* inline markdown, first row = header */; align: ('left' | 'center' | 'right')[] }
@@ -111,7 +109,6 @@ interface PropField {
 	options?: { value: string; label: string; icon?: Icon }[]; // select; stepped slider (label may use {n}); toggles (icon + tooltip)
 	min?: number; max?: number; step?: number; unit?: string; // number slider (stored as string)
 	none?: string;                                // unset label (number slider notch, optional colour)
-	views?: { key: string; label: string }[];     // per-view slider values
 	format?: (value: unknown) => string;
 	parse?: (text: string) => unknown;            // '' / null removes the key
 }
@@ -120,7 +117,7 @@ interface PropField {
 // table, youtube, map, gap — the only bundled plugins (none holds nested blocks or images); PLUGINS = [table, youtube, map, gap]
 // types: TableProps, YouTubeProps, MapProps, GapProps, Head
 // helpers: youtubeId, mapSrc, gapLines, GAP_LINES, GAP_MAX, tableHeads, rowHead, HEADS, square
-// Image blocks, boxes and other containers are app plugins you write yourself (see docs/en/writing-plugins.md).
+// Boxes, containers, image blocks and other site-specific blocks are app plugins you write yourself (see docs/en/writing-plugins.md).
 
 // inline plugins: elements inside the text (stored as their markdown form, e.g. `$x^2$`); same list to Editor and Preview
 interface InlinePlugin<D extends Record<string, string>> { type: string; label: string; icon: Icon; pattern: RegExp /* global, bounded */;
@@ -227,18 +224,23 @@ export const plugins: BlockPlugin[] = [
 
 **Markdown form and conversion** — `markdown(props, { inner })` returns markdown or `''`; use `mdText`, `mdJoin`, `mdQuote`. Whole document: `toMarkdown(doc.map(fromStored), { plugins })`; import: `fromMarkdown(text).map(toStored)` (both in the browser).
 
-**Per-view fields** — add `views` to a slider field and provide the current view:
+**Custom fields form** — for what generated `fields` cannot do (an app picker, app context, scripts), give the plugin a `form` component; it shows in the fields bar below the fields (or alone):
 
-```ts
-import type { BlockPlugin } from '@atom-forge/brickee';
+```svelte
+<!-- PhotoForm.svelte -->
+<script lang="ts">
+	import type { PluginFormProps } from '@atom-forge/brickee';
+	import { IMAGES, useAlbum } from './images'; // the app's own data and context
+	let { props = $bindable() }: PluginFormProps<{ image: string; alt: string }> = $props();
+	const album = useAlbum();
+</script>
 
-const VIEWS = [{ key: 'desktop', label: 'Desktop' }, { key: 'phone', label: 'Phone' }];
-const perView = (p: BlockPlugin, key: string): BlockPlugin => ({ ...p, fields: p.fields?.map((f) => (f.key === key ? { ...f, views: VIEWS } : f)) });
-// host component around <Editor>: provideView(() => currentViewKey);
-// preview: const [desktop, phone] = viewValues(props.ratio, ['desktop', 'phone']);
+{#each IMAGES.filter((m) => m.album === album()) as m (m.id)}
+	<button type="button" onclick={() => (props = { ...props, image: m.id })}><img src={m.url} alt={m.id} width="64" /></button>
+{/each}
 ```
 
-Stored as the base value alone (`"56"`) or an object by view key (`{ "desktop": "56", "phone": "100" }`); a view without its own value inherits from the view before it.
+Plugin: `{ …, form: PhotoForm }`. Assign a new `props` object (deep mutation is not an edit). `markdown` runs outside components: resolve ids from module data, not a context.
 
 **Scroll sync (split view)** — one way, editor → preview, same scroll fraction; re-syncs on source scroll and target resize:
 
@@ -272,7 +274,8 @@ const result = blocksSchemaFor(plugins).safeParse(input); // or pass [{ type, ac
 | Context errors with a linked local copy | Duplicate `svelte` / `@atom-forge/ui` | Vite `resolve.dedupe: ['svelte', '@atom-forge/ui', '@lucide/svelte', 'zod']`. |
 | A block is missing from `<Preview>` | Its plugin has no `preview` | Add one (bundled plugins have a default) or render it yourself. |
 | "Unknown block" in the editor, block missing on the site | Plugin missing from `plugins` | Same plugins for editor and preview. |
-| Image block renders nothing | Preview rejects the stored address, or the app's lookup lacks the id | Store `http(s)` / site-relative addresses; resolve ids from the same app data everywhere. |
+| A plugin block shows in the editor but renders nothing on the site | The preview resolves the stored value differently from the view, or reads a context only the editor page provides | Resolve stored values from the same app data in view, preview and `markdown`; provide app contexts above the preview too. |
+| `views`, `provideView`, `useView`, `viewValues`, `baseValue` missing | Removed: per-view values are the app's business | A plugin `form` and the app's own context and helper (see `docs/en/upgrading.md`). |
 | `media` prop, `useMedia`, `findMedia`, `kind: 'image'` missing | Removed: images are the app's business | Own picking and lookup in the app's image plugin (see `docs/en/upgrading.md`). |
 | Box not offered inside a box | One nesting level | By design. |
 | Block not offered inside a container | `accepts` or host `palette` excludes it | Add its palette id (or `'md:*'`). |

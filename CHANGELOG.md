@@ -9,11 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A plugin's own fields form: the new optional `BlockPlugin.form`, any Svelte component shown in the block's fields bar below the generated fields (or alone), with the block's props bound (`PluginFormProps`: `props`, `readonly`); assigning a new props object is one edit with its own undo step. For what the generated fields cannot do: the app's own pickers, data, contexts and scripts. Documented in *Writing plugins → Custom fields form*.
+- Showcase: a *Custom fields form* page (a photo block whose form picks from the album an app context names, with its own upload), replacing the *Image blocks* page.
 - Inline plugins: elements inside a block's text (a formula, a mention…) that move and delete as one while the stored text stays inline markdown. `InlinePlugin` (pattern, parse, markdown, render, fields, create, typing), the `inlinePlugins` prop of `Editor` and `Preview` (inherited by nested editors; `useInlinePlugins()` / `provideInlinePlugins()` for plugin views), and `inline(md, { inlinePlugins })`. The toolbar gets a button per inline plugin, a click opens an element's fields, typing its markers makes one.
 - `inlineMath` in `@atom-forge/brickee/math`: a formula inside the text, `$…$` (the GitHub and Obsidian rule, so prices stay text).
 - Inline markdown while typing: `**bold**`, `*italic*` / `_italic_` and `~~strike~~` turn into their mark when a space, a punctuation mark or Enter follows; `` `code` `` on its closing backtick, `[text](url)` on its closing parenthesis. A `*` or `_` opens only at a word's edge (`2*3*4`, `snake_case` stay text); `Ctrl/Cmd+Z` right after brings back the text as typed.
 - A formula block: `math` in the new entry point `@atom-forge/brickee/math`, written in LaTeX and drawn as MathML by `temml` (an optional peer dependency; it also renders on the server). Its markdown form is a `$$…$$` block, and a pasted or imported one becomes a formula through the new optional `BlockPlugin.fromMath(tex)`.
 - Plan for formulas and inline plugins in `notes/` (not shipped), linked from `TODO.md`.
+
+### Removed
+
+- **Breaking:** per-view field values. `PropField.views`, `provideView` / `useView`, the kit helpers `baseValue` and `viewValues`, the fields bar's view badge and "inherited" mark, and the `inherited` text of the Hungarian locale are gone: which views a page has is the app's concept, handled in its own plugin (a `form` and its own context). Stored per-view objects still load. The *Per-view values* docs section and showcase page are removed; *Host contexts* now covers code languages and UI text only. See the upgrading chapter.
+- The image-specific docs section (*Writing plugins → Images*) and the image rules of `README-AI.md` and AI Notes: images are an ordinary app plugin, now shown through the custom fields form example.
 
 ### Changed
 

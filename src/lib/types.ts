@@ -68,13 +68,6 @@ export interface PropField {
 	 * or an optional colour ('None'; `placeholder` is the colour a click on it starts from).
 	 */
 	none?: string;
-	/**
-	 * A slider with a value per view (e.g. the page's widths); the host sets the current view with `provideView`, a badge
-	 * shows which one is edited. The first view is
-	 * the base; each other view, while it has no value of its own, takes the one before it. Stored as the base value
-	 * alone, or, with own values for other views, as an object by view key.
-	 */
-	views?: { key: string; label: string }[];
 	/** For 'select', 'slider' and 'toggles' (where `icon` is the button and `label` its tooltip). */
 	options?: { value: string; label: string; icon?: Icon }[];
 	/** The field's text from the stored value; default: the value as a string. */
@@ -91,6 +84,15 @@ export interface PluginViewProps<P extends Props = Props> {
 	/** The host editor's palette and plugins, for a nested editor. */
 	palette: string[];
 	plugins: BlockPlugin[];
+}
+
+/**
+ * What a plugin's own fields form receives (BlockPlugin.form): the block's props, bound — setting a value is an edit
+ * of the block (one undo step) — and whether the editor is read-only (it is never shown then).
+ */
+export interface PluginFormProps<P extends Props = Props> {
+	props: P;
+	readonly: boolean;
 }
 
 /** What a plugin's preview receives: the block as stored, and the plugins to render its nested blocks with. */
@@ -161,6 +163,11 @@ export interface BlockPlugin<P extends Props = Props> {
 	props: () => P;
 	/** Its fields, on the top of the block. */
 	fields?: PropField[];
+	/**
+	 * Its own form in the fields bar, below the `fields` (or alone): any Svelte component, with the block's props bound.
+	 * For what the generated fields cannot do — a picker of the app's own, a value from the app's context, a script.
+	 */
+	form?: Component<PluginFormProps<any>, {}, 'props'>;
 	/** The mini label on the top of the block (before its fields). */
 	tag(props: P): string;
 	/** What the block holds; decides what "Turn into" can offer. 'blocks' gets a nested document. */

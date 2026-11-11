@@ -12,7 +12,6 @@ export const hu: Messages = {
 	'Move down': 'Mozgatás le',
 	'Select the block': 'A blokk kijelölése',
 	'Unknown block: {type}': 'Ismeretlen blokk: {type}',
-	inherited: 'örökölt',
 	Settings: 'Beállítások',
 	'Hide settings': 'Beállítások elrejtése',
 	None: 'Nincs',

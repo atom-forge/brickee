@@ -14,6 +14,7 @@ Egy plugin egy `BlockPlugin` objektum és két Svelte-komponens: egy **nézet** 
 | `icon` | `Icon` | Egy `@lucide/svelte` ikonkomponens. |
 | `props` | `() => P` | Egy új blokk propsai. |
 | `fields` | `PropField[]` | A blokk tetején lévő beállítások (opcionális). |
+| `form` | `Component<PluginFormProps>` | A plugin saját űrlapja a mezősávban, a mezők alatt (opcionális; lásd [Saját mezőűrlap](#saját-mezőűrlap)). |
 | `tag` | `(props: P) => string` | A blokk tetején, a mezői előtt álló kis címke. A ` · `-tal elválasztott részeit egyenként fordítja le. |
 | `content` | `'none' \| 'text' \| 'plain' \| 'blocks'` | Mit tartalmaz a blokk. A pluginok `'none'`-t (csak props) vagy `'blocks'`-ot (beágyazott dokumentum) használnak; ez dönti el, mit kínál az „Átalakítás” menü. |
 | `view` | `Component<PluginViewProps>` | A blokk a szerkesztőben. |
@@ -155,7 +156,6 @@ Minden `PropField` egy beállítás a blokk tetején. A szerkesztő rajzolja ki 
 | `options` | `{ value, label }[]` a `select`-hez, valamint az értékeken lépkedő `slider`-hez. Egy opció címkéje tartalmazhat `{n}`-t, amelyet az értéke tölt ki. A `toggles`-hez `{ value, label, icon }[]`: az `icon` a gomb, a `label` a buboréksúgója. |
 | `min`, `max`, `step`, `unit` | Számcsúszka (`slider`): a tartománya, a lépésköze (alapértelmezés 1) és az érték után mutatott mértékegység. |
 | `none` | A beállítatlan állapot címkéje: számcsúszkánál a `min`-től balra lévő rovátka, opcionális színnél a „none” gomb. |
-| `views` | Nézetenkénti értékek egy `slider`-hez (lásd [Nézetenkénti értékek](host-contexts.md#nézetenkénti-értékek)). |
 | `format` | A mező szövege a tárolt értékből (alapértelmezés: az érték szövegként). |
 | `parse` | A tárolt érték a mező szövegéből (alapértelmezés: maga a szöveg). |
 
@@ -172,6 +172,70 @@ Az egyes fajták így tárolják az értéküket:
 
 Az üres érték (`''`, `null` vagy `undefined`, akkor is, ha a `parse` adja vissza) eltávolítja a kulcsot a `props`-ból, ezért az előnézetnek mindig kezelnie kell a hiányzó propot. A mező `parse`-a jó hely a bemenet normalizálására is: a mellékelt YouTube-mező bármilyen YouTube-linket elfogad, de csak a videó azonosítóját tárolja.
 
+## Saját mezőűrlap
+
+A generált mezők az egyszerű beállításokat fedik le. Minden máshoz — az alkalmazás saját választójához, az alkalmazás saját adataiból vagy kontextusából vett értékekhez, egy szkripthez — a plugin saját `form`-ot ad: bármilyen Svelte-komponenst, amely a blokk mezősávjában, a mezők alatt jelenik meg (vagy egyedül, ha a pluginnak nincsenek `fields`-ei).
+
+Az űrlap `PluginFormProps`-ot kap:
+
+| Prop | Jelentés |
+|---|---|
+| `props` | A blokk propsa (bindable). Új objektumot adj értékül (`props = { ...props, image: id }`): ez a blokk egy szerkesztése, saját visszavonási lépéssel. |
+| `readonly` | A szerkesztő csak olvasható. Ilyenkor a mezősáv, és vele az űrlap sem látszik. |
+
+Az űrlap az alkalmazás kódja, így ott veszi az adatait, ahol az alkalmazás tartja őket — a saját moduljaiban, store-jaiban, vagy egy Svelte-kontextusban, amelyet az alkalmazás a szerkesztő fölött ad meg (a plugin-komponensek alatta renderelődnek). A szerkesztő semmit sem tud róla. Egy `photo` blokk például az alkalmazás képtárában lévő kép azonosítóját tárolja, és annak az albumnak a képeit kínálja fel, amelyet az alkalmazás egy saját kontextusban megnevez:
+
+```ts
+// images.ts — az alkalmazás saját adatai és kontextusa
+import { getContext, setContext } from 'svelte';
+
+export const IMAGES = [
+	{ id: 'ocean', album: 'cool', url: '/img/ocean.jpg' },
+	{ id: 'sunrise', album: 'warm', url: '/img/sunrise.jpg' }
+];
+export const findImage = (id: unknown) => IMAGES.find((i) => i.id === id);
+
+export const provideAlbum = (get: () => string) => setContext('app:album', get);
+export const useAlbum = (): (() => string) => getContext<() => string>('app:album') ?? (() => 'cool');
+```
+
+```svelte
+<!-- PhotoForm.svelte -->
+<script lang="ts">
+	import type { PluginFormProps } from '@atom-forge/brickee';
+	import { IMAGES, useAlbum } from './images';
+	import type { PhotoProps } from './PhotoView.svelte';
+
+	let { props = $bindable() }: PluginFormProps<PhotoProps> = $props();
+	const album = useAlbum();
+</script>
+
+{#each IMAGES.filter((m) => m.album === album()) as m (m.id)}
+	<button type="button" onclick={() => (props = { ...props, image: m.id })}>
+		<img src={m.url} alt={m.id} width="64" />
+	</button>
+{/each}
+```
+
+```ts
+// photo.ts
+export const photo: BlockPlugin<PhotoProps> = {
+	type: 'photo',
+	// …
+	props: () => ({ image: '', alt: '' }),
+	fields: [{ key: 'alt', label: 'Alt text', kind: 'text', placeholder: 'What the image shows' }],
+	form: PhotoForm,
+	view: PhotoView, // a findImage(props.image) képét mutatja
+	preview: PhotoPreview, // ugyanígy, az oldalon
+	markdown: (p) => {
+		const url = findImage(p.image)?.url;
+		return url ? `![${mdText(p.alt)}](${url})` : '';
+	}
+};
+```
+
+Az albumot az alkalmazás a szerkesztő körül állítja be a `provideAlbum(() => album)`-mal. A `markdown` komponenseken kívül fut (blokkok másolásakor, a `toMarkdown`-ban), ezért csak modulbeli adatot használhat, kontextust nem. A tárolt azonosító ugyanolyan prop, mint a többi, tehát megbízhatatlan: a nézet és az előnézet az alkalmazás saját keresésével oldja fel, és egy ismeretlenhez semmit sem renderel.
+
 ## A nézet
 
 A nézet `PluginViewProps`-ot kap:
@@ -187,7 +251,7 @@ A `props`-ot és a `blocks`-ot akkor is `$bindable()`-lel deklaráld, ha a néze
 
 ## Az előnézet
 
-Az előnézet `PluginPreviewProps`-ot kap: `props`, `blocks` és `plugins`. Ez egy egyszerű Svelte-komponens, amely az oldal számára rendereli a blokkot. A szövegek és a nézet a kontextusokon keresztül érhető el (`useText`, `useView`; lásd [Az alkalmazás kontextusai](host-contexts.md)); a képek a plugin saját ügyei (lásd [Képek](#képek)).
+Az előnézet `PluginPreviewProps`-ot kap: `props`, `blocks` és `plugins`. Ez egy egyszerű Svelte-komponens, amely az oldal számára rendereli a blokkot. A felületi szövegek a `useText`-en keresztül érhetők el (lásd [Az alkalmazás kontextusai](host-contexts.md)); minden más, amit az alkalmazás tud, az alkalmazás saját moduljain és kontextusain keresztül jut el hozzá.
 
 ## Tárolók
 
@@ -329,111 +393,6 @@ fromFiles: async (files) => {
 },
 ```
 
-## Képek
-
-A szerkesztő nem ismeri a kép fogalmát: nincs képmező, nincs képválasztó, nincs médialista. Hogy egy blokk a kép URL-jét vagy az alkalmazás saját médiatárában lévő kép azonosítóját tárolja, hogyan választja ki a felhasználó, és hogyan lesz a tárolt értékből cím, az az alkalmazás döntése, így a képblokk az alkalmazás egy közönséges pluginja.
-
-Egy minimális `photo` plugin a kép címét tárolja, amelyet egy szövegmezőbe kell beírni, mellette alternatív szöveggel és magasságcsúszkával:
-
-```svelte
-<!-- PhotoView.svelte -->
-<script lang="ts" module>
-	export interface PhotoProps extends Record<string, unknown> {
-		/** A kép címe. */
-		url: string;
-		alt: string;
-		/** A magasság a szélesség %-ában (20–150), vagy beállítatlan a kép saját alakjához. */
-		ratio?: unknown;
-	}
-
-	/** A tárolt cím, ha http(s) vagy az oldalon belüli, különben ''. */
-	export const imageSrc = (u: unknown) => {
-		const s = String(u ?? '').trim();
-		return /^(https?:|\/(?!\/))/.test(s) ? s : '';
-	};
-
-	/** CSS aspect-ratio egy tárolt magasságból, vagy undefined. */
-	export const aspect = (v: unknown) => {
-		const n = Number(v);
-		return n >= 20 && n <= 150 ? `100 / ${n}` : undefined;
-	};
-</script>
-
-<script lang="ts">
-	import { ImageIcon } from '@lucide/svelte';
-	import { Empty, type PluginViewProps } from '@atom-forge/brickee';
-
-	let { props = $bindable(), blocks = $bindable() }: PluginViewProps<PhotoProps> = $props();
-	const src = $derived(imageSrc(props.url));
-</script>
-
-{#if src}
-	<img {src} alt={props.alt} style="max-width: 100%" />
-{:else}
-	<Empty icon={ImageIcon} text="Set the image's address above" />
-{/if}
-```
-
-```svelte
-<!-- PhotoPreview.svelte -->
-<script lang="ts">
-	import { baseValue, type PluginPreviewProps } from '@atom-forge/brickee';
-	import { aspect, imageSrc, type PhotoProps } from './PhotoView.svelte';
-
-	let { props }: PluginPreviewProps<PhotoProps> = $props();
-	const src = $derived(imageSrc(props.url));
-</script>
-
-{#if src}
-	<img {src} alt={props.alt ?? ''} style:aspect-ratio={aspect(baseValue(props.ratio))} />
-{/if}
-
-<style>
-	img {
-		width: 100%;
-		object-fit: cover;
-	}
-</style>
-```
-
-```ts
-// photo.ts
-import { ImageIcon } from '@lucide/svelte';
-import { mdText, type BlockPlugin } from '@atom-forge/brickee';
-import PhotoView, { type PhotoProps } from './PhotoView.svelte';
-import PhotoPreview from './PhotoPreview.svelte';
-
-export const photo: BlockPlugin<PhotoProps> = {
-	type: 'photo',
-	label: 'Photo',
-	hint: 'One image',
-	keys: 'photo image picture',
-	icon: ImageIcon,
-	props: () => ({ url: '', alt: '' }),
-	fields: [
-		{ key: 'url', label: 'Image', kind: 'text', placeholder: 'https://…', parse: (s) => s.trim() },
-		{ key: 'alt', label: 'Alt text', kind: 'text', placeholder: 'What the image shows' },
-		{ key: 'ratio', label: 'Height', kind: 'slider', min: 20, max: 150, unit: '%', none: 'Original' }
-	],
-	tag: () => 'photo',
-	content: 'none',
-	markdown: (p) => {
-		const src = imageSrc(p.url);
-		return src ? `![${mdText(p.alt)}](${src})` : '';
-	},
-	view: PhotoView,
-	preview: PhotoPreview
-};
-```
-
-A cím ugyanolyan prop, mint a többi, tehát megbízhatatlan: a nézet és az előnézet csak akkor rendereli, ha `http(s)` vagy az oldalon belüli cím, ahogy a gomb is ellenőrzi a linkjét.
-
-Más alkalmazások másként döntenek, de mindezt a pluginon belül:
-
-- **Médiatár.** A blokk URL helyett az alkalmazás médiatárában lévő kép azonosítóját tárolja. A nézet, az előnézet és a `markdown` az alkalmazás saját keresésével alakítja címmé az azonosítót: az alkalmazás egy moduljával, vagy egy saját Svelte-kontextussal, amelyet a szerkesztő és az előnézet fölött ad meg (a plugin-komponensek ezek alatt renderelődnek). A `markdown` komponenseken kívül fut — blokkok másolásakor és a `toMarkdown`-ban —, ezért csak modulbeli adatot használhat.
-- **Kiválasztás.** Szövegmező helyett a nézet saját választót is mutathat — egy gombot, amely megnyitja az alkalmazás médiaablakát vagy egy feltöltést —, és az eredményt a `props`-ba írja, amely kötött (bindable).
-- **Több kép.** Egy galéria egyetlen propban tárol egy listát (URL-ekből vagy azonosítókból), és ugyanígy a nézetében szerkeszti.
-
 ## A kit
 
 | Export | Fajta | Használat |
@@ -442,9 +401,6 @@ Más alkalmazások másként döntenek, de mindezt a pluginon belül:
 | `Empty` | komponens | Olyan blokk helyőrzője, amelynek a propsa még nincs beállítva. |
 | `safeColor(value, fallback)` | függvény | Egy `#hex` szín (3–8 számjegy), vagy a tartalék érték. |
 | `lines(text)` | függvény | Levágott, nem üres sorok: a mező `parse`-a „soronként egy” listákhoz. |
-| `baseValue(value)` | függvény | Egy nézetenkénti prop alapértéke. |
-| `viewValues(value, keys)` | függvény | Egy nézetenkénti prop értéke minden nézetre. |
 | `mdText`, `mdJoin`, `mdQuote` | függvények | Markdown alakok (fent). |
 | `useText` | függvény | Lefordítja a plugin saját felületi szövegeit. |
-| `useView` | függvény | Az alkalmazás által éppen mutatott nézet. |
 | `Preview` | komponens | Egy tároló beágyazott blokkjait rendereli (`nested`-del). |

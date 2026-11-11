@@ -18,7 +18,7 @@ import { table, youtube } from '@atom-forge/brickee/plugins'; // or some
 | `map` | `map` | place or address, zoom slider | a link | A Google Maps embed of a place or an address. |
 | `gap` | `gap` | height slider | none | Empty space between blocks, 1–8 lines high. |
 
-None of them holds nested blocks. Image blocks, boxes and other containers are application-specific in look and behaviour, so the package leaves them to you: [Writing plugins](writing-plugins.md) shows a container, and [Host contexts](host-contexts.md) an image block.
+None of them holds nested blocks. Boxes, containers and other site-specific blocks are application-specific in look and behaviour, so the package leaves them to you: [Writing plugins](writing-plugins.md) shows a button, a container and a block with its own fields form.
 
 Besides the plugins, the entry point exports their props types (`TableProps`, `YouTubeProps`, `MapProps`, `GapProps`) and the helpers their previews use, which are useful when you write your own previews: `youtubeId` (a video id from any YouTube link), `mapSrc` (the embed address of a place), `gapLines`, `GAP_LINES` and `GAP_MAX`, and `tableHeads`, `rowHead`, `HEADS` and `square` for tables.
 
@@ -109,7 +109,7 @@ export const siteMap: BlockPlugin = {
 {/if}
 ```
 
-Add the new field labels to your `messages` if the editor is not in English (see [UI text](host-contexts.md#ui-text)). To make an existing slider per-view, map over `fields` and add `views` to it (see [Per-view values](host-contexts.md#per-view-values)).
+Add the new field labels to your `messages` if the editor is not in English (see [UI text](host-contexts.md#ui-text)).
 
 > **Keep the type**
 >

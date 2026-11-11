@@ -38,16 +38,10 @@ export const messages: Messages = { ...hu, Button: 'Gomb', 'A link as a button':
 ```svelte
 <!-- lib/BlockEditor.svelte -->
 <script lang="ts">
-	import { Editor, provideView, type StoredBlock } from '@atom-forge/brickee';
+	import { Editor, type StoredBlock } from '@atom-forge/brickee';
 	import { messages, PAGE_PALETTE, plugins } from './blocks';
 
-	let {
-		value = $bindable(),
-		palette = PAGE_PALETTE,
-		view
-	}: { value: StoredBlock[]; palette?: string[]; view?: string } = $props();
-
-	provideView(() => view);
+	let { value = $bindable(), palette = PAGE_PALETTE }: { value: StoredBlock[]; palette?: string[] } = $props();
 </script>
 
 <Editor bind:value {plugins} {palette} {messages} />
@@ -111,7 +105,7 @@ Az alkalmazás a csomag lefordított `dist/` mappáját olvassa, ezért minden v
 | Egy plugin blokkja „Unknown block” feliratot mutat | A pluginja hiányzik a `plugins`-ból | Egy dokumentumtípus minden szerkesztőjének és előnézetének ugyanazokat a pluginokat add át. |
 | Egy blokk hiányzik a `Preview`-ból | A pluginjának nincs `preview`-ja | Adj a pluginnak `preview`-t (a mellékelt pluginoknak van alapértelmezett), vagy rendereld a blokkot a saját megjelenítőddel. |
 | Egy plugin blokkja hiányzik az oldalról | Az előnézet más `plugins`-t kapott | Ugyanazt a pluginlistát használd a szerkesztőhöz és az előnézethez. |
-| Egy képblokk semmit sem renderel | Az előnézete elutasítja a tárolt címet, vagy az alkalmazás saját keresése nem ismeri a tárolt azonosítót | Olyan címet tárolj, amelyet az előnézet elfogad (`http(s)` vagy az oldalon belüli); az azonosítókat a szerkesztőben és az oldalon ugyanabból az adatból oldd fel. |
+| Egy plugin blokkja a szerkesztőben látszik, az oldalon nem renderel semmit | Az előnézet másképp oldja fel a tárolt értéket (címet, azonosítót), mint a nézet, vagy olyan kontextust olvas, amelyet csak a szerkesztő oldala ad meg | A tárolt értékeket a nézetben, az előnézetben és a `markdown`-ban ugyanabból az adatból oldd fel; az alkalmazás kontextusait az előnézet fölött is add meg. |
 | Egy doboz nem tehető egy másik dobozba | A beágyazott szerkesztők egy szint mélyek | A tárolókat tartalomblokkok befogadására tervezd, ne más tárolókéra. |
 | Egy blokk nem érhető el egy tárolón belül | Az `accepts` vagy az alkalmazás `palette`-je kihagyja | Vedd fel a palettaazonosítót az `accepts`-be (vagy használd az `'md:*'`-ot az összes beépítetthez). |
 | Egy egyedi blokk kétszer jelenik meg | A séma nem kényszeríti ki a `unique`-ot | Ellenőrizd a szerveren, ha az alkalmazásod számít rá. |

@@ -26,8 +26,7 @@ Project decisions:
 - Editor wrapper component: `<path, e.g. src/lib/blocks/BlockEditor.svelte>`
 - Site previews that replace bundled ones: `<folder, e.g. src/lib/blocks/site/>`
 - Where documents are validated on the server: `<file>`
-- Image blocks: what they store and where images are picked: `<e.g. URLs typed in a field, or ids of the page's attachments picked in a dialog>`
-- Views for per-view fields, and who provides the current one: `<keys and component, or "none">`
+- App data the project's plugins use, and where it comes from: `<e.g. images: ids of the page's attachments, from src/lib/media.ts; the album: an app context>`
 - UI language and messages: `<e.g. Hungarian: locales/hu extended in the setup module>`
 
 Rules:
@@ -40,19 +39,22 @@ Rules:
 - Use the same plugin list for the editor and the site preview of a document
   type. Restrict what an editor offers with `palette`, not by dropping plugins.
 - Write new plugins with the core kit only (`Frame`, `Empty`, `safeColor`,
-  `viewValues`, `mdText`, `mdJoin`, `mdQuote`, `useText`, `useView`). Declare a view's `props` and `blocks` with `$bindable()`.
+  `lines`, `mdText`, `mdJoin`, `mdQuote`, `useText`). Declare a view's `props` and `blocks` with `$bindable()`.
+- Settings the generated `fields` cannot express go in the plugin's own `form`
+  component (fields bar); assign a new `props` object there (one undo step).
 - Treat plugin props as untrusted user input in previews: colours through
   `safeColor`, links and image addresses checked, numbers clamped. Never
   render props with `{@html}`.
-- The package has no image concept. Image blocks are the project's own
-  plugins: they store a URL or an id of the project's media, pick it in their
-  view or the project's own dialog, and resolve ids with the project's own data.
+- The package has no notion of the project's data (images, media, users,
+  screen widths). The project's plugins read it from the project's own modules
+  and contexts, and resolve stored ids the same way in view, preview and
+  `markdown`.
 - Containers go one level deep; narrow their content with `accepts`.
 - Validate every saved document on the server with `blocksSchemaFor(plugins)`
   from `@atom-forge/brickee/schema`, plus the project's own refinements.
-- App needs reach plugins through contexts (`provideView`,
-  `provideCodeLanguages`, `messages`), plugin fields or the project's own
-  modules and contexts, never through new editor props.
+- App needs reach plugins through `provideCodeLanguages`, `messages`, plugin
+  fields and forms, or the project's own modules and contexts, never through
+  new editor props.
 - Put the English text of new labels, hints, keys and field labels into the
   project's messages.
 - `toMarkdown` and `toStored` need the browser; do not call them during SSR.

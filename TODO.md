@@ -6,3 +6,4 @@ Tervezett munka, fontossági sorrendben. A részletek és az ötletek a `notes/`
 2. **Az alap pluginok külön csomagba?** Most a `./plugins` belépési pont elég (ami nincs importálva, nem kerül a buildbe); ha a pluginoknak saját függőségük lesz, érdemes leválasztani.
 3. **Bemutatóoldal publikálása:** a `src/routes` oldal statikusan buildelhető (`build/`), de még nincs deploy és domain (az `@atom-forge/ui`-é a `deploy/` + `bun run deploy`). A kódnézőben a `svelte-highlight` `langtag.css` importja dev alatt 404-et ad.
 4. **Érintőképernyős húzás:** a blokkok húzása HTML5 drag-gel megy; eszközön nem próbáltuk. Ha nem megbízható, pointer-alapú húzás (a tábla sor/oszlop húzása a minta). Addig a „Mozgatás fel/le” menüpont pótolja.
+5. **Több saját plugin példa a bemutatóoldalon:** a gomb, a doboz és a saját mezőűrlapos fotó mellé további minták (pl. nézetenkénti érték saját `form`-mal és az alkalmazás kontextusával, egy galéria, egy alkalmazásadatból dolgozó blokk).

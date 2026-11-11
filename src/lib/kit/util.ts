@@ -9,18 +9,6 @@ export const lines = (s: string) =>
 		.map((l) => l.trim())
 		.filter(Boolean);
 
-const byView = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
-
-/** The base value of a per-view prop (see PropField.views): the value itself, or the first view's. */
-export const baseValue = (v: unknown) => (byView(v) ? Object.values(v)[0] : v);
-
-/** A per-view prop's value for each of these views (the first is the base); a view without its own takes the one before. */
-export function viewValues(v: unknown, keys: string[]): unknown[] {
-	const own = byView(v) ? v : { [keys[0]]: v };
-	let last: unknown;
-	return keys.map((k) => (last = own[k] ?? last));
-}
-
 /** Plain text made safe inside markdown (no inline marks, no block start). */
 export const mdText = (s: unknown) =>
 	String(s ?? '')

@@ -37,7 +37,7 @@ flowchart TB
 - **Bundled plugins** — plugins like any other, written only with what the core exports. You opt in to the ones you need.
 - **Your plugins** — the same `BlockPlugin` shape, living in your application.
 
-The editor itself knows nothing about your application. Whatever an app needs — its page widths, its code languages, its language — reaches the plugins through **contexts** (view, code languages, text) or through plugin **fields**, never through special editor props. Images are no exception: an image block is a plugin of your own, which stores, picks and resolves its images the way your application does.
+The editor itself knows nothing about your application. Its code languages and its language reach the editor through **contexts**; everything else — its media, its page widths, its users — belongs to the app's own plugins, which read it from the app's own code and may show their own **fields form**. There are no special editor props for application concepts.
 
 This book is for Svelte 5 developers who embed the editor in an application, choose and adapt the bundled plugins, or write their own.
 
@@ -50,8 +50,8 @@ This book is for Svelte 5 developers who embed the editor in an application, cho
 2. [[editor-and-preview|The editor and the preview]] — the `Editor` and `Preview` props, the palette, the editing features, and scroll sync.
 3. [[documents-and-markdown|Documents and markdown]] — the stored form (`StoredBlock`), the built-in blocks, and converting from and to markdown.
 4. [[bundled-plugins|Bundled plugins]] — what `@atom-forge/brickee/plugins` contains, and how to override a preview or add fields.
-5. [[writing-plugins|Writing plugins]] — the `BlockPlugin` anatomy, fields, views and previews, containers, markdown forms, image blocks, and the kit.
-6. [[host-contexts|Host contexts]] — per-view values, code languages, and UI text.
+5. [[writing-plugins|Writing plugins]] — the `BlockPlugin` anatomy, fields and custom fields forms, views and previews, containers, markdown forms, inline plugins, and the kit.
+6. [[host-contexts|Host contexts]] — code languages and UI text, and where the app's own data comes from.
 7. [[server-side|On the server]] — schema validation and plain text.
 8. [[recipes-and-pitfalls|Recipes and pitfalls]] — complete patterns and the mistakes to avoid.
 9. [[upgrading|Upgrading]] — what to change in your code when you move to a newer version.
