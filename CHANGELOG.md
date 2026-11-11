@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The table block fills the width of the editor on pages that use Tailwind: its root's class `table` collided with Tailwind's `table` utility (`display: table`), which shrank it to its content.
 - A server-rendered editor shows its blocks' text (it was empty until the page's script ran, so a read-only editor showed nothing without JavaScript). A test renders the editor and the preview on the server, and the test workflow builds the showcase site (which prerenders every page).
 - An editor or a table removed in the middle of a block sweep, a drag or typing leaves no window listener or timer behind.
 - Copying and pasting blocks keeps plugin blocks: the clipboard carries the blocks themselves (`application/x-brickee+json`) beside their markdown, so a copied video, table, gap or box is pasted back as that block instead of a link or nothing; an editor that does not offer the plugin (or already has a unique one) gets its markdown form. An empty block takes pasted plugin blocks in its place, and pasting while blocks are selected inserts after them.
