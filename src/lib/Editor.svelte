@@ -1112,6 +1112,16 @@
 		selA = selH = null;
 	}
 
+	// Looks shared by several elements (Tailwind; whole class names, so Tailwind finds them).
+	/** The block actions in the bubble: inverted, the theme's text colour as the background. */
+	const BUBBLE =
+		'flex h-[26px] w-7 cursor-pointer items-center justify-center border-0 bg-surface-contrast p-0 text-surface shadow-[0_4px_12px_rgb(0_0_0/0.2)] first:rounded-l-md first:pl-0.5 last:rounded-r-md last:pr-0.5 hover:bg-[color-mix(in_srgb,var(--color-surface-contrast,#1d1d1f)_82%,var(--color-surface,#fff))]';
+	const BUBBLE_DELETE =
+		'flex h-[26px] w-7 cursor-pointer items-center justify-center border-0 bg-surface-contrast p-0 text-surface shadow-[0_4px_12px_rgb(0_0_0/0.2)] first:rounded-l-md first:pl-0.5 last:rounded-r-md last:pr-0.5 hover:bg-[#c62828]';
+	/** A block's small label (its type, a code block's language). */
+	const TAG =
+		'max-w-[18em] overflow-hidden rounded-[5px] px-1.5 py-px font-mono text-[11px] leading-[1.5] font-medium text-ellipsis whitespace-nowrap text-muted-contrast select-none';
+
 	const optionKey = (o: TurnOption) => ('item' in o ? o.kind + ':' + o.item.id : o.kind);
 	/** The turn-into options as menu rows: a line before Unwrap / Delete. */
 	const turnRows = $derived(
@@ -1351,6 +1361,7 @@
 						<div class="bubble" role="toolbar" aria-label={tr('Block actions')}>
 							<button
 								type="button"
+								class={BUBBLE}
 								title={tr('Add a block below')}
 								aria-label={tr('Add a block below')}
 								onmousedown={(e) => e.preventDefault()}
@@ -1358,6 +1369,7 @@
 							>
 							<button
 								type="button"
+								class={BUBBLE}
 								title={tr('Turn into')}
 								aria-label={tr('Turn into')}
 								onmousedown={(e) => e.preventDefault()}
@@ -1365,7 +1377,7 @@
 							>
 							<button
 								type="button"
-								class="del"
+								class={BUBBLE_DELETE}
 								title={tr('Delete')}
 								aria-label={tr('Delete')}
 								onmousedown={(e) => e.preventDefault()}
@@ -1377,11 +1389,11 @@
 			{/if}
 			<div class="body t-{b.type}">
 				{#if b.type === 'hr'}
-					<hr />
+					<hr class="m-0 flex-1 border-0 border-t border-frame" />
 				{:else if b.type === 'plugin'}
 					{@const plugin = pluginOf(b.plugin)}
 					{#if plugin}
-						<div class="plugin">
+						<div class="my-[0.35em] min-w-0 flex-1">
 							{#snippet propsBar()}
 								<PropsBar block={b} tag={tagOf(b)} fields={plugin.fields ?? []} {tr} {setProp} {setValue} open={fresh.has(b.id)} />
 							{/snippet}
@@ -1396,18 +1408,19 @@
 							/>
 						</div>
 					{:else}
-						<div class="unknown">{tr('Unknown block: {type}', { type: b.plugin ?? '' })}</div>
+						<div class="flex-1 rounded-lg border border-dashed border-frame px-[0.9em] py-[0.6em] text-[0.85em] text-muted-contrast">{tr('Unknown block: {type}', { type: b.plugin ?? '' })}</div>
 					{/if}
 				{:else}
 					{#if b.type === 'ul'}
-						<span class="marker" aria-hidden="true">{['•', '◦', '▪'][b.indent % 3]}</span>
+						<span class="w-[1.3em] flex-none text-center text-surface-contrast select-none" aria-hidden="true">{['•', '◦', '▪'][b.indent % 3]}</span>
 					{:else if b.type === 'ol'}
-						<span class="marker num" aria-hidden="true">{nums[b.id]}.</span>
+						<span class="w-[1.6em] flex-none text-right text-surface-contrast tabular-nums select-none" aria-hidden="true">{nums[b.id]}.</span>
 					{:else if b.type === 'todo'}
 						<button
 							type="button"
-							class="check"
-							class:done={b.checked}
+							class="mt-[0.3em] mr-[0.2em] ml-[0.1em] grid size-[1.1em] flex-none cursor-pointer place-items-center rounded border-[1.6px] p-0 text-white {b.checked
+								? 'border-(--accent) bg-(--accent)'
+								: 'border-muted-contrast bg-transparent'}"
 							role="checkbox"
 							aria-checked={!!b.checked}
 							aria-label={tr('Done')}
@@ -1417,7 +1430,7 @@
 							>{#if b.checked}<Check size={12} strokeWidth={3} />{/if}</button
 						>
 					{:else if b.type === 'code' && !readonly}
-						<div class="code-fields">
+						<div class="basis-full">
 							<PropsBar block={b} tag={codeTag(b)} fields={codeFields(b)} {tr} {setProp} {setValue} />
 						</div>
 					{/if}
@@ -1449,19 +1462,23 @@
 				{/if}
 				{#if b.type === 'code' && readonly}
 					<!-- read-only: the language of a code block, in its corner -->
-					<div class="badge">
-						<span class="tag">{tr('code')}</span>
-						{#if b.props?.lang}<span class="tag">{b.props.lang}</span>{/if}
+					<!-- `badge`: a hook for the code's room beside it -->
+					<div class="badge absolute top-[calc(0.15em+5px)] right-1.5 z-[2] flex items-center gap-0.5">
+						<span class={TAG}>{tr('code')}</span>
+						{#if b.props?.lang}<span class={TAG}>{b.props.lang}</span>{/if}
 					</div>
 				{:else if b.type === 'plugin' && (readonly || !pluginOf(b.plugin)?.fields?.length)}
-					<div class="badge"><span class="tag">{tagOf(b)}</span></div>
+					<!-- readable over a map or an image -->
+					<div class="absolute top-[calc(0.35em+5px)] right-1.5 z-[2] flex items-center gap-0.5 rounded-md bg-[color-mix(in_srgb,var(--color-surface,#fff)_92%,transparent)]">
+						<span class={TAG}>{tagOf(b)}</span>
+					</div>
 				{/if}
 			</div>
 		</div>
 	{/each}
 
 	{#if !readonly}
-		<button type="button" class="tail" aria-label={tr('New block at the end')} onclick={tailClick}></button>
+		<button type="button" class="tail block w-full cursor-text border-0 bg-transparent {nested ? 'min-h-3' : 'min-h-20'}" aria-label={tr('New block at the end')} onclick={tailClick}></button>
 	{/if}
 
 	{#if toolbar}
@@ -1500,7 +1517,12 @@
 <!-- the popups of this editor and the ones nested in it -->
 {#if !nested}<PopupContainer />{/if}
 
-<style>
+<style lang="scss">
+	// What utility classes do not express: the theme variables, the row's states driving its handle and bubble, the drop
+	// lines, the text field (placeholder, its inline code and links) and the type of each block.
+	$mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+	$faint: rgba(120, 120, 140, 0.06);
+
 	.editor {
 		--fg: var(--color-surface-contrast, #1d1d1f);
 		--muted: var(--color-muted-contrast, #a0a0a8);
@@ -1514,31 +1536,16 @@
 		color: var(--fg);
 		font: 17px/1.65 system-ui, -apple-system, 'Segoe UI', sans-serif;
 		padding-bottom: 6rem;
-	}
-	/* While sweeping over whole blocks, the browser must not keep extending its own text selection. */
-	.editor.sweeping,
-	.editor.sweeping :global(*) {
-		user-select: none;
-	}
-	.editor.nested {
-		font-size: 1em;
-		padding-bottom: 0;
-	}
-	.editor.nested > .tail {
-		min-height: 0.75rem;
-	}
-	.plugin {
-		flex: 1;
-		min-width: 0;
-		margin: 0.35em 0;
-	}
-	.unknown {
-		flex: 1;
-		padding: 0.6em 0.9em;
-		border: 1px dashed var(--border);
-		border-radius: 8px;
-		color: var(--muted);
-		font-size: 0.85em;
+
+		// While sweeping over whole blocks, the browser must not keep extending its own text selection.
+		&.sweeping,
+		&.sweeping :global(*) {
+			user-select: none;
+		}
+		&.nested {
+			font-size: 1em;
+			padding-bottom: 0;
+		}
 	}
 
 	.row {
@@ -1547,32 +1554,69 @@
 		border-radius: 6px;
 		margin: 0 -8px;
 		padding: 0 8px;
-	}
-	.row.selected {
-		background: var(--sel);
-	}
-	.row.dragging {
-		opacity: 0.35;
-	}
-	.row.drop-before::before,
-	.row.drop-after::after {
-		content: '';
-		position: absolute;
-		left: 8px;
-		right: 8px;
-		height: 3px;
-		border-radius: 2px;
-		background: var(--accent);
-		z-index: 2;
-	}
-	.row.drop-before::before {
-		top: -2px;
-	}
-	.row.drop-after::after {
-		bottom: -2px;
+
+		&.selected {
+			background: var(--sel);
+		}
+		&.dragging {
+			opacity: 0.35;
+		}
+		&.drop-before::before,
+		&.drop-after::after {
+			content: '';
+			position: absolute;
+			left: 8px;
+			right: 8px;
+			height: 3px;
+			border-radius: 2px;
+			background: var(--accent);
+			z-index: 2;
+		}
+		&.drop-before::before {
+			top: -2px;
+		}
+		&.drop-after::after {
+			bottom: -2px;
+		}
+
+		// The mouse: a faint fill with the block's hover, stronger on the bar (and while dragging). The block with the
+		// typing caret (or the selected one): a thin frame instead (inset, so nothing moves).
+		&:hover > .gutter .handle {
+			background: $faint;
+		}
+		&:focus-within > .gutter .handle,
+		&.selected > .gutter .handle {
+			box-shadow: inset 0 0 0 1px rgba(120, 120, 140, 0.22);
+		}
+		// With the caret it breathes gently, like the caret blinks; only the innermost block (not the box around it).
+		&:focus-within:not(:has(.row:focus-within)) > .gutter .handle {
+			animation: caret-pulse 1.1s ease-in-out infinite alternate;
+
+			@media (prefers-reduced-motion: reduce) {
+				animation: none;
+			}
+		}
+		&:hover > .gutter .grip,
+		&:focus-within > .gutter .grip,
+		&.selected > .gutter .grip {
+			opacity: 1;
+		}
+		> .gutter .handle:hover,
+		&.dragging > .gutter .handle {
+			background: var(--code-bg);
+		}
 	}
 
-	/* 1px short at both ends, so the bars of neighbouring blocks do not touch. */
+	@keyframes caret-pulse {
+		from {
+			box-shadow: inset 0 0 0 1px $faint;
+		}
+		to {
+			box-shadow: inset 0 0 0 1px rgba(120, 120, 140, 0.3);
+		}
+	}
+
+	// 1px short at both ends, so the bars of neighbouring blocks do not touch.
 	.gutter {
 		position: absolute;
 		left: -22px;
@@ -1593,7 +1637,7 @@
 			background 0.12s,
 			box-shadow 0.12s;
 	}
-	/* The grip icon shows with the block's hover, caret or selection; the bubble comes only from the icon. */
+	// The grip icon shows with the block's hover, caret or selection; the bubble comes only from the icon.
 	.grip {
 		width: 20px;
 		height: 20px;
@@ -1603,47 +1647,13 @@
 		opacity: 0;
 		transition: opacity 0.12s;
 	}
-	/* The mouse: a faint fill with the block's hover, stronger on the bar (below; and while dragging). The block with
-	   the typing caret (or the selected one): a thin frame instead (inset, so nothing moves). */
-	.row:hover > .gutter .handle {
-		background: rgba(120, 120, 140, 0.06);
-	}
-	.row:focus-within > .gutter .handle,
-	.row.selected > .gutter .handle {
-		box-shadow: inset 0 0 0 1px rgba(120, 120, 140, 0.22);
-	}
-	/* with the caret it breathes gently, like the caret blinks; only the innermost block (not the box around it) */
-	.row:focus-within:not(:has(.row:focus-within)) > .gutter .handle {
-		animation: caret-pulse 1.1s ease-in-out infinite alternate;
-	}
-	@keyframes caret-pulse {
-		from {
-			box-shadow: inset 0 0 0 1px rgba(120, 120, 140, 0.06);
-		}
-		to {
-			box-shadow: inset 0 0 0 1px rgba(120, 120, 140, 0.3);
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.row:focus-within:not(:has(.row:focus-within)) > .gutter .handle {
-			animation: none;
-		}
-	}
-	.row:hover > .gutter .grip,
-	.row:focus-within > .gutter .grip,
-	.row.selected > .gutter .grip {
-		opacity: 1;
-	}
-	.row > .gutter .handle:hover,
-	.row.dragging > .gutter .handle {
-		background: var(--code-bg);
-	}
 	.grab {
 		position: relative;
 		height: 100%;
 	}
-	/* The block actions: a dark bubble right of the handle, over the start of the block. Its left padding bridges
-	   the gap, so the pointer can move from the handle into it without it closing. */
+
+	// The block actions: a dark bubble right of the handle, over the start of the block. Its left padding bridges the
+	// gap, so the pointer can move from the handle into it without it closing.
 	.bubble {
 		position: absolute;
 		left: 100%;
@@ -1657,58 +1667,32 @@
 		transition:
 			opacity 0.12s,
 			visibility 0s 0.12s;
-	}
-	.bubble::before {
-		content: '';
-		position: absolute;
-		left: 2px;
-		top: 50%;
-		translate: 0 -50%;
-		border: 4px solid transparent;
-		border-right-color: var(--color-surface-contrast, #1d1d1f);
-		border-left: 0;
-	}
-	.grab:has(.grip:hover) .bubble,
-	.bubble:hover {
-		opacity: 1;
-		visibility: visible;
-		transition-delay: 0.15s, 0s;
-	}
-	/* Hidden from the press on (so it is not in the drag image) and while sweeping. Only visibility changes here:
-	   a layout change inside the row while the drag starts makes Chrome cancel the drag. */
-	.handle:active ~ .bubble,
-	.editor.sweeping .bubble {
-		opacity: 0;
-		visibility: hidden;
-		transition: none;
-	}
-	.bubble button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 28px;
-		height: 26px;
-		padding: 0;
-		border: 0;
-		/* inverted: the theme's text colour as the background */
-		color: var(--color-surface, #fff);
-		background: var(--color-surface-contrast, #1d1d1f);
-		cursor: pointer;
-		box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
-	}
-	.bubble button:first-child {
-		border-radius: 6px 0 0 6px;
-		padding-left: 2px;
-	}
-	.bubble button:last-child {
-		border-radius: 0 6px 6px 0;
-		padding-right: 2px;
-	}
-	.bubble button:hover {
-		background: color-mix(in srgb, var(--color-surface-contrast, #1d1d1f) 82%, var(--color-surface, #fff));
-	}
-	.bubble button.del:hover {
-		background: #c62828;
+
+		// its arrow
+		&::before {
+			content: '';
+			position: absolute;
+			left: 2px;
+			top: 50%;
+			translate: 0 -50%;
+			border: 4px solid transparent;
+			border-right-color: var(--color-surface-contrast, #1d1d1f);
+			border-left: 0;
+		}
+		.grab:has(.grip:hover) &,
+		&:hover {
+			opacity: 1;
+			visibility: visible;
+			transition-delay: 0.15s, 0s;
+		}
+		// Hidden from the press on (so it is not in the drag image) and while sweeping. Only visibility changes here: a
+		// layout change inside the row while the drag starts makes Chrome cancel the drag.
+		.handle:active ~ &,
+		.editor.sweeping & {
+			opacity: 0;
+			visibility: hidden;
+			transition: none;
+		}
 	}
 
 	.body {
@@ -1721,6 +1705,7 @@
 		margin-left: calc(var(--indent, 0) * 1.7em);
 	}
 
+	// The text of a block.
 	.ce {
 		flex: 1;
 		min-width: 0;
@@ -1729,181 +1714,84 @@
 		white-space: pre-wrap;
 		word-break: break-word;
 		caret-color: var(--accent);
+
+		&.empty::before {
+			content: attr(data-placeholder);
+			color: var(--muted);
+			pointer-events: none;
+		}
+		&.done {
+			color: var(--muted);
+			text-decoration: line-through;
+		}
+		:global(code) {
+			background: var(--code-bg);
+			padding: 0.1em 0.35em;
+			border-radius: 4px;
+			font: 0.88em $mono;
+		}
+		:global(a) {
+			color: var(--accent);
+			text-decoration: underline;
+		}
 	}
-	.ce.empty::before {
-		content: attr(data-placeholder);
-		color: var(--muted);
-		pointer-events: none;
-	}
-	.t-p .ce.empty:not(:focus)::before,
-	.t-ul .ce.empty:not(:focus)::before,
-	.t-ol .ce.empty:not(:focus)::before {
-		content: '';
-	}
-	.ce.done {
-		color: var(--muted);
-		text-decoration: line-through;
-	}
-	.ce :global(code) {
-		background: var(--code-bg);
-		padding: 0.1em 0.35em;
-		border-radius: 4px;
-		font: 0.88em ui-monospace, SFMono-Regular, Menlo, monospace;
-	}
-	.ce :global(a) {
-		color: var(--accent);
-		text-decoration: underline;
+	// Plain text and list items show their hint only with the caret.
+	.t-p,
+	.t-ul,
+	.t-ol {
+		.ce.empty:not(:focus)::before {
+			content: '';
+		}
 	}
 
-	.t-h1 .ce {
-		font-size: 2em;
-		font-weight: 700;
-		line-height: 1.25;
-	}
-	.t-h1 {
-		padding-top: 0.6em;
-	}
-	.t-h2 .ce {
-		font-size: 1.5em;
-		font-weight: 650;
-		line-height: 1.3;
-	}
-	.t-h2 {
-		padding-top: 0.45em;
-	}
-	.t-h3 .ce {
-		font-size: 1.2em;
-		font-weight: 600;
-		line-height: 1.4;
-	}
-	.t-h3 {
-		padding-top: 0.3em;
-	}
-	.t-h4 .ce {
-		font-size: 1.05em;
-		font-weight: 600;
-		line-height: 1.45;
-	}
-	.t-h4 {
-		padding-top: 0.25em;
-	}
-	.t-h5 .ce {
-		font-size: 0.95em;
-		font-weight: 600;
-		line-height: 1.5;
+	// Headings: size, weight and the room above.
+	@each $level, $size, $weight, $height, $above in (1, 2em, 700, 1.25, 0.6em), (2, 1.5em, 650, 1.3, 0.45em), (3, 1.2em, 600, 1.4, 0.3em),
+		(4, 1.05em, 600, 1.45, 0.25em), (5, 0.95em, 600, 1.5, 0.2em), (6, 0.85em, 600, 1.5, 0.2em)
+	{
+		.t-h#{$level} {
+			padding-top: $above;
+
+			.ce {
+				font-size: $size;
+				font-weight: $weight;
+				line-height: $height;
+			}
+		}
 	}
 	.t-h6 .ce {
-		font-size: 0.85em;
-		font-weight: 600;
-		line-height: 1.5;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
 	}
-	.t-h5,
-	.t-h6 {
-		padding-top: 0.2em;
-	}
+
 	.t-quote .ce {
 		border-left: 3px solid var(--fg);
 		padding-left: 0.9em;
 		font-style: italic;
 	}
-	.t-code,
+
 	.t-plugin {
 		position: relative;
 	}
-	.badge {
-		position: absolute;
-		top: calc(0.15em + 5px);
-		right: 6px;
-		display: flex;
-		align-items: center;
-		gap: 2px;
-		z-index: 2;
-	}
-	.t-plugin > .badge {
-		top: calc(0.35em + 5px);
-		/* Readable over a map or an image. */
-		background: color-mix(in srgb, var(--color-surface, #fff) 92%, transparent);
-		border-radius: 6px;
-	}
-	.tag {
-		max-width: 18em;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		padding: 1px 6px;
-		border-radius: 5px;
-		color: var(--muted);
-		font: 500 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
-		user-select: none;
-	}
-	/* the fields bar on its own row above the code */
+	// The fields bar on its own row above the code; the code beside a read-only badge keeps room for it.
 	.t-code {
+		position: relative;
 		flex-wrap: wrap;
 		row-gap: 0;
+
+		.ce {
+			flex-basis: 100%;
+			background: var(--code-bg);
+			border-radius: 8px;
+			padding: 0.7em 0.9em;
+			font: 0.88em/1.6 $mono;
+			white-space: pre-wrap;
+		}
+		&:has(> .badge) .ce {
+			padding-right: 7.5em;
+		}
 	}
-	.code-fields,
-	.t-code .ce {
-		flex-basis: 100%;
-	}
-	.t-code:has(> .badge) .ce {
-		padding-right: 7.5em;
-	}
-	.t-code .ce {
-		background: var(--code-bg);
-		border-radius: 8px;
-		padding: 0.7em 0.9em;
-		font: 0.88em/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
-		white-space: pre-wrap;
-	}
+
 	.t-hr {
 		padding: 0.6em 0;
-	}
-	hr {
-		flex: 1;
-		border: 0;
-		border-top: 1px solid var(--border);
-		margin: 0;
-	}
-
-	.marker {
-		flex: none;
-		width: 1.3em;
-		text-align: center;
-		color: var(--fg);
-		user-select: none;
-	}
-	.marker.num {
-		width: 1.6em;
-		text-align: right;
-		font-variant-numeric: tabular-nums;
-	}
-	.check {
-		flex: none;
-		width: 1.1em;
-		height: 1.1em;
-		margin: 0.3em 0.2em 0 0.1em;
-		border: 1.6px solid var(--muted);
-		border-radius: 4px;
-		background: transparent;
-		color: #fff;
-		display: grid;
-		place-items: center;
-		cursor: pointer;
-		padding: 0;
-	}
-	.check.done {
-		background: var(--accent);
-		border-color: var(--accent);
-	}
-
-	.tail {
-		display: block;
-		width: 100%;
-		min-height: 5rem;
-		border: 0;
-		background: none;
-		cursor: text;
 	}
 </style>
