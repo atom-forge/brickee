@@ -111,7 +111,7 @@ export const siteMap: BlockPlugin = {
 {/if}
 ```
 
-Add the new field labels to your `messages` if the editor is not in English (see [[host-contexts#UI text|UI text]]).
+Add the new field labels to your `messages` if the editor is not in English (see [[host-contexts#ui-text|UI text]]).
 
 > [!warning] Keep the type
 > Keep the plugin's `type` when you override it: stored documents refer to blocks by type. A new `type` makes a new block, and existing documents will not find their blocks.

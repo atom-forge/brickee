@@ -41,7 +41,7 @@ Gating content (a supporters-only or paywall divider) is an application's concep
 
 ### Images and media are no longer part of the package
 
-The package has no notion of images any more. Whether a block stores an image's URL or an id, how the user picks the image, and how the stored value becomes an address are decided by the application's own image plugin (see [[writing-plugins#Custom fields form|Custom fields form]]).
+The package has no notion of images any more. Whether a block stores an image's URL or an id, how the user picks the image, and how the stored value becomes an address are decided by the application's own image plugin (see [[writing-plugins#custom-fields-form|Custom fields form]]).
 
 | Removed | Was |
 |---|---|

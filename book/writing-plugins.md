@@ -17,7 +17,7 @@ A plugin is a `BlockPlugin` object plus two Svelte components: a **view** for th
 | `icon` | `Icon` | A `@lucide/svelte` icon component. |
 | `props` | `() => P` | The props of a new block. |
 | `fields` | `PropField[]` | The settings on the top of the block (optional). |
-| `form` | `Component<PluginFormProps>` | The plugin's own form in the fields bar, below the fields (optional; see [[writing-plugins#Custom fields form\|Custom fields form]]). |
+| `form` | `Component<PluginFormProps>` | The plugin's own form in the fields bar, below the fields (optional; see [[writing-plugins#custom-fields-form\|Custom fields form]]). |
 | `tag` | `(props: P) => string` | The small label on the top of the block, before its fields. Parts separated by ` · ` are translated one by one. |
 | `content` | `'none' \| 'text' \| 'plain' \| 'blocks'` | What the block holds. Plugins use `'none'` (props only) or `'blocks'` (a nested document); it decides what Turn-into offers. |
 | `view` | `Component<PluginViewProps>` | The block in the editor. |

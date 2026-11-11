@@ -18,7 +18,7 @@ interface StoredBlock {
 }
 ```
 
-A short document with a paragraph, a list, a video and a box (the `note` container from [[writing-plugins#Containers|Writing plugins]]):
+A short document with a paragraph, a list, a video and a box (the `note` container from [[writing-plugins#containers|Writing plugins]]):
 
 ```json
 [
@@ -108,7 +108,7 @@ What `fromMarkdown` reads:
 - list nesting by the items' markers: a line indented past an item's marker is inside the item (so `1. ` items nest with two, three or four spaces);
 - the lines of a paragraph, a list item or a quote as one block, with line breaks between them; a blank line, or `>` alone in a quote, starts a new one;
 - reference links (`[text][id]` with `[id]: url`) resolved, footnote definitions as a paragraph after their number;
-- a GFM table as a block of the first of `plugins` that takes tables (`fromTable`, see [[writing-plugins#Taking pasted tables|Writing plugins]]; the bundled `table` does), otherwise as text. The editor passes the plugins it offers, so a pasted table becomes a table block.
+- a GFM table as a block of the first of `plugins` that takes tables (`fromTable`, see [[writing-plugins#taking-pasted-tables|Writing plugins]]; the bundled `table` does), otherwise as text. The editor passes the plugins it offers, so a pasted table becomes a table block.
 
 What `fromHtml` reads — the editor uses it for a formatted paste from a web page, Google Docs or Word: headings, paragraphs, lists (nested, numbered with their start, to-dos from checkboxes), quotes, code (`pre`, with a `language-…` class), rules, tables (for a plugin that takes them), and the inline marks — also Google Docs' bold, italic and struck-through spans. Images become links (the package has no images), and scripts, styles and form controls are dropped. The HTML is only read: it goes through markdown and the same safe rendering as everything else.
 
@@ -119,4 +119,4 @@ What `toMarkdown` writes:
 - code in a fence longer than any backtick run in it, and plain text escaped where markdown would read it as markup (`\_`, `1\.` at a line's start…);
 - a plugin block through its plugin's `markdown(props, { inner })`, where `inner` is its nested blocks already converted; a plugin without a markdown form, or one returning `''`, is left out.
 
-Writing a markdown form for your own plugin is covered in [[writing-plugins#Markdown form|Writing plugins]].
+Writing a markdown form for your own plugin is covered in [[writing-plugins#markdown-form|Writing plugins]].

@@ -14,7 +14,7 @@ The editor has no props for application concepts. Two things the editor itself u
 
 Nested editors and previews inherit both from their parent.
 
-Everything else the app knows — the screen width it is showing, its media library, the current user — is not the editor's business. A plugin is the app's own code: it reads such things from the app's own modules, stores or contexts (provided above the editor and the preview), and shows its own controls in its view or in its own fields form (see [[writing-plugins#Custom fields form|Custom fields form]]).
+Everything else the app knows — the screen width it is showing, its media library, the current user — is not the editor's business. A plugin is the app's own code: it reads such things from the app's own modules, stores or contexts (provided above the editor and the preview), and shows its own controls in its view or in its own fields form (see [[writing-plugins#custom-fields-form|Custom fields form]]).
 
 ## Code languages
 
