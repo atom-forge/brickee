@@ -25,6 +25,8 @@
 	import LinkPrompt from './LinkPrompt.svelte';
 	import PluginHost from './PluginHost.svelte';
 	import PropsBar from './PropsBar.svelte';
+	import BlockMenu, { type MenuRow } from './editor/BlockMenu.svelte';
+	import FormatBar from './editor/FormatBar.svelte';
 	import { acceptsId, BUILT_IN_IDS, PALETTE_ITEMS, type Icon, type PaletteItem } from './palette';
 	import { MAX_INDENT, newBlock, numbering, uid, type Block, type BlockPlugin, type BlockType, type StoredBlock, type PropField, type Content, BUILT_IN_CONTENT, isMd, MD } from './types';
 
@@ -1159,6 +1161,17 @@
 	}
 
 	const optionKey = (o: TurnOption) => ('item' in o ? o.kind + ':' + o.item.id : o.kind);
+	/** The turn-into options as menu rows: a line before Unwrap / Delete. */
+	const turnRows = $derived(
+		turnOptions.map((o, n): MenuRow => ({
+			key: optionKey(o),
+			...optionView(o),
+			warn: 'lossy' in o && o.lossy,
+			danger: o.kind === 'delete',
+			current: 'current' in o && o.current,
+			gap: (o.kind === 'unwrap' || o.kind === 'delete') && n > 0 && turnOptions[n - 1].kind !== 'unwrap'
+		}))
+	);
 	function optionView(o: TurnOption): { icon: Icon; label: string; hint: string } {
 		const n = selected.length;
 		if (o.kind === 'delete') return { icon: Trash2, label: tr('Delete'), hint: n > 1 ? tr('{n} blocks', { n }) : tr('Remove this block') };
@@ -1500,86 +1513,35 @@
 	{/if}
 
 	{#if toolbar}
-		<div class="toolbar" style:left="{toolbar.x}px" style:top="{toolbar.y}px" role="toolbar" aria-label={tr('Formatting')}>
-			{#each tools as t (t.cmd)}
-				<button
-					type="button"
-					title={tr(t.title)}
-					aria-label={tr(t.title)}
-					onmousedown={(e) => e.preventDefault()}
-					onclick={() => fmt(t.cmd)}><t.icon size={16} /></button
-				>
-			{/each}
-		</div>
+		<FormatBar x={toolbar.x} y={toolbar.y} tools={tools.map((t) => ({ ...t, title: tr(t.title) }))} label={tr('Formatting')} onpick={(cmd) => fmt(cmd as Cmd)} />
 	{/if}
 
 	{#if turn}
-		<div
-			class="menu turn"
-			class:up={turn.up}
-			style:left="{turn.x}px"
-			style:top="{turn.y}px"
-			role="listbox"
-			aria-label={tr('Turn into')}
-		>
-			{#if turnOptions[0]?.kind !== 'unwrap' && turnOptions[0]?.kind !== 'delete'}
-				<div class="caption">{tr('Turn into')}</div>
-			{/if}
-			{#each turnOptions as o, n (optionKey(o))}
-				{@const v = optionView(o)}
-				{#if (o.kind === 'unwrap' || o.kind === 'delete') && n > 0 && turnOptions[n - 1].kind !== 'unwrap'}
-					<div class="sep"></div>
-				{/if}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<div
-					class="item"
-					class:danger={o.kind === 'delete'}
-					class:active={n === turn.index}
-					role="option"
-					tabindex="-1"
-					aria-selected={n === turn.index}
-					onmousedown={(e) => {
-						e.preventDefault();
-						applyTurn(n);
-					}}
-					onmouseenter={() => turn && (turn.index = n)}
-				>
-					<span class="icon"><v.icon size={14} /></span>
-					<span class="txt"><b>{v.label}</b><small class:warn={'lossy' in o && o.lossy}>{v.hint}</small></span>
-					{#if 'current' in o && o.current}<span class="current"><Check size={16} /></span>{/if}
-				</div>
-			{/each}
-		</div>
+		<BlockMenu
+			turn
+			rows={turnRows}
+			index={turn.index}
+			x={turn.x}
+			y={turn.y}
+			up={turn.up}
+			caption={turnOptions[0]?.kind !== 'unwrap' && turnOptions[0]?.kind !== 'delete' ? tr('Turn into') : undefined}
+			label={tr('Turn into')}
+			onpick={applyTurn}
+			onhover={(n) => turn && (turn.index = n)}
+		/>
 	{/if}
 
 	{#if slash && filtered.length}
-		<div
-			class="menu"
-			class:up={slash.up}
-			style:left="{slash.x}px"
-			style:top="{slash.y}px"
-			role="listbox"
-			aria-label={tr('Block type')}
-		>
-			{#each filtered as it, n (it.id)}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<div
-					class="item"
-					class:active={n === slash.index}
-					role="option"
-					tabindex="-1"
-					aria-selected={n === slash.index}
-					onmousedown={(e) => {
-						e.preventDefault();
-						applySlash(it);
-					}}
-					onmouseenter={() => slash && (slash.index = n)}
-				>
-					<span class="icon"><it.icon size={14} /></span>
-					<span class="txt"><b>{it.label}</b><small>{it.hint}</small></span>
-				</div>
-			{/each}
-		</div>
+		<BlockMenu
+			rows={filtered.map((it) => ({ key: it.id, icon: it.icon, label: it.label, hint: it.hint }))}
+			index={slash.index}
+			x={slash.x}
+			y={slash.y}
+			up={slash.up}
+			label={tr('Block type')}
+			onpick={(n) => applySlash(filtered[n])}
+			onhover={(n) => slash && (slash.index = n)}
+		/>
 	{/if}
 </div>
 
@@ -1991,117 +1953,5 @@
 		border: 0;
 		background: none;
 		cursor: text;
-	}
-
-	.toolbar {
-		position: fixed;
-		transform: translate(-50%, calc(-100% - 8px));
-		display: flex;
-		gap: 2px;
-		padding: 4px;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 10px;
-		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-		z-index: 20;
-	}
-	.toolbar button {
-		min-width: 30px;
-		height: 30px;
-		border: 0;
-		border-radius: 6px;
-		background: none;
-		color: var(--fg);
-		display: grid;
-		place-items: center;
-		cursor: pointer;
-	}
-	.toolbar button:hover {
-		background: var(--code-bg);
-	}
-
-	.menu {
-		position: fixed;
-		width: 260px;
-		max-height: 300px;
-		overflow: auto;
-		padding: 6px;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 12px;
-		box-shadow: 0 10px 36px rgba(0, 0, 0, 0.2);
-		z-index: 30;
-	}
-	.menu.up {
-		transform: translateY(-100%);
-	}
-	.menu.turn {
-		width: 240px;
-		max-height: 340px;
-	}
-	.caption {
-		padding: 4px 8px 6px;
-		font: 600 11px system-ui;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-	.sep {
-		height: 1px;
-		margin: 6px 4px;
-		background: var(--border);
-	}
-	.current {
-		margin-left: auto;
-		display: flex;
-		color: var(--accent);
-	}
-	.txt small.warn {
-		color: #b45309;
-	}
-	.item.danger {
-		color: #dc2626;
-	}
-	.item.danger .icon {
-		color: #dc2626;
-	}
-	/* Compact one-line rows: icon, label, and the hint after it in grey. */
-	.item {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 3px 6px;
-		border-radius: 6px;
-		cursor: pointer;
-	}
-	.item.active {
-		background: var(--sel);
-	}
-	.icon {
-		flex: none;
-		width: 24px;
-		height: 24px;
-		display: grid;
-		place-items: center;
-		border: 1px solid var(--border);
-		border-radius: 6px;
-		color: var(--fg);
-	}
-	.txt {
-		min-width: 0;
-		display: flex;
-		align-items: baseline;
-		gap: 6px;
-		white-space: nowrap;
-		overflow: hidden;
-	}
-	.txt b {
-		font: 500 13px system-ui;
-	}
-	.txt small {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		color: var(--muted);
-		font-size: 11px;
 	}
 </style>
