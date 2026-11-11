@@ -1,5 +1,6 @@
 <!-- The formatting bar above a text selection: bold, italic… link, plain text. -->
 <script lang="ts">
+	import { portal } from '../dom';
 	import type { Icon } from '../palette';
 
 	let {
@@ -18,7 +19,9 @@
 	} = $props();
 </script>
 
+<!-- in the body (portal): placed against the viewport even inside a transformed parent -->
 <div
+	use:portal
 	class="fixed z-20 flex -translate-x-1/2 translate-y-[calc(-100%-8px)] gap-0.5 rounded-[10px] border border-frame bg-surface p-1 shadow-[0_6px_24px_rgb(0_0_0/0.18)]"
 	style:left="{x}px"
 	style:top="{y}px"

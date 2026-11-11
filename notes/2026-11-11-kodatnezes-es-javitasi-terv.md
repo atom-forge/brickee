@@ -20,7 +20,7 @@ Minden lépés után frissül; a kész lépések commitolva vannak (helyben, kia
 - [x] 3.0 stílusok: sima CSS sehol (Tailwind + SCSS), pixelre egyezően; `@source` dokumentálva (S7)
 - [x] — közben talált: a tábla összezsugorodott Tailwindes oldalon (`table` osztály ütközés)
 - [x] 2.6 kiemelőszín a témából, öröklött betűtípus (S3) — a méret marad 17 px
-- [ ] 3.4 menük az `@atom-forge/ui` popup-kezelőjén, ui gombok (F6)
+- [x] 3.4 menük transzformált szülőben (F6) — saját `portal` akció; a ui popup-kezelője helyben renderel, nem oldotta volna meg; ui gombok: nem (az inverz buborék- és a tábla ikongombjaihoz nincs megfelelő ui változat)
 - [ ] 3.6 bontás maradéka: húzás és sweep külön modulban (S1) — előzmény, menük, formázósáv: kész
 - [ ] 3.1 formázott (HTML) beillesztés (F1)
 - [ ] 3.2 fájlok fogadása pluginnal: `fromFiles` (F4)

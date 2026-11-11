@@ -1,23 +1,7 @@
 <script lang="ts">
 	import { getContext, setContext, tick, untrack } from 'svelte';
 	import { Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
-	import {
-		rich,
-		clean,
-		textLen,
-		splitAtCaret,
-		atStart,
-		atEnd,
-		caretOffset,
-		caretRect,
-		caretAt,
-		setCaret,
-		removeBeforeCaret,
-		onEdgeLine,
-		focusAtEdge,
-		toggleCode,
-		plainText
-	} from './dom';
+	import { rich, clean, textLen, splitAtCaret, atStart, atEnd, caretOffset, caretRect, caretAt, setCaret, removeBeforeCaret, onEdgeLine, focusAtEdge, toggleCode, plainText, portal } from './dom';
 	import { fromMarkdown, fromStored, plainHtml, toMarkdown, toStored } from './markdown';
 	import { useCodeLanguages } from './code';
 	import { provideText, useText, type Messages } from './i18n';
@@ -303,12 +287,6 @@
 			index: slash && slash.id === b.id && slash.query === m[1] ? slash.index : 0
 		};
 	}
-
-	// Keep the highlighted item visible while moving through the menu with the arrow keys.
-	$effect(() => {
-		if (slash?.index === undefined && turn?.index === undefined) return;
-		root.querySelector(':scope > .menu .item.active')?.scrollIntoView({ block: 'nearest' });
-	});
 
 	function applySlash(item: PaletteItem) {
 		if (!slash) return;
@@ -1515,7 +1493,7 @@
 </div>
 
 <!-- the popups of this editor and the ones nested in it -->
-{#if !nested}<PopupContainer />{/if}
+{#if !nested}<div class="contents" use:portal><PopupContainer /></div>{/if}
 
 <style lang="scss">
 	// What utility classes do not express: the theme variables, the row's states driving its handle and bubble, the drop

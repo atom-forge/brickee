@@ -22,6 +22,7 @@
 
 <script lang="ts">
 	import { Check } from '@lucide/svelte';
+	import { portal } from '../dom';
 
 	let {
 		rows,
@@ -48,12 +49,21 @@
 		onpick: (n: number) => void;
 		onhover: (n: number) => void;
 	} = $props();
+
+	let menu: HTMLDivElement;
+	// Keep the highlighted row visible while moving through the menu with the arrow keys.
+	$effect(() => {
+		void index;
+		menu?.querySelector('.active')?.scrollIntoView({ block: 'nearest' });
+	});
 </script>
 
-<!-- `menu`, `turn`, `item` and `active` are hooks for the editor (scrolling the active row into view, closing on an
-     outside click), not styles. -->
+<!-- `menu`, `turn` and `active` are hooks (closing on an outside click, scrolling the active row into view), not styles.
+     It lives in the body (portal), so it keeps the editor's type size and colour itself. -->
 <div
-	class="menu fixed z-30 overflow-auto rounded-xl border border-frame bg-surface p-1.5 shadow-[0_10px_36px_rgb(0_0_0/0.2)] {turn
+	bind:this={menu}
+	use:portal
+	class="menu fixed z-30 overflow-auto text-[17px] leading-[1.65] text-surface-contrast rounded-xl border border-frame bg-surface p-1.5 shadow-[0_10px_36px_rgb(0_0_0/0.2)] {turn
 		? 'turn max-h-[340px] w-60'
 		: 'max-h-[300px] w-[260px]'} {up ? '-translate-y-full' : ''}"
 	style:left="{x}px"

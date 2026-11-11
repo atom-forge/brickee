@@ -8,6 +8,16 @@ export function rich(node: HTMLElement, value: string) {
 	};
 }
 
+/**
+ * Svelte action: moves the element to the end of the body. A floating menu positioned with `position: fixed` is then
+ * placed against the viewport even when the editor sits in a transformed parent (an animated drawer, a dialog), where
+ * `fixed` would be relative to that parent.
+ */
+export function portal(node: HTMLElement) {
+	document.body.appendChild(node);
+	return { destroy: () => node.remove() };
+}
+
 export function serialize(frag: DocumentFragment): string {
 	const d = document.createElement('div');
 	d.append(frag);
