@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pasting or importing a GFM table: `fromMarkdown(text, { plugins })` gives it to the first plugin with the new `BlockPlugin.fromTable(table: MarkdownTable)`, which returns the block's props; the bundled `table` takes them, so a table pasted into an editor that offers it becomes a table block.
 - A numbered list keeps its start number (`props.start` on its first `md:ol` item): read from markdown (`5. …`), numbered from it in the editor and the preview (`<ol start>`), and written back.
-- Tests for the markdown conversions (`bun run test`, vitest), run by the release checks and CI.
+- Tests for the markdown conversions (`bun run test`, vitest), run by the release checks, the publish workflow and a new test workflow on every push and pull request (type check, tests, package).
 - Code review findings and a staged fix plan in `notes/` (not shipped), linked from `TODO.md`.
 
 ### Changed
@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- An editor or a table removed in the middle of a block sweep, a drag or typing leaves no window listener or timer behind.
 - Copying and pasting blocks keeps plugin blocks: the clipboard carries the blocks themselves (`application/x-brickee+json`) beside their markdown, so a copied video, table, gap or box is pasted back as that block instead of a link or nothing; an editor that does not offer the plugin (or already has a unique one) gets its markdown form. An empty block takes pasted plugin blocks in its place, and pasting while blocks are selected inserts after them.
 - Changes made in a plugin's view are undoable: table cells, rows and columns, and the blocks of a nested editor (a box) are undo steps of the editor around them, and Ctrl+Z / Ctrl+Shift+Z in a table cell undo and redo there instead of the cell's own short-lived history. A document loaded from outside starts a fresh history.
 - A read-only editor no longer writes its normalized document back into `value` on mount, so a host does not see a change nobody made.

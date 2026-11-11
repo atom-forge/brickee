@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, setContext, tick, untrack } from 'svelte';
+	import { getContext, onDestroy, setContext, tick, untrack } from 'svelte';
 	import { Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
 	import {
 		rich,
@@ -1221,9 +1221,16 @@
 
 	function endSweep() {
 		removeEventListener('mousemove', sweep);
+		removeEventListener('mouseup', endSweep);
 		sweepFrom = null;
 		sweeping = false;
 	}
+
+	// Removed in the middle of a sweep or of typing: no listener or timer is left behind.
+	onDestroy(() => {
+		endSweep();
+		clearTimeout(timer);
+	});
 
 	/* ---------------------------------------------------------------- dragging */
 

@@ -107,6 +107,8 @@ blokknál ez másodpercek. A teljesítményteszt (1.1) eldönti, kell-e javítá
 
 #### 2.1 P1: blokkonkénti gyorsítótár a tárolt alakhoz
 
+KÉSZ: leütésenként csak a szerkesztett blokk megy át a DOM-on; 2000 blokk + előnézet: kb. 50 → 33 ms, 500 blokk: kb. 10 → 6 ms (`/dev/perf`). A read-only szerkesztő nem ír vissza. Kívülről új tömbbel kell frissíteni (helyben módosítást nem vesz észre) — dokumentálva.
+
 Cél: változatlan blokkra ugyanaz a `StoredBlock` objektum jöjjön vissza, DOM-munka nélkül.
 
 1. `Editor.svelte`: `const stored = new Map<string, { key: string; out: StoredBlock }>()` a blokk `id`-jával.
@@ -126,6 +128,8 @@ Kész, ha: gépeléskor csak a szerkesztett blokk `toStored`-ja fut, és az elő
 
 #### 2.2 H2: pluginváltozások a visszavonási előzményben
 
+KÉSZ: táblacella, sor, oszlop és beágyazott szerkesztő is visszavonható; Ctrl+Z a táblacellában a szerkesztőé; külső betöltés törli az előzményt. Élőben ellenőrizve.
+
 1. `Editor.svelte`: a `PluginHost` két settere hívja a `typed()`-ot a hozzárendelés előtt:
    `bind:props={() => b.props ?? {}, (p) => { typed(); b.props = p; }}`, ugyanígy a `blocks`-ra.
    A `typed()` 600 ms-os összevonása miatt a folyamatos cellagépelés egy lépés lesz.
@@ -140,6 +144,8 @@ Kész, ha: táblacella-szerkesztés, sor törlése, oszlop áthúzása és egy n
 Ctrl+Z-vel, és az újra (redo) is működik.
 
 #### 2.3 H3: saját vágólap-formátum
+
+KÉSZ: `application/x-brickee+json` blokkonkénti markdownnal; nem kínált / második unique plugin a markdownjára esik vissza; üres blokk helyére kerül; blokk-kijelölésnél utána. Élőben ellenőrizve.
 
 1. `onCopy`: a `text/plain` (markdown) mellé `application/x-brickee+json` is kerül: a kijelölt blokkok tárolt alakja
    (`toStored`), verziószámmal: `{ v: 1, blocks: StoredBlock[] }`.
@@ -171,6 +177,8 @@ Kész, ha: YouTube-, tábla-, gap- és note-blokk másolás-beillesztéssel ugya
 3. Kommentek átírása; „Unknown block: {type}” a `tr`-en keresztül, `hu` fordítással.
 
 #### 2.5 S5 + S6: CI és takarítás
+
+KÉSZ: `.github/workflows/test.yml`; `onDestroy` takarítás az `Editor`-ban és a `Table`-ben.
 
 1. `.github/workflows/test.yml`: push és PR esetén `bun install --frozen-lockfile`, `bun run check`, `bun run test`
    (a Ship repó `test.yml`-je a minta).
