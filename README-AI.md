@@ -45,6 +45,7 @@ function inline(md: string): string;                 // inline markdown -> safe 
 function fromStored(s: StoredBlock): Block;
 function toStored(b: Block): StoredBlock;           // browser only
 function fromMarkdown(src: string, opts?: { plugins?: BlockPlugin[] }): Block[]; // CommonMark/GFM blocks; a paragraph's lines stay one block; a GFM table goes to the first plugin with fromTable
+function fromHtml(html: string, opts?: { plugins?: BlockPlugin[] }): Block[]; // browser only; formatted paste (web, Google Docs, Word) via markdown
 function toMarkdown(blocks: Block[], opts?: { plugins?: BlockPlugin[] }): string; // browser only
 
 // contexts (call provide* in component init, above the editor/preview; use* in plugin components)

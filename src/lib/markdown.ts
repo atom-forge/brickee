@@ -119,21 +119,31 @@ export function inline(md: string): string {
 }
 
 /** A link target as markdown reads it back: spaces and unbalanced parentheses encoded. */
-function mdUrl(href: string): string {
+export function mdUrl(href: string): string {
 	let depth = 0;
 	const balanced = [...href].every((c) => (c === '(' ? ++depth : c === ')' ? --depth : depth) >= 0) && depth === 0;
 	return (balanced ? href : href.replace(/\(/g, '%28').replace(/\)/g, '%29')).replace(/\s/g, '%20');
+}
+
+/** Plain text as inline markdown: what would read as a mark is escaped (`_` only at a word's edge: snake_case stays). */
+export function escText(t: string): string {
+	return t
+		.replace(SPECIAL, '\\$&')
+		.replace(/_/g, (u, i: number, s: string) => (/[\p{L}\p{N}]/u.test(s[i - 1] ?? '') && /[\p{L}\p{N}]/u.test(s[i + 1] ?? '') ? u : '\\_'));
+}
+
+/** Inline markdown for a code span: a fence longer than any backtick run inside, padded when it starts or ends with one. */
+export function codeSpan(text: string): string {
+	const fence = '`'.repeat(Math.max(0, ...(text.match(/`+/g) ?? []).map((r) => r.length)) + 1);
+	const pad = /^`|`$/.test(text) ? ' ' : '';
+	return fence + pad + text + pad + fence;
 }
 
 function walk(n: Node, code: boolean): string {
 	if (n.nodeType === Node.TEXT_NODE) {
 		// Zero-width spaces only hold the caret outside a mark (see plainText()).
 		const t = (n.textContent ?? '').replace(/​/g, '');
-		if (code) return t;
-		// `_` emphasizes only at a word's edge: snake_case stays as it is.
-		return t
-			.replace(SPECIAL, '\\$&')
-			.replace(/_/g, (u, i: number, s: string) => (/[\p{L}\p{N}]/u.test(s[i - 1] ?? '') && /[\p{L}\p{N}]/u.test(s[i + 1] ?? '') ? u : '\\_'));
+		return code ? t : escText(t);
 	}
 	if (!(n instanceof HTMLElement)) return '';
 	const inCode = code || n.tagName === 'CODE';
@@ -155,13 +165,8 @@ function walk(n: Node, code: boolean): string {
 		case 'STRIKE':
 		case 'DEL':
 			return inner ? `~~${inner}~~` : '';
-		case 'CODE': {
-			if (!inner || code) return inner;
-			// A fence longer than any backtick run inside; a space keeps a backtick at an edge apart from it.
-			const fence = '`'.repeat(Math.max(0, ...(inner.match(/`+/g) ?? []).map((r) => r.length)) + 1);
-			const pad = /^`|`$/.test(inner) ? ' ' : '';
-			return fence + pad + inner + pad + fence;
-		}
+		case 'CODE':
+			return !inner || code ? inner : codeSpan(inner);
 		case 'A':
 			return `[${inner}](${mdUrl(n.getAttribute('href') ?? '')})`;
 		case 'BR':
@@ -200,7 +205,7 @@ const SETEXT = /^(=+|-+)[ \t]*$/;
 const TABLE_RULE = /^\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$/;
 
 /** A line of text, escaped where markdown would read it as a block start (`1. ` as `1\. `). */
-function escLine(t: string): string {
+export function escLine(t: string): string {
 	if (!BLOCK_START.test(t)) return t;
 	const ol = /^(\d{1,9})([.)])/.exec(t);
 	return ol ? `${ol[1]}\\${t.slice(ol[1].length)}` : '\\' + t;

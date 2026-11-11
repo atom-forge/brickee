@@ -3,6 +3,7 @@
 	import { Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
 	import { rich, clean, textLen, splitAtCaret, atStart, atEnd, caretOffset, caretRect, caretAt, setCaret, removeBeforeCaret, onEdgeLine, focusAtEdge, toggleCode, plainText, portal } from './dom';
 	import { fromMarkdown, fromStored, plainHtml, toMarkdown, toStored } from './markdown';
+	import { fromHtml } from './html';
 	import { useCodeLanguages } from './code';
 	import { provideText, useText, type Messages } from './i18n';
 	import { PopupContainer, createPopupManager, getPopupManager } from '@atom-forge/ui';
@@ -627,23 +628,38 @@
 		);
 	}
 
+	/**
+	 * What a paste brings, as blocks: our own blocks as they were, otherwise formatted HTML (a web page, Google Docs,
+	 * Word), otherwise markdown text; a GFM table goes to a plugin that takes tables, if this editor offers one.
+	 */
+	function pasted(data: DataTransfer | null): Block[] | null {
+		const own = fromClip(data?.getData(CLIP));
+		if (own) return admit(own);
+		const offered = { plugins: plugins.filter((p) => allowed.has(p.type)) };
+		const html = data?.getData('text/html');
+		if (html) return fit(fromHtml(html, offered));
+		const text = data?.getData('text/plain');
+		return text == null ? null : fit(fromMarkdown(text.replace(/\r/g, ''), offered));
+	}
+
 	function onPaste(e: ClipboardEvent, b: Block) {
-		const own = b.type === 'code' ? null : fromClip(e.clipboardData?.getData(CLIP));
-		const text = e.clipboardData?.getData('text/plain');
-		if (!own && text == null) return;
+		const data = e.clipboardData;
+		const text = data?.getData('text/plain');
+		const rich = b.type !== 'code' && (data?.types.includes(CLIP) || data?.types.includes('text/html'));
+		if (!rich && text == null) return;
 		e.preventDefault();
 		const ce = e.currentTarget as HTMLElement;
 		const norm = (text ?? '').replace(/\r/g, '');
 
-		if (!own && (b.type === 'code' || !norm.includes('\n'))) {
+		// Plain text into a code block, or a single line of plain text: typed in as it is.
+		if (!rich && (b.type === 'code' || !norm.includes('\n'))) {
 			norm.split('\n').forEach((line, n) => {
 				if (n) document.execCommand('insertLineBreak');
 				if (line) document.execCommand('insertText', false, line);
 			});
 			return;
 		}
-		// Our own blocks as they were; otherwise markdown (a GFM table goes to a plugin that takes tables, if offered).
-		const parsed = own ? admit(own) : fit(fromMarkdown(norm, { plugins: plugins.filter((p) => allowed.has(p.type)) }));
+		const parsed = pasted(data) ?? [];
 		if (!parsed.length) return;
 		const parts = splitAtCaret(ce);
 		if (!parts) return;
@@ -691,9 +707,7 @@
 	/** Pasting while whole blocks are selected: the blocks go in after the selection. */
 	function onRootPaste(e: ClipboardEvent) {
 		if (e.target !== root || readonly || !selH) return;
-		const own = fromClip(e.clipboardData?.getData(CLIP));
-		const text = e.clipboardData?.getData('text/plain') ?? '';
-		const parsed = own ? admit(own) : fit(fromMarkdown(text.replace(/\r/g, ''), { plugins: plugins.filter((p) => allowed.has(p.type)) }));
+		const parsed = pasted(e.clipboardData) ?? [];
 		e.preventDefault();
 		if (!parsed.length) return;
 		const at = Math.max(...value.map((b, n) => (selSet.has(b.id) ? n : -1))) + 1;

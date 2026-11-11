@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Formatted paste: text pasted from a web page, Google Docs or Word keeps its headings, paragraphs, lists (nested, numbered, to-dos), quotes, code, rules, tables (for a plugin that takes them) and inline marks, instead of arriving as plain text. Exported as `fromHtml(html, { plugins })` (browser only); it reads the HTML through markdown, so the result is as safe as any other text.
 - Pasting or importing a GFM table: `fromMarkdown(text, { plugins })` gives it to the first plugin with the new `BlockPlugin.fromTable(table: MarkdownTable)`, which returns the block's props; the bundled `table` takes them, so a table pasted into an editor that offers it becomes a table block.
 - A numbered list keeps its start number (`props.start` on its first `md:ol` item): read from markdown (`5. …`), numbered from it in the editor and the preview (`<ol start>`), and written back.
 - Tests for the markdown conversions (`bun run test`, vitest), run by the release checks, the publish workflow and a new test workflow on every push and pull request (type check, tests, package).

@@ -9,6 +9,7 @@ export { default as Empty } from './kit/Empty.svelte';
 export * from './kit/util';
 export * from './model';
 export { inline, fromStored, toStored, fromMarkdown, toMarkdown } from './markdown';
+export { fromHtml } from './html';
 export { provideView, useView } from './view';
 export { provideCodeLanguages, useCodeLanguages, type CodeLanguage } from './code';
 export { scrollSync, scrollFraction, setScrollFraction, type ScrollSync } from './scroll';

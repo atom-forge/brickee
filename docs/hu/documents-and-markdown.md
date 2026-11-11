@@ -79,6 +79,7 @@ A markdown teljes értékű formátum: a vágólap ezt hordozza, és a befogadó
 | `fromStored(block)` | `StoredBlock` → `Block` | bárhol |
 | `toStored(block)` | `Block` → `StoredBlock` | csak böngészőben |
 | `fromMarkdown(text, { plugins })` | markdown → `Block[]` | bárhol |
+| `fromHtml(html, { plugins })` | HTML (formázott beillesztés, egy oldal) → `Block[]` | csak böngészőben |
 | `toMarkdown(blocks, { plugins })` | `Block[]` → markdown | csak böngészőben |
 | `inline(md)` | inline markdown → inline HTML | bárhol |
 
@@ -106,6 +107,8 @@ Amit a `fromMarkdown` beolvas:
 - egy bekezdés, listaelem vagy idézet sorait egy blokként, köztük sortöréssel; üres sor, idézetben a magában álló `>` új blokkot kezd;
 - a hivatkozásos linkeket (`[text][id]` és `[id]: url`) feloldva, a lábjegyzet-definíciókat a számuk utáni bekezdésként;
 - a GFM-táblázatot a `plugins` közül az első olyan plugin blokkjaként, amelyik fogad táblázatot (`fromTable`, lásd [Pluginok írása](writing-plugins.md#beillesztett-táblázatok-fogadása); a beépített `table` ilyen), különben szövegként. A szerkesztő átadja a felkínált pluginjait, így egy beillesztett táblázatból táblázat blokk lesz.
+
+Amit a `fromHtml` beolvas – a szerkesztő ezt használja weboldalról, Google Docsból vagy Wordből érkező formázott beillesztéshez: címsorok, bekezdések, listák (beágyazva, a számozottak a kezdőszámukkal, a teendők a jelölőnégyzetekből), idézetek, kód (`pre`, `language-…` osztállyal), elválasztók, táblázatok (egy azt fogadó pluginnak) és az inline jelölések – a Google Docs félkövér, dőlt és áthúzott spanjei is. A képekből link lesz (a csomagban nincs képfogalom), a scriptek, stílusok és űrlapelemek kimaradnak. A HTML-t csak olvassa: markdownon és ugyanazon a biztonságos megjelenítésen megy át, mint minden más.
 
 Amit a `toMarkdown` kiír:
 
