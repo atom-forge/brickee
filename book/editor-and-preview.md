@@ -26,7 +26,6 @@ An empty document is shown as one empty paragraph, so the value the editor write
 | `blocks` | `StoredBlock[]` | — | The document to render. |
 | `plugins` | `BlockPlugin[]` | — | The plugins whose previews render the plugin blocks. |
 | `messages` | `Messages` | — | UI text in the host's language. |
-| `markGated` | `boolean` | `true` | Marks the blocks after a gate block (see [Unique and gate blocks](writing-plugins.md#unique-and-gate-blocks)). |
 | `nested` | `boolean` | `false` | Set by plugin previews that render their nested blocks. |
 
 The preview renders built-in blocks as plain HTML (`p`, `h1`…`h6`, `ul`/`ol` with nested items, `blockquote`, `pre > code` with a `language-<lang>` class, `hr`) and each plugin block with its plugin's `preview`. A block whose type has no plugin in `plugins`, or whose plugin has no `preview`, is not rendered.

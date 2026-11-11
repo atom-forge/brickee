@@ -9,7 +9,7 @@ export interface CodeLanguage {
 	label?: string;
 }
 
-const KEY = 'block-editor:code-languages';
+const KEY = 'brickee:code-languages';
 type Get = () => CodeLanguage[];
 
 const normalize = (list: (string | CodeLanguage)[]) => list.map((l) => (typeof l === 'string' ? { value: l } : l));

@@ -16,10 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The editor's internal context keys are `brickee:*` (were `block-editor:*`); an "Unknown block" note is translatable (`Unknown block: {type}`, also in the Hungarian locale).
 - `fromMarkdown` reads much more of CommonMark and GFM: fences of any length and `~~~` (closed only by a fence at least as long), indented code, setext headings and closing `#`s, nested quotes, list nesting by the items' markers (also under `1. ` and with four-space indents), reference links, footnotes (as superscripts), and the lines of a paragraph, list item or quote as one block with line breaks instead of one block per line.
 - `inline` reads `_italic_`, `__bold__` and `***both***` (now valid HTML), code spans of any backtick length, link targets with balanced parentheses and titles, `<https://…>` autolinks, images (as links), every ASCII punctuation escape, and inline HTML (marks kept, other tags dropped). A stored text with a word wrapped in single underscores (`_word_`) now shows it in italics.
 - Typing converts only the edited block to its stored form: the other blocks keep their objects in `value`, so the editor and a `<Preview>` beside it do much less work per keystroke (a 2000-block document with a preview: about 50 ms → 33 ms per keystroke). A document from outside is reloaded when `value` is replaced with a new array that differs from the current one; changing the array in place is not picked up.
 - `toMarkdown` writes markdown other readers read the same way: items nested under a numbered item indented to its content, code fenced longer than any backtick run in it, consecutive quotes as one quote, line breaks as a backslash at the line's end, `_` and line starts that would read as markup escaped.
+
+### Removed
+
+- **Breaking:** gate blocks — gating content is the application's concept, not the editor's. Removed: `BlockPlugin.gate`, the `Preview`'s `markGated` prop and its "For supporters only" section (`.supporters`, `.supporters-label`), and that text in the Hungarian locale; the `Preview` renders every block. `unique` stays. See the upgrading chapter.
 
 ### Fixed
 

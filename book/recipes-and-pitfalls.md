@@ -116,7 +116,6 @@ The application reads the package's built `dist/`, so rebuild the package after 
 | A box cannot be put inside another box | Nested editors go one level deep | Design containers to hold content blocks, not other containers. |
 | A block is not offered inside a container | Its `accepts` or the host `palette` leaves it out | Add the palette id to `accepts` (or use `'md:*'` for every built-in). |
 | A unique block appears twice | The schema does not enforce `unique` | Check it on the server if your application relies on it. |
-| Gated content visible to everyone | `gate` only marks the blocks | Cut the document on the server before rendering. |
 | `document is not defined` | `toMarkdown` or `toStored` ran during SSR | Call them in the browser only. |
 | A colour or link from props breaks the page | Props are user input | Use `safeColor`, check links, never use `{@html}` with props. |
 | Overridden plugin loses its blocks | Its `type` was changed | Keep `type` when spreading a plugin. |

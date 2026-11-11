@@ -5,7 +5,7 @@ import { getContext, setContext } from 'svelte';
 export type Messages = Record<string, string>;
 export type Translate = (text: string, vars?: Record<string, string | number>) => string;
 
-const KEY = 'block-editor:text';
+const KEY = 'brickee:text';
 type Get = () => Messages | undefined;
 
 export const translator =

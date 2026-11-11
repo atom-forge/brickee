@@ -52,7 +52,7 @@ This book is for Svelte 5 developers who embed the editor in an application, cho
 4. [[bundled-plugins|Bundled plugins]] — what `@atom-forge/brickee/plugins` contains, and how to override a preview or add fields.
 5. [[writing-plugins|Writing plugins]] — the `BlockPlugin` anatomy, fields, views and previews, containers, markdown forms, image blocks, and the kit.
 6. [[host-contexts|Host contexts]] — per-view values, code languages, and UI text.
-7. [[server-side|On the server]] — schema validation, plain text, and gated content.
+7. [[server-side|On the server]] — schema validation and plain text.
 8. [[recipes-and-pitfalls|Recipes and pitfalls]] — complete patterns and the mistakes to avoid.
 9. [[upgrading|Upgrading]] — what to change in your code when you move to a newer version.
 10. [[ai-notes|AI Notes]] — instructions to copy into the agent instruction file of a project that uses the package.

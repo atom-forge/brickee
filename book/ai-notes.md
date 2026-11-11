@@ -50,7 +50,6 @@ Rules:
 - Containers go one level deep; narrow their content with `accepts`.
 - Validate every saved document on the server with `blocksSchemaFor(plugins)`
   from `@atom-forge/brickee/schema`, plus the project's own refinements.
-- `gate` only marks content in the preview; cut gated content on the server.
 - App needs reach plugins through contexts (`provideView`,
   `provideCodeLanguages`, `messages`), plugin fields or the project's own
   modules and contexts, never through new editor props.

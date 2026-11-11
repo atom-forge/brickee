@@ -21,7 +21,6 @@ Egy plugin egy `BlockPlugin` objektum és két Svelte-komponens: egy **nézet** 
 | `accepts` | `string[]` | Egy tároló blokk megengedett beágyazott blokkjai, palettaazonosítókként; az `'md:*'` az összes beépített blokk. Alapértelmezés: minden, amit az alkalmazás kínál. |
 | `markdown` | `(props: P, ctx: MarkdownContext) => string` | A markdown alakja (opcionális). |
 | `unique` | `boolean` | Dokumentumonként legfeljebb egy, csak a legfelső szinten. |
-| `gate` | `boolean` | Az utána következő blokkok védettek; az előnézet megjelöli őket. |
 
 A `P` a plugin props-típusa; `Record<string, unknown>`-t kiterjesztő interfészként deklaráld.
 
@@ -261,16 +260,9 @@ Hogyan működik a beágyazás:
 - Blokkok tárolóba csomagolását az „Átalakítás” menüből, illetve egy tároló másikká alakítását csak akkor kínálja fel, ha a tároló minden bekerülő blokkot elfogad.
 - A `blocksSchemaFor(plugins)` a szerveren ellenőrzi az `accepts`-et (lásd [A szerveren](server-side.md)).
 
-## Egyedi és kapus blokkok
+## Egyedi blokkok
 
-- **`unique: true`** — dokumentumonként legfeljebb egy, a legfelső szinten. Amint a dokumentumban van egy, a plugin eltűnik a perjeles és az „Átalakítás” menüből; beágyazott szerkesztő soha nem kínálja.
-- **`gate: true`** — az első legfelső szintű kapus blokk utáni blokkok védettek. A `Preview` egy „For supporters only” jelölésű, szaggatott vonallal elválasztott szakaszban rendereli őket; a `markGated={false}` kikapcsolja a jelölést. A beágyazott előnézetek soha nem osztódnak ketté.
-
-Mindkettőre tipikus példa egy csak támogatóknak szóló elválasztó: dokumentumonként egy, mögötte a védett tartalommal.
-
-> **A kapu csak jelöl**
->
-> A `gate` semmit sem rejt el: az előnézet továbbra is minden blokkot renderel, és a tárolt dokumentum is mindet tartalmazza. Annak eldöntése, hogy ki olvashatja a védett részt — és hogy mindenki más elől kimaradjon az oldalról —, az alkalmazás feladata, a szerveren (lásd [Védett tartalom](server-side.md#védett-tartalom)). A `unique`-ot a séma sem kényszeríti ki.
+**`unique: true`** — dokumentumonként legfeljebb egy, a legfelső szinten (például egy tartalomjegyzék). Amint a dokumentumban van egy, a plugin eltűnik a perjeles és az „Átalakítás” menüből, a beillesztett második példány a markdown alakjára esik vissza, és beágyazott szerkesztő soha nem kínálja. A séma nem kényszeríti ki.
 
 ## Markdown alak
 

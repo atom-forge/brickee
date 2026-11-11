@@ -1,4 +1,5 @@
-<!-- Styles travel with the markup: the sites show the blocks as server-rendered HTML (see content.server.ts). -->
+<!-- Renders a document the way a site shows it. Styles travel with the markup (injected), so the preview looks the same
+     wherever it is mounted. -->
 <svelte:options css="injected" />
 
 <script lang="ts" module>
@@ -55,24 +56,17 @@
 	interface Props {
 		blocks: StoredBlock[];
 		plugins: BlockPlugin[];
-		/** Set by plugins rendering their nested blocks; only the top level splits at the supporters-only divider. */
+		/** Set by plugins rendering their nested blocks (a container's preview). */
 		nested?: boolean;
 		/** UI text in the host's language; nested previews share their parent's. */
 		messages?: Messages;
-		/** Mark the blocks after a gate (the supporters-only divider) with a label and a dashed line; default: yes. */
-		markGated?: boolean;
 	}
-	let { blocks, plugins, nested = false, messages, markGated = true }: Props = $props();
+	let { blocks, plugins, nested = false, messages }: Props = $props();
 
 	provideText(() => messages);
 	const tr = useText();
 
 	const pluginOf = (type: string) => plugins.find((p) => p.type === type);
-
-	// Everything after a unique supporters-only divider is for supporters: shown here, marked as such.
-	const lockAt = $derived(nested || !markGated ? -1 : blocks.findIndex((b) => pluginOf(b.type)?.gate));
-	const open = $derived(lockAt < 0 ? blocks : blocks.slice(0, lockAt + 1));
-	const locked = $derived(lockAt < 0 ? [] : blocks.slice(lockAt + 1));
 
 	// Inline markdown -> html: text is escaped first, links are http(s), mailto, tel or site-relative only (see inline()).
 	const html = (b: StoredBlock) => inline(b.text ?? '');
@@ -137,28 +131,11 @@
 {/snippet}
 
 <div class="preview" class:nested>
-	{@render run(open)}
-	{#if locked.length}
-		<div class="supporters" aria-label={tr('For supporters only')}>
-			<p class="supporters-label">{tr('For supporters only')}</p>
-			{@render run(locked)}
-		</div>
-	{/if}
+	{@render run(blocks)}
 </div>
 
 <style>
 	/* Only what the renderer itself adds; the article typography comes from the page that shows it. */
-	.supporters {
-		margin-top: 1.5em;
-		padding-top: 1em;
-		border-top: 2px dashed #f96854;
-	}
-	.supporters-label {
-		font: 600 11px/1 system-ui, sans-serif;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: #f96854;
-	}
 	.preview :global(ul.todo) {
 		list-style: none;
 		padding-left: 0.2em;

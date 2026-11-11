@@ -152,10 +152,8 @@ export interface BlockPlugin<P extends Props = Props> {
 	 * that has it gets the table; without one, the table stays text.
 	 */
 	fromTable?(table: MarkdownTable): P;
-	/** At most one per document, and only at the top level (e.g. the supporters-only divider). */
+	/** At most one per document, and only at the top level (e.g. a table of contents). */
 	unique?: boolean;
-	/** The blocks after it are gated (e.g. for supporters only): the preview marks them. Implies nothing about `unique`. */
-	gate?: boolean;
 }
 
 export { MAX_INDENT } from './model';

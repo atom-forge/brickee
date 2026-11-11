@@ -77,20 +77,3 @@ export const description = (doc: StoredBlock[]) => blocksToPlainText(doc).slice(
 ## Rendering
 
 `Preview` is an ordinary Svelte component and can be server-rendered; the core renderer and the bundled previews use no browser APIs. Only the markdown export path (`toMarkdown`, `toStored`) needs the browser.
-
-## Gated content
-
-A gate block (a plugin with `gate: true`, such as a supporters-only divider) only makes the preview mark the blocks after it. To keep the gated part from readers who may not see it, cut the document on the server before it reaches the page:
-
-```ts
-import type { StoredBlock } from '@atom-forge/brickee/model';
-
-/** The document up to and including the first gate block, for readers without access. */
-export function publicPart(doc: StoredBlock[], gateTypes: string[], canRead: boolean): StoredBlock[] {
-	if (canRead) return doc;
-	const at = doc.findIndex((b) => gateTypes.includes(b.type));
-	return at < 0 ? doc : doc.slice(0, at + 1);
-}
-```
-
-Call it with your gate plugin types (for example `['paywall']`) and the reader's access. Readers without access see the content up to the gate block and its teaser; readers with access get the whole document, and the preview marks the gated part for them.

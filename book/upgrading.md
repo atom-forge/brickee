@@ -7,6 +7,14 @@ This chapter lists the changes that may require action when you move to a newer 
 
 Changes that need no action from you — new exports, fixes, documentation updates — are listed only in the changelog (`CHANGELOG.md`, shipped with the package).
 
+## From 0.0.2 to Unreleased
+
+### Gate blocks are gone
+
+Gating content (a supporters-only or paywall divider) is an application's concept, not the editor's. `BlockPlugin.gate`, the `Preview`'s `markGated` prop, its "For supporters only" section with the `.supporters` and `.supporters-label` classes, and the `For supporters only` text of the Hungarian locale are removed. The `Preview` now renders every block it gets. `unique` stays.
+
+**What to do:** remove `gate: true` from your plugin and `markGated` from your previews. Your divider stays an ordinary (unique) plugin block, so stored documents still load. Where you showed the gated part marked, render the document in two parts yourself — `const at = doc.findIndex((b) => b.type === 'divider')`, then `doc.slice(0, at + 1)` and `doc.slice(at + 1)` in two `<Preview>`s inside your own markup — and keep cutting the gated part for readers without access before it reaches the page. Add your own translation for any label you show.
+
 ## From 0.0.1 to 0.0.2
 
 ### Images and media are no longer part of the package

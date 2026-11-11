@@ -1,6 +1,6 @@
-// block-editor: a Svelte 5 block editor. The core is markdown (`md:p`, `md:h2`, `md:code`…) plus the kit to write plugins
+// Brickee: a Svelte 5 block editor. The core is markdown (`md:p`, `md:h2`, `md:code`…) plus the kit to write plugins
 // with; every other block is a plugin with an editor view, a site preview and optionally a markdown form. The bundled
-// plugins (block-editor/plugins) are plugins like any other. The stored form is `StoredBlock[]` (see model.ts).
+// plugins (@atom-forge/brickee/plugins) are plugins like any other. The stored form is `StoredBlock[]` (see model.ts).
 export { default as Editor } from './Editor.svelte';
 export { default as Preview } from './Preview.svelte';
 // The kit: what plugins are written with (box frame, empty state, helpers).

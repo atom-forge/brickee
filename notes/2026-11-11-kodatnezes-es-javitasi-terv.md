@@ -160,6 +160,8 @@ Kész, ha: YouTube-, tábla-, gap- és note-blokk másolás-beillesztéssel ugya
 
 #### 2.4 H5 + S2: alkalmazásfüggő maradványok
 
+KÉSZ: a `gate` kikerült a kódból, a bemutatóoldalról és a dokumentációból (upgrading-bejegyzéssel); kontextuskulcsok `brickee:*`; régi kommentek átírva; „Unknown block: {type}” fordítható.
+
 1. A `gate` teljesen kikerül (**breaking**):
    - `types.ts`: a `BlockPlugin.gate` mező és a kommentje;
    - `Preview.svelte`: a `markGated` prop, a `lockAt` / `open` / `locked` vágás, a `.supporters` blokk és stílusai;

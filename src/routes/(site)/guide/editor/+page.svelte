@@ -22,7 +22,6 @@
 		{ name: 'blocks', type: 'StoredBlock[]', description: 'The document to render.' },
 		{ name: 'plugins', type: 'BlockPlugin[]', description: 'The same plugins the editor got; blocks without a plugin <code>preview</code> are skipped.' },
 		{ name: 'messages', type: 'Messages', description: 'UI text.' },
-		{ name: 'markGated', type: 'boolean', default: 'true', description: 'Marks the blocks after a <code>gate</code> plugin block.' },
 		{ name: 'nested', type: 'boolean', default: 'false', description: 'For container previews.' }
 	];
 </script>

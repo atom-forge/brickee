@@ -28,7 +28,7 @@
 	import { acceptsId, BUILT_IN_IDS, PALETTE_ITEMS, type Icon, type PaletteItem } from './palette';
 	import { MAX_INDENT, newBlock, numbering, uid, type Block, type BlockPlugin, type BlockType, type StoredBlock, type PropField, type Content, BUILT_IN_CONTENT, isMd, MD } from './types';
 
-	const HUB = 'block-editor:hub';
+	const HUB = 'brickee:hub';
 
 	interface Props {
 		/** The document: built-in blocks as markdown snippets, plugin blocks with their props. */
@@ -1428,7 +1428,7 @@
 							/>
 						</div>
 					{:else}
-						<div class="unknown">Unknown block: {b.plugin}</div>
+						<div class="unknown">{tr('Unknown block: {type}', { type: b.plugin ?? '' })}</div>
 					{/if}
 				{:else}
 					{#if b.type === 'ul'}

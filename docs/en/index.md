@@ -29,7 +29,7 @@ The editor itself knows nothing about your application. Whatever an app needs �
 4. [Bundled plugins](bundled-plugins.md) — what `@atom-forge/brickee/plugins` contains, and how to override a preview or add fields.
 5. [Writing plugins](writing-plugins.md) — the `BlockPlugin` anatomy, fields, views and previews, containers, markdown forms, image blocks, and the kit.
 6. [Host contexts](host-contexts.md) — per-view values, code languages, and UI text.
-7. [On the server](server-side.md) — schema validation, plain text, and gated content.
+7. [On the server](server-side.md) — schema validation and plain text.
 8. [Recipes and pitfalls](recipes-and-pitfalls.md) — complete patterns and the mistakes to avoid.
 9. [Upgrading](upgrading.md) — what to change in your code when you move to a newer version.
 

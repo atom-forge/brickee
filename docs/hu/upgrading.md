@@ -6,6 +6,14 @@ Ez a fejezet azokat a változásokat sorolja fel, amelyek teendőt igényelhetne
 
 A tőled semmit nem igénylő változások – új exportok, javítások, dokumentációfrissítések – csak a változásnaplóban (`CHANGELOG.md`, a csomaggal együtt szállítva) szerepelnek.
 
+## A 0.0.2-ről a következő változatra
+
+### A kapus blokkok megszűntek
+
+A tartalom védése (támogatói vagy fizetőfalas elválasztó) az alkalmazás fogalma, nem a szerkesztőé. Kikerült a `BlockPlugin.gate`, a `Preview` `markGated` propja, a „For supporters only” szakasza a `.supporters` és `.supporters-label` osztályokkal, valamint a magyar fordítás `For supporters only` szövege. A `Preview` mostantól minden kapott blokkot renderel. A `unique` marad.
+
+**Teendő:** töröld a `gate: true`-t a pluginodból és a `markGated`-et az előnézeteidből. Az elválasztód közönséges (egyedi) pluginblokk marad, így a tárolt dokumentumok továbbra is betöltődnek. Ahol a védett részt megjelölve mutattad, rendereld a dokumentumot magad két részben – `const at = doc.findIndex((b) => b.type === 'divider')`, majd `doc.slice(0, at + 1)` és `doc.slice(at + 1)` két `<Preview>`-ban, a saját jelölésedben –, és a hozzáférés nélküli olvasóknak továbbra is vágd le a védett részt, mielőtt az oldalra kerül. Az általad mutatott feliratokhoz adj saját fordítást.
+
 ## A 0.0.1-ről a 0.0.2-re
 
 ### A képek és a média már nem részei a csomagnak

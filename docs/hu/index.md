@@ -29,7 +29,7 @@ Maga a szerkesztő semmit sem tud az alkalmazásodról. Amire egy alkalmazásnak
 4. [Mellékelt pluginok](bundled-plugins.md) — mit tartalmaz az `@atom-forge/brickee/plugins`, és hogyan írhatsz felül egy előnézetet vagy adhatsz hozzá mezőket.
 5. [Pluginok írása](writing-plugins.md) — a `BlockPlugin` felépítése, mezők, nézetek és előnézetek, tárolók, markdown alakok, képblokkok és a kit.
 6. [Az alkalmazás kontextusai](host-contexts.md) — nézetenkénti értékek, kódnyelvek és felületi szövegek.
-7. [A szerveren](server-side.md) — sémavalidálás, sima szöveg és védett tartalom.
+7. [A szerveren](server-side.md) — sémavalidálás, sima szöveg.
 8. [Receptek és buktatók](recipes-and-pitfalls.md) — teljes minták és az elkerülendő hibák.
 9. [Frissítés](upgrading.md) — mit kell módosítanod a kódodban, amikor újabb verzióra váltasz.
 

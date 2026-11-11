@@ -21,7 +21,6 @@ A plugin is a `BlockPlugin` object plus two Svelte components: a **view** for th
 | `accepts` | `string[]` | A container's allowed nested blocks, as palette ids; `'md:*'` is every built-in block. Default: everything the host offers. |
 | `markdown` | `(props: P, ctx: MarkdownContext) => string` | Its markdown form (optional). |
 | `unique` | `boolean` | At most one per document, top level only. |
-| `gate` | `boolean` | The blocks after it are gated; the preview marks them. |
 
 `P` is the props type of the plugin; declare it as an interface extending `Record<string, unknown>`.
 
@@ -261,16 +260,9 @@ How nesting works:
 - Wrapping blocks into a container from the Turn-into menu, and turning a container into another, is offered only when the container accepts every block going in.
 - `blocksSchemaFor(plugins)` checks `accepts` on the server (see [On the server](server-side.md)).
 
-## Unique and gate blocks
+## Unique blocks
 
-- **`unique: true`** — at most one per document, at the top level. Once the document has one, the plugin leaves the slash and Turn-into menus; nested editors never offer it.
-- **`gate: true`** — the blocks after the first top-level gate block are gated. The `Preview` renders them inside a section marked "For supporters only" with a dashed line; `markGated={false}` turns the marking off. Nested previews never split.
-
-A supporters-only divider is a typical example of both: one per document, with the gated content behind it.
-
-> **Gating only marks**
->
-> `gate` does not hide anything: the preview still renders every block, and the stored document still holds them. Deciding who may read the gated part — and leaving it out of the page for everyone else — is the host's job, on the server (see [Gated content](server-side.md#gated-content)). `unique` is not enforced by the schema either.
+**`unique: true`** — at most one per document, at the top level (a table of contents, for example). Once the document has one, the plugin leaves the slash and Turn-into menus, a second one pasted in falls back to its markdown form, and nested editors never offer it. The schema does not enforce it.
 
 ## Markdown form
 

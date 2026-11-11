@@ -76,20 +76,3 @@ export const description = (doc: StoredBlock[]) => blocksToPlainText(doc).slice(
 ## Renderelés
 
 A `Preview` hagyományos Svelte-komponens, és szerveren is renderelhető; a mag renderelője és a mellékelt előnézetek nem használnak böngésző-API-kat. Csak a markdown-export útvonalnak (`toMarkdown`, `toStored`) kell a böngésző.
-
-## Védett tartalom
-
-Egy kapus blokk (egy `gate: true` beállítású plugin, például egy csak támogatóknak szóló elválasztó) csak annyit tesz, hogy az előnézet megjelöli az utána következő blokkokat. Hogy a védett részt elzárd azoktól az olvasóktól, akik nem láthatják, vágd el a dokumentumot a szerveren, mielőtt az oldalhoz érne:
-
-```ts
-import type { StoredBlock } from '@atom-forge/brickee/model';
-
-/** A dokumentum az első kapus blokkig, azt is beleértve, hozzáférés nélküli olvasóknak. */
-export function publicPart(doc: StoredBlock[], gateTypes: string[], canRead: boolean): StoredBlock[] {
-	if (canRead) return doc;
-	const at = doc.findIndex((b) => gateTypes.includes(b.type));
-	return at < 0 ? doc : doc.slice(0, at + 1);
-}
-```
-
-Hívd meg a kapus pluginjaid típusaival (például `['paywall']`) és az olvasó hozzáférésével. A hozzáférés nélküli olvasók a kapus blokkig látják a tartalmat, az előzetesével együtt; a hozzáféréssel rendelkezők a teljes dokumentumot kapják, és az előnézet megjelöli számukra a védett részt.

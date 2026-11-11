@@ -3,7 +3,7 @@
 // per-view field simply edits its base value.
 import { getContext, setContext } from 'svelte';
 
-const KEY = 'block-editor:view';
+const KEY = 'brickee:view';
 type Get = () => string | undefined;
 
 /** Call in a component's init (around the editor); the function returns the current view's key. */

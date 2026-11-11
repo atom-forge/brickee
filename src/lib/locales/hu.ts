@@ -8,6 +8,7 @@ export const hu: Messages = {
 	'Add a block below': 'Új blokk alá',
 	'Drag to move, click to select': 'Húzd az áthelyezéshez, kattints a kijelöléshez',
 	Done: 'Kész',
+	'Unknown block: {type}': 'Ismeretlen blokk: {type}',
 	inherited: 'örökölt',
 	Settings: 'Beállítások',
 	'Hide settings': 'Beállítások elrejtése',
@@ -144,7 +145,6 @@ export const hu: Messages = {
 	'Add a row': 'Új sor',
 
 	// előnézet
-	'For supporters only': 'Csak támogatóknak',
 	'YouTube video': 'YouTube-videó',
 	video: 'videó',
 	'Play {title}': 'Lejátszás: {title}',

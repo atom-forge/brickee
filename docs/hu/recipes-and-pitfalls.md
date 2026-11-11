@@ -114,7 +114,6 @@ Az alkalmazás a csomag lefordított `dist/` mappáját olvassa, ezért minden v
 | Egy doboz nem tehető egy másik dobozba | A beágyazott szerkesztők egy szint mélyek | A tárolókat tartalomblokkok befogadására tervezd, ne más tárolókéra. |
 | Egy blokk nem érhető el egy tárolón belül | Az `accepts` vagy az alkalmazás `palette`-je kihagyja | Vedd fel a palettaazonosítót az `accepts`-be (vagy használd az `'md:*'`-ot az összes beépítetthez). |
 | Egy egyedi blokk kétszer jelenik meg | A séma nem kényszeríti ki a `unique`-ot | Ellenőrizd a szerveren, ha az alkalmazásod számít rá. |
-| A védett tartalom mindenkinek látszik | A `gate` csak megjelöli a blokkokat | Renderelés előtt vágd meg a dokumentumot a szerveren. |
 | `document is not defined` | A `toMarkdown` vagy a `toStored` SSR közben futott | Csak a böngészőben hívd őket. |
 | Egy propsból jövő szín vagy link elrontja az oldalt | A props felhasználói bemenet | Használd a `safeColor`-t, ellenőrizd a linkeket, és propsszal soha ne használj `{@html}`-t. |
 | Egy felülírt plugin elveszíti a blokkjait | Megváltozott a `type`-ja | Egy plugin szétterítésekor tartsd meg a `type`-ot. |

@@ -23,7 +23,6 @@ Az üres dokumentum egyetlen üres bekezdésként jelenik meg, így a szerkeszt�
 | `blocks` | `StoredBlock[]` | — | A megjelenítendő dokumentum. |
 | `plugins` | `BlockPlugin[]` | — | A pluginok, amelyek előnézetei a pluginblokkokat renderelik. |
 | `messages` | `Messages` | — | Felületi szövegek az alkalmazás nyelvén. |
-| `markGated` | `boolean` | `true` | Megjelöli a kapus blokk utáni blokkokat (lásd [Egyedi és kapus blokkok](writing-plugins.md#egyedi-és-kapus-blokkok)). |
 | `nested` | `boolean` | `false` | A beágyazott blokkjaikat renderelő plugin-előnézetek állítják be. |
 
 Az előnézet a beépített blokkokat sima HTML-ként rendereli (`p`, `h1`…`h6`, `ul`/`ol` beágyazott elemekkel, `blockquote`, `pre > code` `language-<lang>` osztállyal, `hr`), a pluginblokkokat pedig a pluginjuk `preview` komponensével. Az a blokk, amelynek típusához nincs plugin a `plugins` listában, vagy amelynek pluginjának nincs `preview`-ja, nem renderelődik.

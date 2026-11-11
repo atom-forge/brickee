@@ -15,7 +15,7 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`â
 - Plugin props are untrusted user input. Previews sanitize: `safeColor` for colours, check links and image addresses (`http(s)` or site-relative), clamp numbers, never `{@html}` with props.
 - A plugin view declares both `props` and `blocks` with `$bindable()`, even if unused.
 - Containers (`content: 'blocks'`) nest one level only; nested editors never offer containers or unique plugins. `accepts` narrows their content (`'md:*'` = every built-in).
-- `unique`: one per document, top level; not enforced by the schema. `gate`: the preview only *marks* blocks after it; hide gated content on the server.
+- `unique`: one per document, top level; not enforced by the schema.
 - `toMarkdown` and `toStored` use the DOM: browser only. `fromMarkdown`, `fromStored`, `inline`, the schema and `./model` run anywhere.
 - Validate saved documents on the server with `blocksSchemaFor(plugins)`; it checks shape and `accepts`, not known types, uniqueness or prop contents.
 - Scroll sync is proportional (same scroll fraction), one way, editor â†’ preview; it needs no markup and shows roughly the same place, not the same block.
@@ -29,7 +29,7 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`â
 // <Editor bind:value={StoredBlock[]} plugins?={BlockPlugin[]} palette?={string[]} messages?={Messages}
 //         readonly?={boolean} placeholder?={string} />   // `nested` is for Frame only
 // <Preview blocks={StoredBlock[]} plugins={BlockPlugin[]} messages?={Messages}
-//          markGated?={boolean /* default true */} nested?={boolean} />
+//          nested?={boolean} />
 // <Frame bind:blocks {readonly} {palette} {plugins} heading?={string} empty?={string} image?={string} placeholder?={string} />
 // <Empty icon={Icon} text={string} />
 
@@ -97,7 +97,6 @@ interface BlockPlugin<P extends Props = Props> {
 	markdown?(props: P, ctx: MarkdownContext): string; // '' = left out
 	fromTable?(table: MarkdownTable): P; // takes a pasted/imported GFM table (bundled `table` does)
 	unique?: boolean;
-	gate?: boolean;
 }
 interface PluginViewProps<P> { props: P; blocks: StoredBlock[]; readonly: boolean; palette: string[]; plugins: BlockPlugin[] }
 interface PluginPreviewProps<P> { props: P; blocks: StoredBlock[]; plugins: BlockPlugin[] }
@@ -266,7 +265,6 @@ const result = blocksSchemaFor(plugins).safeParse(input); // or pass [{ type, ac
 | `media` prop, `useMedia`, `findMedia`, `kind: 'image'` missing | Removed: images are the app's business | Own picking and lookup in the app's image plugin (see `docs/en/upgrading.md`). |
 | Box not offered inside a box | One nesting level | By design. |
 | Block not offered inside a container | `accepts` or host `palette` excludes it | Add its palette id (or `'md:*'`). |
-| Gated content visible to all | `gate` only marks | Cut the document on the server. |
 | `document is not defined` | `toMarkdown` / `toStored` during SSR | Call in the browser. |
 | Injected colour / link | Props rendered unchecked | `safeColor`, link checks, no `{@html}`. |
 | Override loses its blocks | `type` changed | Keep `type`. |

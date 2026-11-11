@@ -1,6 +1,5 @@
-// Block content: what the block editor (src/routes/(+lib)/blocks) writes into the `content` column of pages, news posts
-// and promo boxes. Built-in blocks are `md:<kind>` with inline markdown text (raw text for md:code); every other type
-// belongs to an editor plugin, with its own props and, for some, nested blocks.
+// The stored document: what the editor writes and an app saves. Built-in blocks are `md:<kind>` with inline markdown text
+// (raw text for md:code); every other type belongs to a plugin, with its own props and, for containers, nested blocks.
 
 export interface StoredBlock {
 	type: string;

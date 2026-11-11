@@ -23,7 +23,8 @@
 		{ name: 'view', type: 'Component', description: 'The editor view; declares <code>props</code> and <code>blocks</code> as <code>$bindable()</code>.' },
 		{ name: 'preview', type: 'Component', description: 'Optional. The site rendering; sanitizes its props.' },
 		{ name: 'markdown', type: '(props, { inner }) => string', description: "Optional. Its markdown form; <code>''</code> leaves it out." },
-		{ name: 'accepts · unique · gate', type: 'string[] · boolean · boolean', description: 'Container content, one per document, and the gate marker.' }
+		{ name: 'accepts · unique', type: 'string[] · boolean', description: 'Container content, and at most one per document.' },
+		{ name: 'fromTable', type: '(table) => P', description: 'Optional. Takes a pasted GFM table.' }
 	];
 </script>
 
