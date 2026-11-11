@@ -68,7 +68,7 @@
 		{#if row.gap}<div class="mx-1 my-1.5 h-px bg-frame"></div>{/if}
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
-			class="item flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-[3px] {n === index ? 'active bg-[#3b82f6]/14' : ''} {row.danger ? 'text-[#dc2626]' : ''}"
+			class="item flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-[3px] {n === index ? 'active bg-accent/14' : ''} {row.danger ? 'text-[#dc2626]' : ''}"
 			role="option"
 			tabindex="-1"
 			aria-selected={n === index}
@@ -86,7 +86,7 @@
 					class="overflow-hidden text-[11px] text-ellipsis {row.warn ? 'text-[#b45309]' : 'text-muted-contrast'}">{row.hint}</small
 				></span
 			>
-			{#if row.current}<span class="ml-auto flex text-[#3b82f6]"><Check size={16} /></span>{/if}
+			{#if row.current}<span class="ml-auto flex text-accent"><Check size={16} /></span>{/if}
 		</div>
 	{/each}
 </div>

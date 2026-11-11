@@ -212,10 +212,10 @@
 	const TOOL =
 		'inline-grid h-6 min-w-[26px] cursor-pointer place-items-center rounded-md border-0 bg-transparent px-[5px] text-surface-contrast enabled:hover:bg-surface enabled:hover:shadow-[0_1px_2px_rgb(0_0_0/0.08)] disabled:cursor-default disabled:opacity-30';
 	const TOOL_ON =
-		'inline-grid h-6 min-w-[26px] cursor-pointer place-items-center rounded-md border-0 bg-surface px-[5px] text-[#2563eb] shadow-[0_1px_2px_rgb(0_0_0/0.08)]';
+		'inline-grid h-6 min-w-[26px] cursor-pointer place-items-center rounded-md border-0 bg-surface px-[5px] text-accent shadow-[0_1px_2px_rgb(0_0_0/0.08)]';
 	const DANGER = `${TOOL} enabled:hover:text-[#dc2626]`;
 	const ADD = $derived(
-		`grid cursor-pointer place-items-center rounded-md border-0 bg-muted p-0 text-muted-contrast transition-[opacity,background] duration-[120ms] hover:bg-[color-mix(in_srgb,#3b82f6_12%,transparent)] hover:text-[#2563eb] ${at ? 'opacity-100' : 'opacity-0 group-hover/table:opacity-100'}`
+		`grid cursor-pointer place-items-center rounded-md border-0 bg-muted p-0 text-muted-contrast transition-[opacity,background] duration-[120ms] hover:bg-accent/12 hover:text-accent ${at ? 'opacity-100' : 'opacity-0 group-hover/table:opacity-100'}`
 	);
 
 	const ALIGNS: { value: Align; icon: typeof TextAlignStart; label: string }[] = [
@@ -226,7 +226,7 @@
 </script>
 
 <div
-	class="table-editor group/table font-[system-ui,-apple-system,'Segoe_UI',sans-serif] text-[15px] leading-[1.45]"
+	class="table-editor group/table text-[15px] leading-[1.45]"
 	bind:this={root}
 	onfocusout={(e) => {
 		if (!root.contains(e.relatedTarget as Node)) at = null;
@@ -320,7 +320,7 @@
 
 <style lang="scss">
 	// The grid itself: cells, header and footer bands, the focused cell, the grips and the drop lines.
-	$accent: #3b82f6;
+	$accent: var(--color-accent, #3b82f6);
 
 	table {
 		width: 100%;
@@ -431,7 +431,7 @@
 			opacity: 1;
 		}
 		&:hover {
-			color: #2563eb;
+			color: $accent;
 			background: color-mix(in srgb, $accent 9%, transparent);
 		}
 	}

@@ -19,7 +19,7 @@ Minden lépés után frissül; a kész lépések commitolva vannak (helyben, kia
 - [x] — közben talált: SSR 500-as hiba és üres szerveroldali szerkesztő javítva, SSR-teszt, CI build
 - [x] 3.0 stílusok: sima CSS sehol (Tailwind + SCSS), pixelre egyezően; `@source` dokumentálva (S7)
 - [x] — közben talált: a tábla összezsugorodott Tailwindes oldalon (`table` osztály ütközés)
-- [ ] 2.6 kiemelőszín a témából, öröklött betűtípus (S3)
+- [x] 2.6 kiemelőszín a témából, öröklött betűtípus (S3) — a méret marad 17 px
 - [ ] 3.4 menük az `@atom-forge/ui` popup-kezelőjén, ui gombok (F6)
 - [ ] 3.6 bontás maradéka: húzás és sweep külön modulban (S1) — előzmény, menük, formázósáv: kész
 - [ ] 3.1 formázott (HTML) beillesztés (F1)

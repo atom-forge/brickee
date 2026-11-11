@@ -157,7 +157,7 @@
 							<button
 								type="button"
 								class="inline-grid h-6 min-w-[26px] cursor-pointer place-items-center rounded-[5px] border-0 px-1 {on.includes(opt.value)
-									? 'bg-surface text-[#3b82f6] shadow-[0_1px_2px_rgb(0_0_0/0.08)]'
+									? 'bg-surface text-accent shadow-[0_1px_2px_rgb(0_0_0/0.08)]'
 									: 'bg-transparent text-muted-contrast hover:text-surface-contrast'}"
 								aria-pressed={on.includes(opt.value)}
 								title={tr(opt.label)}

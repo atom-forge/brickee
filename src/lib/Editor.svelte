@@ -1526,15 +1526,18 @@
 	.editor {
 		--fg: var(--color-surface-contrast, #1d1d1f);
 		--muted: var(--color-muted-contrast, #a0a0a8);
-		--accent: #3b82f6;
-		--sel: rgba(59, 130, 246, 0.14);
+		// The theme's accent (blue without a theme); the selection is a tint of it.
+		--accent: var(--color-accent, #3b82f6);
+		--sel: color-mix(in srgb, var(--accent) 14%, transparent);
 		--surface: var(--color-surface, #fff);
 		--border: var(--color-frame, #e5e5ea);
 		--code-bg: rgba(120, 120, 140, 0.14);
 		position: relative;
 		outline: none;
 		color: var(--fg);
-		font: 17px/1.65 system-ui, -apple-system, 'Segoe UI', sans-serif;
+		// The page's typeface, so the editor reads like the preview beside it; its own size.
+		font-size: 17px;
+		line-height: 1.65;
 		padding-bottom: 6rem;
 
 		// While sweeping over whole blocks, the browser must not keep extending its own text selection.
