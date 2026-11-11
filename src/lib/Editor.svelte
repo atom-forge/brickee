@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, onDestroy, setContext, tick, untrack } from 'svelte';
+	import { getContext, setContext, tick, untrack } from 'svelte';
 	import { Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
 	import {
 		rich,
@@ -72,6 +72,8 @@
 	const pluginOf = (type: string | undefined) => plugins.find((p) => p.type === type);
 	/** Blocks the caret cannot enter from outside: dividers and plugin blocks. */
 	const atomic = (b: Block) => b.type === 'hr' || b.type === 'plugin';
+	/** Rendering on the server: the blocks' text goes into the markup (in the browser the `rich` action puts it in). */
+	const ssr = typeof document === 'undefined';
 
 	/* ------------------------------------------------------------ document io */
 
@@ -1226,8 +1228,9 @@
 		sweeping = false;
 	}
 
-	// Removed in the middle of a sweep or of typing: no listener or timer is left behind.
-	onDestroy(() => {
+	// Removed in the middle of a sweep or of typing: no listener or timer is left behind. (An effect's cleanup, not
+	// onDestroy: that also runs after server-side rendering, where there is no window.)
+	$effect(() => () => {
 		endSweep();
 		clearTimeout(timer);
 	});
@@ -1477,7 +1480,7 @@
 							if (focusedId === b.id) focusedId = null;
 							slash = null;
 						}}
-					></div>
+					>{#if ssr}{@html b.html}{/if}</div>
 				{/if}
 				{#if b.type === 'code' && readonly}
 					<!-- read-only: the language of a code block, in its corner -->

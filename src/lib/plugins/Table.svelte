@@ -61,7 +61,7 @@
 		TextAlignStart,
 		Trash2
 	} from '@lucide/svelte';
-	import { onDestroy, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import type { PluginViewProps } from '../types';
 
 	let { props = $bindable(), readonly }: PluginViewProps<TableProps> = $props();
@@ -117,7 +117,7 @@
 	}
 	// A table removed in the middle of a drag leaves no listener behind.
 	let stopDrag = () => {};
-	onDestroy(() => stopDrag());
+	$effect(() => () => stopDrag());
 	/** The drop line of a row or column: before it, after it (the last one), or none. */
 	function dropMark(kind: 'row' | 'col', i: number, count: number) {
 		if (drag?.kind !== kind || drag.to === drag.from || drag.to === drag.from + 1) return null;

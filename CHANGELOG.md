@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A numbered list keeps its start number (`props.start` on its first `md:ol` item): read from markdown (`5. …`), numbered from it in the editor and the preview (`<ol start>`), and written back.
 - Tests for the markdown conversions (`bun run test`, vitest), run by the release checks, the publish workflow and a new test workflow on every push and pull request (type check, tests, package).
 - Code review findings and a staged fix plan in `notes/` (not shipped), linked from `TODO.md`.
+- Development tools (not shipped): `scripts/shots.mjs` and `scripts/shots-diff.mjs` photograph the editor's looks in light and dark mode from the dev pages (`/dev/states`, `/dev/perf`) and compare two sets pixel by pixel; `<style lang="scss">` is enabled (compiled at build time, so `dist/` holds plain CSS).
 
 ### Changed
 
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A server-rendered editor shows its blocks' text (it was empty until the page's script ran, so a read-only editor showed nothing without JavaScript). A test renders the editor and the preview on the server, and the test workflow builds the showcase site (which prerenders every page).
 - An editor or a table removed in the middle of a block sweep, a drag or typing leaves no window listener or timer behind.
 - Copying and pasting blocks keeps plugin blocks: the clipboard carries the blocks themselves (`application/x-brickee+json`) beside their markdown, so a copied video, table, gap or box is pasted back as that block instead of a link or nothing; an editor that does not offer the plugin (or already has a unique one) gets its markdown form. An empty block takes pasted plugin blocks in its place, and pasting while blocks are selected inserts after them.
 - Changes made in a plugin's view are undoable: table cells, rows and columns, and the blocks of a nested editor (a box) are undo steps of the editor around them, and Ctrl+Z / Ctrl+Shift+Z in a table cell undo and redo there instead of the cell's own short-lived history. A document loaded from outside starts a fresh history.
