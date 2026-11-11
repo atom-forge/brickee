@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
-	import { Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
+	import { ArrowDown, ArrowUp, Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
 	import { rich, clean, textLen, splitAtCaret, atStart, atEnd, caretOffset, caretRect, caretAt, setCaret, removeBeforeCaret, onEdgeLine, focusAtEdge, toggleCode, plainText, portal } from './dom';
 	import { fromMarkdown, fromStored, plainHtml, toMarkdown, toStored } from './markdown';
 	import { fromHtml } from './html';
@@ -432,6 +432,11 @@
 			else if (k === 'k') fmt('link');
 			else if (k === '\\') fmt('plain');
 			else if (k === 'x' && e.shiftKey) fmt('strikeThrough');
+			else if (k === '/') {
+				// The turn-into menu of this block, from the text.
+				selectOnly(b.id);
+				void openTurnByKey();
+			}
 			else if (k === 'a' && (!ce.textContent || getSelection()?.toString() === ce.textContent)) {
 				selA = value[0].id;
 				selH = value[value.length - 1].id;
@@ -846,6 +851,11 @@
 		}
 		if (e.target !== root || !selSet.size || !selH) return;
 		if (onTurnKey(e)) return;
+		// The turn-into menu from the keyboard: '/' or Ctrl+/ (also the menu key, Shift+F10) on selected blocks.
+		if (!readonly && (e.key === '/' || e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10'))) {
+			e.preventDefault();
+			return void openTurnByKey();
+		}
 		const mod = e.metaKey || e.ctrlKey;
 		const key = e.key;
 		const h = idx(selH);
@@ -914,10 +924,21 @@
 			blurActive();
 			root.focus({ preventScroll: true });
 		} else selectOnly(b.id);
-		if (!menu) return;
-		const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		if (menu) openTurn(e.currentTarget as HTMLElement);
+	}
+
+	/** The turn-into menu for the selected blocks, beside `anchor` (a handle, a bubble button). */
+	function openTurn(anchor: Element) {
+		const r = anchor.getBoundingClientRect();
 		const up = r.bottom + 340 > innerHeight && r.top > 340;
 		turn = { x: Math.min(r.right + 6, innerWidth - 250), y: up ? r.bottom : r.top, up, index: 0 };
+	}
+
+	/** From the keyboard: the turn-into menu of the selected blocks, beside the handle of the selection's head. */
+	async function openTurnByKey() {
+		await tick();
+		const handle = selH ? root.querySelector(`[data-block="${selH}"] > .gutter .handle`) : null;
+		if (handle) openTurn(handle);
 	}
 
 	/* ------------------------------------------------------ properties panel */
@@ -989,6 +1010,8 @@
 		| { kind: 'type'; item: PaletteItem; type: BlockType; current: boolean; lossy: boolean }
 		| { kind: 'wrap'; item: PaletteItem; plugin: BlockPlugin; current: boolean }
 		| { kind: 'retype'; item: PaletteItem; plugin: BlockPlugin; current: boolean }
+		| { kind: 'up' }
+		| { kind: 'down' }
 		| { kind: 'unwrap' }
 		| { kind: 'delete' };
 
@@ -1033,6 +1056,11 @@
 			const lossy = to === 'plain' && sel.some((b) => contentOf(b) === 'text' && formatted(b.html));
 			out.push({ kind: 'type', item, type, current: single?.type === type, lossy });
 		}
+		// Moving without dragging (touch, keyboard).
+		const at = value.findIndex((b) => selSet.has(b.id));
+		const end = value.length - 1 - [...value].reverse().findIndex((b) => selSet.has(b.id));
+		if (at > 0) out.push({ kind: 'up' });
+		if (end < value.length - 1) out.push({ kind: 'down' });
 		if (known && kinds.includes('blocks')) out.push({ kind: 'unwrap' });
 		out.push({ kind: 'delete' });
 		return out;
@@ -1048,6 +1076,7 @@
 		if (!opt) return;
 		const sel = selected;
 		if (opt.kind === 'delete') return deleteSelected();
+		if (opt.kind === 'up' || opt.kind === 'down') return nudge([...selSet], opt.kind === 'up' ? -1 : 1);
 		if (opt.kind === 'unwrap') return unwrap(sel);
 		if (opt.kind === 'wrap') return wrap(sel, opt.plugin);
 		if (opt.kind === 'retype') return mutate(() => sel.forEach((b) => toPlugin(b, opt.plugin)));
@@ -1122,7 +1151,9 @@
 		'max-w-[18em] overflow-hidden rounded-[5px] px-1.5 py-px font-mono text-[11px] leading-[1.5] font-medium text-ellipsis whitespace-nowrap text-muted-contrast select-none';
 
 	const optionKey = (o: TurnOption) => ('item' in o ? o.kind + ':' + o.item.id : o.kind);
-	/** The turn-into options as menu rows: a line before Unwrap / Delete. */
+	/** The actions after the types: a line above the first of them. */
+	const ACTIONS = new Set<TurnOption['kind']>(['up', 'down', 'unwrap', 'delete']);
+	/** The turn-into options as menu rows. */
 	const turnRows = $derived(
 		turnOptions.map((o, n): MenuRow => ({
 			key: optionKey(o),
@@ -1130,12 +1161,14 @@
 			warn: 'lossy' in o && o.lossy,
 			danger: o.kind === 'delete',
 			current: 'current' in o && o.current,
-			gap: (o.kind === 'unwrap' || o.kind === 'delete') && n > 0 && turnOptions[n - 1].kind !== 'unwrap'
+			gap: ACTIONS.has(o.kind) && n > 0 && !ACTIONS.has(turnOptions[n - 1].kind)
 		}))
 	);
 	function optionView(o: TurnOption): { icon: Icon; label: string; hint: string } {
 		const n = selected.length;
 		if (o.kind === 'delete') return { icon: Trash2, label: tr('Delete'), hint: n > 1 ? tr('{n} blocks', { n }) : tr('Remove this block') };
+		if (o.kind === 'up') return { icon: ArrowUp, label: tr('Move up'), hint: 'Ctrl+Shift+↑' };
+		if (o.kind === 'down') return { icon: ArrowDown, label: tr('Move down'), hint: 'Ctrl+Shift+↓' };
 		if (o.kind === 'unwrap') return { icon: Ungroup, label: tr('Unwrap'), hint: tr('Move the inner blocks out') };
 		if (o.kind === 'wrap') return { icon: o.item.icon, label: o.item.label, hint: n > 1 ? tr('Put {n} blocks inside', { n }) : tr('Put inside') };
 		if (o.kind === 'type' && o.lossy) return { icon: o.item.icon, label: o.item.label, hint: tr('Loses formatting') };
@@ -1301,13 +1334,15 @@
 					     middle. Drag to move, click for the turn-into menu. Hovering it shows a small dark bubble on its right
 					     with the block actions (add a block below, turn into, delete). -->
 					<div class="grab">
-						<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-						<span
+						<button
+							type="button"
 							class="handle"
 							draggable="true"
+							tabindex="-1"
 							title={tr('Drag to move, click to select')}
+							aria-label={tr('Select the block')}
 							ondragstart={(e) => drag.start(e, b.id)}
-							onclick={(e) => onHandleClick(e, b)}><span class="grip"><GripVertical size={16} /></span></span
+							onclick={(e) => onHandleClick(e, b)}><span class="grip"><GripVertical size={16} /></span></button
 						>
 						<div class="bubble" role="toolbar" aria-label={tr('Block actions')}>
 							<button
@@ -1444,7 +1479,7 @@
 			x={turn.x}
 			y={turn.y}
 			up={turn.up}
-			caption={turnOptions[0]?.kind !== 'unwrap' && turnOptions[0]?.kind !== 'delete' ? tr('Turn into') : undefined}
+			caption={turnOptions[0] && !ACTIONS.has(turnOptions[0].kind) ? tr('Turn into') : undefined}
 			label={tr('Turn into')}
 			onpick={applyTurn}
 			onhover={(n) => turn && (turn.index = n)}
@@ -1579,7 +1614,12 @@
 		width: 20px;
 	}
 	.handle {
+		width: 100%;
 		height: 100%;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		font: inherit;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1634,10 +1674,18 @@
 			border-left: 0;
 		}
 		.grab:has(.grip:hover) &,
+		.grab:focus-within &,
 		&:hover {
 			opacity: 1;
 			visibility: visible;
 			transition-delay: 0.15s, 0s;
+		}
+		// Touch screens have no hover: a tapped (selected) block shows its actions.
+		@media (hover: none) {
+			.row.selected > .gutter & {
+				opacity: 1;
+				visibility: visible;
+			}
 		}
 		// Hidden from the press on (so it is not in the drag image) and while sweeping. Only visibility changes here: a
 		// layout change inside the row while the drag starts makes Chrome cancel the drag.

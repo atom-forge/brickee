@@ -71,9 +71,9 @@ A plain paragraph (`md:p`) is always allowed as the fallback.
 | Inline formatting | Select text for the toolbar, or `Ctrl/Cmd` + `B` bold, `I` italic, `U` underline, `Shift+X` strikethrough, `E` code, `K` link, `\` remove formatting. Subscript and superscript are on the toolbar. |
 | Indent | `Tab` / `Shift+Tab` (at most 6 levels). |
 | Line break | `Shift+Enter`; in a code block `Enter` breaks the line and `Shift+Enter` or `Ctrl/Cmd+Enter` starts a new block. |
-| Select blocks | Click a block's handle, `Esc` in a block, `Shift+↑/↓` past the edge of a block, or drag a text selection across blocks. `Ctrl/Cmd+A` in an empty block selects every block. |
-| Move blocks | Drag the handle (also into and out of nested editors), or `Ctrl/Cmd+Shift+↑/↓`. |
-| Turn into | Click the handle of a block or a selection for the Turn-into menu. |
+| Select blocks | Click (or tap) a block's handle, `Esc` in a block, `Shift+↑/↓` past the edge of a block, or drag a text selection across blocks. `Ctrl/Cmd+A` in an empty block selects every block. |
+| Move blocks | Drag the handle (also into and out of nested editors), `Ctrl/Cmd+Shift+↑/↓`, or *Move up* / *Move down* in the Turn-into menu (without dragging: touch screens, keyboard). |
+| Turn into | Click the handle of a block or a selection for the Turn-into menu; from the keyboard `/` (or `Ctrl/Cmd+/`, the menu key, `Shift+F10`) on selected blocks, or `Ctrl/Cmd+/` in a block's text. On a touch screen a tapped block shows its actions (add below, turn into, delete) beside its handle. |
 | Copy, cut, paste | Copying selected blocks puts their markdown on the clipboard (plugin blocks through their markdown form) and, beside it, the blocks themselves (`application/x-brickee+json`). Formatted text from elsewhere (a web page, Google Docs, Word) keeps its headings, lists, tables and marks (`fromHtml`); plain text is read as markdown. Pasted into a Brickee editor, copied blocks come back as they were; a plugin block that editor does not offer (or a second unique one) falls back to its markdown form. Pasted anywhere else, the markdown arrives. Pasting while blocks are selected puts the blocks after them. |
 | Paste | Multi-line text is read as markdown and becomes blocks. |
 | Undo, redo | `Ctrl/Cmd+Z`, `Ctrl/Cmd+Shift+Z` or `Ctrl/Cmd+Y`. |

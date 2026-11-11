@@ -71,9 +71,9 @@ A `PALETTE_ITEMS` a beépített blokkokat sorolja fel a címkéikkel, tippjeikke
 | Szövegformázás | Jelölj ki szöveget az eszköztárhoz, vagy `Ctrl/Cmd` + `B` félkövér, `I` dőlt, `U` aláhúzott, `Shift+X` áthúzott, `E` kód, `K` link, `\` formázás eltávolítása. Az alsó és a felső index az eszköztáron érhető el. |
 | Behúzás | `Tab` / `Shift+Tab` (legfeljebb 6 szint). |
 | Sortörés | `Shift+Enter`; kódblokkban az `Enter` töri a sort, a `Shift+Enter` vagy a `Ctrl/Cmd+Enter` pedig új blokkot kezd. |
-| Blokkok kijelölése | Kattints egy blokk fogantyújára, nyomj `Esc`-et egy blokkban, `Shift+↑/↓` a blokk szélén túl, vagy húzz szövegkijelölést több blokkon át. Üres blokkban a `Ctrl/Cmd+A` minden blokkot kijelöl. |
-| Blokkok mozgatása | Húzd a fogantyút (beágyazott szerkesztőkbe be és onnan ki is), vagy `Ctrl/Cmd+Shift+↑/↓`. |
-| Átalakítás | Kattints egy blokk vagy egy kijelölés fogantyújára az „Átalakítás” menühöz. |
+| Blokkok kijelölése | Kattints (vagy koppints) egy blokk fogantyújára, nyomj `Esc`-et egy blokkban, `Shift+↑/↓` a blokk szélén túl, vagy húzz szövegkijelölést több blokkon át. Üres blokkban a `Ctrl/Cmd+A` minden blokkot kijelöl. |
+| Blokkok mozgatása | Húzd a fogantyút (beágyazott szerkesztőkbe be és onnan ki is), `Ctrl/Cmd+Shift+↑/↓`, vagy az „Átalakítás” menü *Mozgatás fel* / *Mozgatás le* pontja (húzás nélkül: érintőképernyő, billentyűzet). |
+| Átalakítás | Kattints egy blokk vagy egy kijelölés fogantyújára az „Átalakítás” menühöz; billentyűzetről a kijelölt blokkokon `/` (vagy `Ctrl/Cmd+/`, a menübillentyű, `Shift+F10`), egy blokk szövegében `Ctrl/Cmd+/`. Érintőképernyőn a megkoppintott blokk a fogantyúja mellett mutatja a műveleteit (új blokk alá, átalakítás, törlés). |
 | Másolás, kivágás, beillesztés | A kijelölt blokkok másolásakor a markdownjuk kerül a vágólapra (a pluginblokkok a markdown alakjukon keresztül), mellé pedig maguk a blokkok is (`application/x-brickee+json`). Máshonnan (weboldal, Google Docs, Word) érkező formázott szöveg megtartja a címsorait, listáit, táblázatait és jelöléseit (`fromHtml`); a sima szöveget markdownként olvassa. Brickee-szerkesztőbe illesztve a másolt blokkok változatlanul jönnek vissza; az a pluginblokk, amelyet az a szerkesztő nem kínál fel (vagy egy második egyedi), a markdown alakjára esik vissza. Bárhová máshová illesztve a markdown érkezik. Blokk-kijelölés közben beillesztve a blokkok a kijelölés után kerülnek. |
 | Beillesztés | A többsoros szöveg markdownként értelmeződik, és blokkokká válik. |
 | Visszavonás, újra | `Ctrl/Cmd+Z`, `Ctrl/Cmd+Shift+Z` vagy `Ctrl/Cmd+Y`. |
