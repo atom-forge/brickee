@@ -75,7 +75,7 @@ A `PALETTE_ITEMS` a beépített blokkokat sorolja fel a címkéikkel, tippjeikke
 | Blokkok kijelölése | Kattints egy blokk fogantyújára, nyomj `Esc`-et egy blokkban, `Shift+↑/↓` a blokk szélén túl, vagy húzz szövegkijelölést több blokkon át. Üres blokkban a `Ctrl/Cmd+A` minden blokkot kijelöl. |
 | Blokkok mozgatása | Húzd a fogantyút (beágyazott szerkesztőkbe be és onnan ki is), vagy `Ctrl/Cmd+Shift+↑/↓`. |
 | Átalakítás | Kattints egy blokk vagy egy kijelölés fogantyújára az „Átalakítás” menühöz. |
-| Másolás, kivágás | A kijelölt blokkok másolásakor a markdownjuk kerül a vágólapra (a pluginblokkok a markdown alakjukon keresztül). |
+| Másolás, kivágás, beillesztés | A kijelölt blokkok másolásakor a markdownjuk kerül a vágólapra (a pluginblokkok a markdown alakjukon keresztül), mellé pedig maguk a blokkok is (`application/x-brickee+json`). Brickee-szerkesztőbe illesztve a blokkok változatlanul jönnek vissza; az a pluginblokk, amelyet az a szerkesztő nem kínál fel (vagy egy második egyedi), a markdown alakjára esik vissza. Bárhová máshová illesztve a markdown érkezik. Blokk-kijelölés közben beillesztve a blokkok a kijelölés után kerülnek. |
 | Beillesztés | A többsoros szöveg markdownként értelmeződik, és blokkokká válik. |
 | Visszavonás, újra | `Ctrl/Cmd+Z`, `Ctrl/Cmd+Shift+Z` vagy `Ctrl/Cmd+Y`. |
 

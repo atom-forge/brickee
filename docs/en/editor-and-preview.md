@@ -75,7 +75,7 @@ A plain paragraph (`md:p`) is always allowed as the fallback.
 | Select blocks | Click a block's handle, `Esc` in a block, `Shift+↑/↓` past the edge of a block, or drag a text selection across blocks. `Ctrl/Cmd+A` in an empty block selects every block. |
 | Move blocks | Drag the handle (also into and out of nested editors), or `Ctrl/Cmd+Shift+↑/↓`. |
 | Turn into | Click the handle of a block or a selection for the Turn-into menu. |
-| Copy, cut | Copying selected blocks puts their markdown on the clipboard (plugin blocks through their markdown form). |
+| Copy, cut, paste | Copying selected blocks puts their markdown on the clipboard (plugin blocks through their markdown form) and, beside it, the blocks themselves (`application/x-brickee+json`). Pasted into a Brickee editor, the blocks come back as they were; a plugin block that editor does not offer (or a second unique one) falls back to its markdown form. Pasted anywhere else, the markdown arrives. Pasting while blocks are selected puts the blocks after them. |
 | Paste | Multi-line text is read as markdown and becomes blocks. |
 | Undo, redo | `Ctrl/Cmd+Z`, `Ctrl/Cmd+Shift+Z` or `Ctrl/Cmd+Y`. |
 

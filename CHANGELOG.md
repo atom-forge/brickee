@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Copying and pasting blocks keeps plugin blocks: the clipboard carries the blocks themselves (`application/x-brickee+json`) beside their markdown, so a copied video, table, gap or box is pasted back as that block instead of a link or nothing; an editor that does not offer the plugin (or already has a unique one) gets its markdown form. An empty block takes pasted plugin blocks in its place, and pasting while blocks are selected inserts after them.
 - Changes made in a plugin's view are undoable: table cells, rows and columns, and the blocks of a nested editor (a box) are undo steps of the editor around them, and Ctrl+Z / Ctrl+Shift+Z in a table cell undo and redo there instead of the cell's own short-lived history. A document loaded from outside starts a fresh history.
 - A read-only editor no longer writes its normalized document back into `value` on mount, so a host does not see a change nobody made.
 - Inline markdown and `fromMarkdown` stay fast on hostile text: many unclosed HTML tags, a long run of `[`, unclosed `**` or `_`, or long runs of spaces could freeze the tab for seconds to minutes; every pattern is now linear (100 000 characters take milliseconds). Limits that come with it: a marked span is at most 2000 characters, a link label has no brackets of its own (at most 1000 characters), a link target at most 2000. Inline HTML marks are now always balanced (an unclosed `<b>` is closed, a stray closing tag dropped).

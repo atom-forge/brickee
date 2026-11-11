@@ -652,22 +652,71 @@
 		detectSlash(ce, b);
 	}
 
+	/** The editor's own clipboard format: the copied blocks in their stored form, beside their markdown. */
+	const CLIP = 'application/x-brickee+json';
+
+	/**
+	 * Blocks from the editor's clipboard format, or null when it is missing, of another version or malformed. Each block
+	 * carries its markdown form as the copying editor wrote it, for an editor that cannot hold the block (`md`).
+	 */
+	function fromClip(data: string | undefined): (Block & { md?: string })[] | null {
+		if (!data) return null;
+		try {
+			const clip = JSON.parse(data);
+			const ok = (s: unknown, depth: number): s is StoredBlock => {
+				const b = s as StoredBlock;
+				return (
+					!!b && typeof b === 'object' && typeof b.type === 'string' && Number.isInteger(b.indent) && b.indent >= 0 && b.indent <= MAX_INDENT &&
+					(b.text === undefined || typeof b.text === 'string') &&
+					(b.props === undefined || (typeof b.props === 'object' && !Array.isArray(b.props))) &&
+					(b.blocks === undefined || (depth === 0 && Array.isArray(b.blocks) && b.blocks.every((x) => ok(x, 1))))
+				);
+			};
+			if (clip?.v !== 1 || !Array.isArray(clip.blocks) || clip.blocks.length > 2000 || !clip.blocks.every((x: unknown) => ok(x, 0))) return null;
+			const md: unknown[] = Array.isArray(clip.md) ? clip.md : [];
+			return (clip.blocks as StoredBlock[]).map((s, n) => ({ ...fromStored(s), md: typeof md[n] === 'string' ? (md[n] as string) : undefined }));
+		} catch {
+			return null;
+		}
+	}
+
+	/**
+	 * Pasted blocks this editor can hold: a plugin block it does not offer (or a unique one it already has) falls back
+	 * to its markdown form; built-in types outside the palette become text (fit).
+	 */
+	function admit(blocks: (Block & { md?: string })[]): Block[] {
+		const has = new Set(value.filter((b) => b.type === 'plugin').map((b) => b.plugin));
+		const offered = plugins.filter((p) => allowed.has(p.type));
+		return fit(
+			blocks.flatMap(({ md, ...b }): Block[] => {
+				if (b.type !== 'plugin') return [b];
+				const p = pluginOf(b.plugin);
+				if (p && allowed.has(p.type) && !(p.unique && has.has(p.type))) {
+					if (p.unique) has.add(p.type);
+					return [b];
+				}
+				return fromMarkdown(md ?? toMarkdown([b], { plugins }), { plugins: offered }).map((x) => ({ ...x, indent: Math.min(MAX_INDENT, x.indent + b.indent) }));
+			})
+		);
+	}
+
 	function onPaste(e: ClipboardEvent, b: Block) {
+		const own = b.type === 'code' ? null : fromClip(e.clipboardData?.getData(CLIP));
 		const text = e.clipboardData?.getData('text/plain');
-		if (text == null) return;
+		if (!own && text == null) return;
 		e.preventDefault();
 		const ce = e.currentTarget as HTMLElement;
-		const norm = text.replace(/\r/g, '');
+		const norm = (text ?? '').replace(/\r/g, '');
 
-		if (b.type === 'code' || !norm.includes('\n')) {
+		if (!own && (b.type === 'code' || !norm.includes('\n'))) {
 			norm.split('\n').forEach((line, n) => {
 				if (n) document.execCommand('insertLineBreak');
 				if (line) document.execCommand('insertText', false, line);
 			});
 			return;
 		}
-		// A pasted GFM table becomes a block of a plugin that takes tables (fromTable), if this editor offers one.
-		const parsed = fit(fromMarkdown(norm, { plugins: plugins.filter((p) => allowed.has(p.type)) }));
+		// Our own blocks as they were; otherwise markdown (a GFM table goes to a plugin that takes tables, if offered).
+		const parsed = own ? admit(own) : fit(fromMarkdown(norm, { plugins: plugins.filter((p) => allowed.has(p.type)) }));
 		if (!parsed.length) return;
 		const parts = splitAtCaret(ce);
 		if (!parts) return;
@@ -675,6 +724,14 @@
 		const post = clean(parts[1]);
 		const i = idx(b.id);
 
+		// An empty block takes pasted plugin blocks or dividers in its place.
+		if (!pre && !post && atomic(parsed[0])) {
+			mutate(() => (value = [...value.slice(0, i), ...parsed, ...value.slice(i + 1)]));
+			const last = parsed[parsed.length - 1];
+			if (atomic(last)) selectOnly(last.id);
+			else focusBlock(last.id, 'end');
+			return;
+		}
 		let rest = parsed;
 		const first = parsed[0];
 		let curHtml = pre;
@@ -682,14 +739,16 @@
 			b.type = first.type;
 			b.indent = first.indent;
 			if (first.type === 'todo') b.checked = first.checked;
+			if (first.props) b.props = first.props;
+			else delete b.props;
 			curHtml = first.html;
 			rest = parsed.slice(1);
 		} else if (first.type === 'p') {
 			curHtml = pre + first.html;
 			rest = parsed.slice(1);
 		}
-		// Text after the caret goes into the last pasted block, or a new paragraph after a pasted plugin block.
-		if (post && rest.length && rest[rest.length - 1].type === 'plugin') rest = [...rest, newBlock('p', '')];
+		// Text after the caret goes into the last pasted block, or a new paragraph after a pasted plugin block or divider.
+		if (post && rest.length && atomic(rest[rest.length - 1])) rest = [...rest, newBlock('p', '')];
 		const target = rest.length ? rest[rest.length - 1] : b;
 		const off = textLen(target === b ? curHtml : target.html);
 		mutate(() => {
@@ -698,7 +757,22 @@
 			b.html = curHtml;
 			value = [...value.slice(0, i + 1), ...rest, ...value.slice(i + 1)];
 		});
-		focusBlock(target.id, off);
+		if (atomic(target)) selectOnly(target.id);
+		else focusBlock(target.id, off);
+	}
+
+	/** Pasting while whole blocks are selected: the blocks go in after the selection. */
+	function onRootPaste(e: ClipboardEvent) {
+		if (e.target !== root || readonly || !selH) return;
+		const own = fromClip(e.clipboardData?.getData(CLIP));
+		const text = e.clipboardData?.getData('text/plain') ?? '';
+		const parsed = own ? admit(own) : fit(fromMarkdown(text.replace(/\r/g, ''), { plugins: plugins.filter((p) => allowed.has(p.type)) }));
+		e.preventDefault();
+		if (!parsed.length) return;
+		const at = Math.max(...value.map((b, n) => (selSet.has(b.id) ? n : -1))) + 1;
+		mutate(() => (value = [...value.slice(0, at), ...parsed, ...value.slice(at)]));
+		selA = parsed[0].id;
+		selH = parsed[parsed.length - 1].id;
 	}
 
 	/* ---------------------------------------------------------- inline format */
@@ -862,7 +936,13 @@
 	function onCopy(e: ClipboardEvent, cut = false) {
 		if (!selSet.size) return;
 		e.preventDefault();
-		e.clipboardData?.setData('text/plain', toMarkdown(value.filter((b) => selSet.has(b.id)), { plugins }));
+		const blocks = value.filter((b) => selSet.has(b.id));
+		e.clipboardData?.setData('text/plain', toMarkdown(blocks, { plugins }));
+		// The blocks as they are, for pasting into this or another editor (the markdown is for everything else).
+		e.clipboardData?.setData(
+			CLIP,
+			JSON.stringify({ v: 1, blocks: blocks.map((b) => $state.snapshot(toStored(b))), md: blocks.map((b) => toMarkdown([b], { plugins })) })
+		);
 		if (cut) deleteSelected();
 	}
 
@@ -1259,6 +1339,7 @@
 	onkeydown={onRootKey}
 	oncopy={(e) => onCopy(e)}
 	oncut={(e) => onCopy(e, true)}
+	onpaste={onRootPaste}
 	onmousedown={(e) => {
 		if (selA && !(e.target as HTMLElement).closest('.grab')) selA = selH = null;
 		startSweep(e);
