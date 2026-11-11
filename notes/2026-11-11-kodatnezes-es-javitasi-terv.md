@@ -23,7 +23,7 @@ Minden lépés után frissül; a kész lépések commitolva vannak (helyben, kia
 - [x] 3.4 menük transzformált szülőben (F6) — saját `portal` akció; a ui popup-kezelője helyben renderel, nem oldotta volna meg; ui gombok: nem (az inverz buborék- és a tábla ikongombjaihoz nincs megfelelő ui változat)
 - [x] 3.6 bontás (S1): `editor/history.ts`, `BlockMenu`, `FormatBar`, `sweep.svelte.ts`, `drag.svelte.ts`, `insertAt` — élőben ellenőrizve
 - [x] 3.1 formázott (HTML) beillesztés (F1) — `fromHtml` (HTML → markdown → blokkok), Google Docs-burok és stílusok, tesztek, élőben ellenőrizve
-- [ ] 3.2 fájlok fogadása pluginnal: `fromFiles` (F4)
+- [x] 3.2 fájlok fogadása pluginnal: `fromFiles` (F4) — beillesztés és bedobás (húzásjelzővel), aszinkron is; a demó photo pluginja használja; élőben ellenőrizve
 - [ ] 3.3 érintés és billentyűzet a blokkműveletekhez (F2, F3)
 - [ ] 3.5 formázás a táblacellákban (F5)
 - [ ] 3.7 hosszabb távú: `execCommand`, előzmény különbségekkel (S4, P2) — mérés és döntés

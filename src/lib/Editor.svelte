@@ -644,6 +644,14 @@
 
 	function onPaste(e: ClipboardEvent, b: Block) {
 		const data = e.clipboardData;
+		// Files (a copied image, a screenshot) to a plugin that takes them; an empty block makes room for it.
+		const files = [...(data?.files ?? [])];
+		if (files.length && b.type !== 'code' && fileTakers().length) {
+			e.preventDefault();
+			const ce = e.currentTarget as HTMLElement;
+			void takeFiles(files, idx(b.id) + 1, clean(ce.innerHTML) ? undefined : b);
+			return;
+		}
 		const text = data?.getData('text/plain');
 		const rich = b.type !== 'code' && (data?.types.includes(CLIP) || data?.types.includes('text/html'));
 		if (!rich && text == null) return;
@@ -707,10 +715,16 @@
 	/** Pasting while whole blocks are selected: the blocks go in after the selection. */
 	function onRootPaste(e: ClipboardEvent) {
 		if (e.target !== root || readonly || !selH) return;
+		const at = Math.max(...value.map((b, n) => (selSet.has(b.id) ? n : -1))) + 1;
+		const files = [...(e.clipboardData?.files ?? [])];
+		if (files.length && fileTakers().length) {
+			e.preventDefault();
+			void takeFiles(files, at);
+			return;
+		}
 		const parsed = pasted(e.clipboardData) ?? [];
 		e.preventDefault();
 		if (!parsed.length) return;
-		const at = Math.max(...value.map((b, n) => (selSet.has(b.id) ? n : -1))) + 1;
 		mutate(() => insertAt(at, ...parsed));
 		selA = parsed[0].id;
 		selH = parsed[parsed.length - 1].id;
@@ -1185,8 +1199,32 @@
 		insert: (payload, over, after) => {
 			const incoming = fit(payload.map(fromStored));
 			mutate(() => insertAt(idx(over) + (after ? 1 : 0), ...incoming));
-		}
+		},
+		takesFiles: () => fileTakers().length > 0,
+		files: (files, over, after) => void takeFiles(files, idx(over) + (after ? 1 : 0))
 	});
+
+	/** The plugins this editor offers that take files. */
+	const fileTakers = () => plugins.filter((p) => p.fromFiles && allowed.has(p.type));
+
+	/**
+	 * Files pasted or dropped: the first plugin that takes them gets one block, at `at` (or in place of the empty block
+	 * `empty`). False when none takes them.
+	 */
+	async function takeFiles(files: File[], at: number, empty?: Block): Promise<boolean> {
+		for (const p of fileTakers()) {
+			const props = await p.fromFiles!(files);
+			if (!props) continue;
+			const pb = newBlock('plugin', '', { plugin: p.type, indent: empty?.indent ?? 0, props });
+			fresh.add(pb.id);
+			const i = empty ? idx(empty.id) : -1;
+			mutate(() => (i >= 0 ? (value = [...value.slice(0, i), pb, ...value.slice(i + 1)]) : insertAt(Math.min(at, value.length), pb)));
+			await tick();
+			selectOnly(pb.id);
+			return true;
+		}
+		return false;
+	}
 
 	/* ------------------------------------------------------------------- misc */
 
@@ -1244,6 +1282,7 @@
 	ondragover={drag.over}
 	ondrop={drag.drop}
 	ondragend={drag.end}
+	ondragleave={drag.leave}
 >
 	{#each value as b, i (b.id)}
 		<div

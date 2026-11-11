@@ -6,13 +6,13 @@
 	import photoTs from '$site/blocks/photo.ts?raw';
 	import photoView from '$site/blocks/PhotoView.svelte?raw';
 	import photoPreview from '$site/blocks/PhotoPreview.svelte?raw';
-	import imagesTs from '$site/blocks/images.ts?raw';
+	import imagesTs from '$site/blocks/images.svelte.ts?raw';
 
 	const files = [
 		{ name: 'photo.ts', language: 'typescript', code: photoTs },
 		{ name: 'PhotoView.svelte', language: 'svelte', code: photoView },
 		{ name: 'PhotoPreview.svelte', language: 'svelte', code: photoPreview },
-		{ name: 'images.ts', language: 'typescript', code: imagesTs }
+		{ name: 'images.svelte.ts', language: 'typescript', code: imagesTs }
 	];
 </script>
 
@@ -31,7 +31,7 @@
 
 	<ProseParagraph>
 		<ProseTitle level={3}>A photo block</ProseTitle>
-		<ProseText>This demo stores an id from its own image library, picks it from a row of thumbnails in the block's view, and resolves it with its own lookup. Alt text and height are ordinary fields.</ProseText>
+		<ProseText>This demo stores an id from its own image library, picks it from a row of thumbnails in the block's view, and resolves it with its own lookup. Alt text and height are ordinary fields. Paste or drop an image file into the editor: the plugin's <DocInlineCode>fromFiles</DocInlineCode> adds it to the library and makes a photo of it.</ProseText>
 		<DocShowCode code={files} />
 		<DocShowExample class="block" component={Example} code={example} />
 	</ProseParagraph>

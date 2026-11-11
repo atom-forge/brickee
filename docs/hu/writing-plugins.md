@@ -291,6 +291,25 @@ fromTable?(table: MarkdownTable): P;
 
 A beépített `table` pluginnak van ilyen (`fromTable: ({ rows, align }) => ({ rows, heads: ['top'], align })`), így egy olyan szerkesztőbe beillesztett táblázat, amely felkínálja, táblázat blokk lesz. Ilyen plugin nélkül a táblázat szöveg marad.
 
+## Fájlok fogadása
+
+Ha fájlokat illesztenek be a szerkesztőbe (egy kimásolt kép, egy képernyőkép), vagy az oldalon kívülről dobnak rá, a szerkesztő által felkínált pluginok közül az első, amelynek van `fromFiles` függvénye és propokat ad vissza, kap egy saját blokkot:
+
+```ts
+fromFiles?(files: File[]): P | null | Promise<P | null>;
+```
+
+`null`-lal a következő pluginra hagyja a fájlokat. A feltöltés és a tárolás a plugin dolga, ezért visszaadhat promise-t is – feltölt, majd a tárolt URL-lel vagy azonosítóval adja vissza a propokat. A beillesztett fájl a kurzort tartalmazó blokk után kerül (vagy egy üres blokk helyére), a bedobott oda, ahol a húzásjelző vonal mutatja.
+
+```ts
+fromFiles: async (files) => {
+	const file = files.find((f) => f.type.startsWith('image/'));
+	if (!file) return null;
+	const url = await uploadToMyStorage(file); // az alkalmazásod feltöltése
+	return { url, alt: file.name };
+},
+```
+
 ## Képek
 
 A szerkesztő nem ismeri a kép fogalmát: nincs képmező, nincs képválasztó, nincs médialista. Hogy egy blokk a kép URL-jét vagy az alkalmazás saját médiatárában lévő kép azonosítóját tárolja, hogyan választja ki a felhasználó, és hogyan lesz a tárolt értékből cím, az az alkalmazás döntése, így a képblokk az alkalmazás egy közönséges pluginja.

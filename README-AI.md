@@ -97,6 +97,7 @@ interface BlockPlugin<P extends Props = Props> {
 	accepts?: string[];          // container content as palette ids; 'md:*'
 	markdown?(props: P, ctx: MarkdownContext): string; // '' = left out
 	fromTable?(table: MarkdownTable): P; // takes a pasted/imported GFM table (bundled `table` does)
+	fromFiles?(files: File[]): P | null | Promise<P | null>; // takes pasted/dropped files; null = next plugin; upload is yours
 	unique?: boolean;
 }
 interface PluginViewProps<P> { props: P; blocks: StoredBlock[]; readonly: boolean; palette: string[]; plugins: BlockPlugin[] }

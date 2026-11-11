@@ -1,6 +1,6 @@
 import { ImageIcon } from '@lucide/svelte';
 import { mdText, type BlockPlugin } from '@atom-forge/brickee';
-import { findImage } from './images';
+import { addImage, findImage } from './images.svelte';
 
 // Images are this app's business, not Brickee's: the block stores an id from the app's library (it could just as well
 // store a URL), picks it in its own view (PhotoView) and resolves it with the app's own lookup.
@@ -23,6 +23,11 @@ export const photo: BlockPlugin<PhotoProps> = {
 	markdown: (p) => {
 		const url = findImage(p.image)?.url;
 		return url ? `![${mdText(p.alt)}](${url})` : '';
+	},
+	// A pasted or dropped image file joins the app's library and becomes a photo (another plugin gets other files).
+	fromFiles: (files) => {
+		const file = files.find((f) => f.type.startsWith('image/'));
+		return file ? { image: addImage(file), alt: file.name.replace(/\.[^.]+$/, '') } : null;
 	},
 	view: PhotoView,
 	preview: PhotoPreview

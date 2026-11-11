@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { viewValues, type PluginPreviewProps } from '@atom-forge/brickee';
-	import { findImage } from './images';
+	import { findImage } from './images.svelte';
 	import { aspect, type PhotoProps } from './PhotoView.svelte';
 	import { VIEW_KEYS } from './views';
 

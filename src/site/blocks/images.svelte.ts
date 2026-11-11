@@ -14,11 +14,18 @@ const swatch = (from: string, to: string, label: string) =>
 
 /** This app's image library. Brickee knows nothing about images: the photo block decides what it stores (here an id)
  * and how it turns that into a picture. A real app would load this from its own store. */
-export const IMAGES: Image[] = [
+export const IMAGES: Image[] = $state([
 	{ id: 'sunrise', name: 'sunrise.svg', url: swatch('#f97316', '#db2777', 'Sunrise') },
 	{ id: 'ocean', name: 'ocean.svg', url: swatch('#0ea5e9', '#4f46e5', 'Ocean') },
 	{ id: 'forest', name: 'forest.svg', url: swatch('#22c55e', '#0f766e', 'Forest') },
 	{ id: 'stone', name: 'stone.svg', url: swatch('#a8a29e', '#44403c', 'Stone') }
-];
+]);
 
 export const findImage = (id: unknown) => IMAGES.find((i) => i.id === id);
+
+/** A file the user pasted or dropped, added to the library (this demo keeps it in the browser only). */
+export function addImage(file: File): string {
+	const id = `upload-${IMAGES.length}`;
+	IMAGES.push({ id, name: file.name, url: URL.createObjectURL(file) });
+	return id;
+}

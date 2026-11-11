@@ -152,6 +152,12 @@ export interface BlockPlugin<P extends Props = Props> {
 	 * that has it gets the table; without one, the table stays text.
 	 */
 	fromTable?(table: MarkdownTable): P;
+	/**
+	 * Takes files pasted into the editor or dropped on it (an image, a PDF…): returns the new block's props, or null to
+	 * leave them to the next plugin. Uploading and storing them is the plugin's own business; it may take its time (a
+	 * promise). The first plugin the editor offers that takes them gets one block.
+	 */
+	fromFiles?(files: File[]): P | null | Promise<P | null>;
 	/** At most one per document, and only at the top level (e.g. a table of contents). */
 	unique?: boolean;
 }

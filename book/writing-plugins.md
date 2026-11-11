@@ -293,6 +293,25 @@ fromTable?(table: MarkdownTable): P;
 
 The bundled `table` has it (`fromTable: ({ rows, align }) => ({ rows, heads: ['top'], align })`), so a table pasted into an editor that offers it becomes a table block. Without such a plugin the table stays text.
 
+## Taking files
+
+When files are pasted into the editor (a copied image, a screenshot) or dropped on it from outside the page, the first plugin the editor offers that has `fromFiles` and returns props gets one block of its own:
+
+```ts
+fromFiles?(files: File[]): P | null | Promise<P | null>;
+```
+
+Return `null` to leave the files to the next plugin. Uploading and storing them is the plugin's business, so it may return a promise — upload, then return the props with the stored URL or id. A pasted file goes after the block with the caret (or in place of an empty one); a dropped one where the drop line shows.
+
+```ts
+fromFiles: async (files) => {
+	const file = files.find((f) => f.type.startsWith('image/'));
+	if (!file) return null;
+	const url = await uploadToMyStorage(file); // your app's upload
+	return { url, alt: file.name };
+},
+```
+
 ## Images
 
 The editor has no notion of images: no image field, no picker, no list of media. Whether a block stores an image's URL or the id of an image in the app's own media library, how the user picks it, and how the stored value becomes an address are the application's decisions, so an image block is an ordinary plugin of the app.

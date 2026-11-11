@@ -16,7 +16,7 @@
 
 <script lang="ts">
 	import { baseValue, useView, viewValues, type PluginViewProps } from '@atom-forge/brickee';
-	import { IMAGES, findImage } from './images';
+	import { IMAGES, findImage } from './images.svelte';
 	import { VIEW_KEYS } from './views';
 
 	let { props = $bindable(), blocks = $bindable(), readonly }: PluginViewProps<PhotoProps> = $props();

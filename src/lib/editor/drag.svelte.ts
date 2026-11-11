@@ -51,6 +51,10 @@ export interface DragHost {
 	move(ids: string[], over: string, after: boolean): void;
 	/** Puts another editor's blocks before or after one of its own (an undo step). */
 	insert(payload: StoredBlock[], over: string, after: boolean): void;
+	/** Does a plugin this editor offers take files? */
+	takesFiles(): boolean;
+	/** Files dropped from outside the page, before or after one of its blocks. */
+	files(files: File[], over: string, after: boolean): void;
 }
 
 export function createDrag(host: DragHost) {
@@ -84,9 +88,12 @@ export function createDrag(host: DragHost) {
 		/** On the editor's dragover. */
 		over(e: DragEvent) {
 			// A nested editor deeper in the tree already took this event.
-			if (!hub.src || e.defaultPrevented) return;
+			if (e.defaultPrevented) return;
+			// Files from outside the page, when a plugin here takes files.
+			const files = !hub.src && !!e.dataTransfer?.types.includes('Files') && host.takesFiles();
+			if (!hub.src && !files) return;
 			const row = host.ownRow(e.target as Element);
-			if (!row || !accepts(hub.src)) return;
+			if (!row || (hub.src && !accepts(hub.src))) return;
 			e.preventDefault();
 			const r = row.getBoundingClientRect();
 			hub.target = { editor: token, over: row.dataset.block!, after: e.clientY > r.top + r.height / 2 };
@@ -95,9 +102,14 @@ export function createDrag(host: DragHost) {
 		drop(e: DragEvent) {
 			const src = hub.src;
 			const at = hub.target;
-			if (!src || at?.editor !== token) return;
+			if (at?.editor !== token) return;
 			e.preventDefault();
 			hub.src = hub.target = null;
+			if (!src) {
+				const files = [...(e.dataTransfer?.files ?? [])];
+				if (files.length) host.files(files, at.over, at.after);
+				return;
+			}
 			if (src.ids.includes(at.over)) return;
 			if (src.editor === token) return host.move(src.ids, at.over, at.after);
 			// From another editor: copy in through the stored form, then remove at the source.
@@ -107,6 +119,10 @@ export function createDrag(host: DragHost) {
 		/** On dragend: nothing is dragged any more. */
 		end() {
 			hub.src = hub.target = null;
+		},
+		/** On the editor's dragleave: files dragged out of it leave no drop line behind (they have no dragend here). */
+		leave(e: DragEvent) {
+			if (!hub.src && hub.target?.editor === token && !host.root().contains(e.relatedTarget as Node)) hub.target = null;
 		},
 		/** Is this block of this editor being dragged? */
 		moves: (id: string) => hub.src?.editor === token && hub.src.ids.includes(id),
