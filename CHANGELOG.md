@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-11-11
+
 ### Added
 
 - The book is listed on the AtomForge documentation site (https://books.atom-forge.eu).
