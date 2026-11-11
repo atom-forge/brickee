@@ -27,6 +27,7 @@
 	import PropsBar from './PropsBar.svelte';
 	import BlockMenu, { type MenuRow } from './editor/BlockMenu.svelte';
 	import FormatBar from './editor/FormatBar.svelte';
+	import { History } from './editor/history';
 	import { acceptsId, BUILT_IN_IDS, PALETTE_ITEMS, type Icon, type PaletteItem } from './palette';
 	import { MAX_INDENT, newBlock, numbering, uid, type Block, type BlockPlugin, type BlockType, type StoredBlock, type PropField, type Content, BUILT_IN_CONTENT, isMd, MD } from './types';
 
@@ -151,6 +152,8 @@
 	});
 
 	const idx = (id: string) => value.findIndex((b) => b.id === id);
+	/** Puts blocks into the document before position `at`. */
+	const insertAt = (at: number, ...blocks: Block[]) => (value = [...value.slice(0, at), ...blocks, ...value.slice(at)]);
 	// Direct children only: a plugin row may hold a nested editor with its own blocks.
 	const el = (id: string) => root?.querySelector<HTMLElement>(`[data-block="${id}"] > .body > .ce`) ?? null;
 	const ownRow = (n: Element | null) => {
@@ -183,69 +186,18 @@
 		const e = focusedId ? el(focusedId) : null;
 		return { blocks: JSON.stringify($state.snapshot(value)), id: focusedId, off: e ? caretOffset(e) : 0 };
 	};
-	let past: Snap[] = [];
-	let future: Snap[] = [];
-	let last: Snap = take();
-	let pending = false;
-	let timer: ReturnType<typeof setTimeout>;
-
-	/** Call on every text edit: consecutive typing collapses into one undo step. */
-	function typed() {
-		if (!pending) {
-			past.push(last);
-			if (past.length > 300) past.shift();
-			future = [];
-			pending = true;
-		}
-		clearTimeout(timer);
-		timer = setTimeout(() => {
-			pending = false;
-			last = take();
-		}, 600);
-	}
-
-	/** Wrap every structural change: pushes an undo step. */
-	function mutate(fn: () => void) {
-		clearTimeout(timer);
-		pending = false;
-		past.push(take());
-		if (past.length > 300) past.shift();
-		future = [];
-		fn();
-		last = take();
-	}
-
-	/** Drops the undo and redo steps (a document loaded from outside). */
-	function forget() {
-		clearTimeout(timer);
-		pending = false;
-		past = [];
-		future = [];
-		last = take();
-	}
+	const history = new History<Snap>(take, restore);
+	const typed = () => history.typed();
+	const mutate = (fn: () => void) => history.mutate(fn);
+	const forget = () => history.forget();
+	const undo = () => history.undo();
+	const redo = () => history.redo();
 
 	function restore(s: Snap) {
 		value = JSON.parse(s.blocks);
 		selA = selH = null;
 		slash = null;
-		last = s;
 		if (s.id && idx(s.id) >= 0) focusBlock(s.id, s.off);
-	}
-	function undo() {
-		clearTimeout(timer);
-		pending = false;
-		const s = past.pop();
-		if (!s) return;
-		future.push(take());
-		restore(s);
-	}
-	function redo() {
-		clearTimeout(timer);
-		pending = false;
-		const s = future.pop();
-		if (!s) return;
-		past.push(take());
-		restore(s);
 	}
 
 	/* ---------------------------------------------------------- block catalog */
@@ -376,7 +328,7 @@
 			if (type === 'hr') {
 				const i = idx(b.id);
 				const nb = newBlock();
-				value = [...value.slice(0, i + 1), nb, ...value.slice(i + 1)];
+				insertAt(i + 1, nb);
 				focusBlock(nb.id, 'start');
 			} else focusBlock(b.id, off);
 		});
@@ -430,7 +382,7 @@
 				b.type = 'hr';
 				b.html = '';
 				const nb = newBlock();
-				value = [...value.slice(0, i + 1), nb, ...value.slice(i + 1)];
+				insertAt(i + 1, nb);
 				focusBlock(nb.id, 'start');
 			});
 			return;
@@ -471,7 +423,7 @@
 		const nb = newBlock(type, post, { indent: b.indent, ...(type === 'todo' ? { checked: false } : {}) });
 		mutate(() => {
 			b.html = pre;
-			value = [...value.slice(0, i + 1), nb, ...value.slice(i + 1)];
+			insertAt(i + 1, nb);
 		});
 		focusBlock(nb.id, 'start');
 	}
@@ -516,7 +468,7 @@
 			} else if (e.shiftKey && (key === 'ArrowUp' || key === 'ArrowDown')) nudge([b.id], key === 'ArrowUp' ? -1 : 1);
 			else if (key === 'Enter' && b.type === 'code') {
 				const nb = newBlock();
-				mutate(() => (value = [...value.slice(0, i + 1), nb, ...value.slice(i + 1)]));
+				mutate(() => insertAt(i + 1, nb));
 				focusBlock(nb.id, 'start');
 			} else handled = false;
 			if (handled) return e.preventDefault();
@@ -532,7 +484,7 @@
 			if (b.type === 'code') {
 				if (e.shiftKey) {
 					const nb = newBlock();
-					mutate(() => (value = [...value.slice(0, i + 1), nb, ...value.slice(i + 1)]));
+					mutate(() => insertAt(i + 1, nb));
 					focusBlock(nb.id, 'start');
 				} else document.execCommand('insertLineBreak');
 			} else if (e.shiftKey) document.execCommand('insertLineBreak');
@@ -759,7 +711,7 @@
 			if (target === b) curHtml += post;
 			else target.html += post;
 			b.html = curHtml;
-			value = [...value.slice(0, i + 1), ...rest, ...value.slice(i + 1)];
+			insertAt(i + 1, ...rest);
 		});
 		if (atomic(target)) selectOnly(target.id);
 		else focusBlock(target.id, off);
@@ -774,7 +726,7 @@
 		e.preventDefault();
 		if (!parsed.length) return;
 		const at = Math.max(...value.map((b, n) => (selSet.has(b.id) ? n : -1))) + 1;
-		mutate(() => (value = [...value.slice(0, at), ...parsed, ...value.slice(at)]));
+		mutate(() => insertAt(at, ...parsed));
 		selA = parsed[0].id;
 		selH = parsed[parsed.length - 1].id;
 	}
@@ -916,7 +868,7 @@
 			if (el(b.id)) focusBlock(b.id, 'end');
 			else {
 				const nb = newBlock();
-				mutate(() => (value = [...value.slice(0, h + 1), nb, ...value.slice(h + 1)]));
+				mutate(() => insertAt(h + 1, nb));
 				focusBlock(nb.id, 'start');
 			}
 		} else if (key === 'Escape') {
@@ -1245,7 +1197,7 @@
 	// onDestroy: that also runs after server-side rendering, where there is no window.)
 	$effect(() => () => {
 		endSweep();
-		clearTimeout(timer);
+		history.dispose();
 	});
 
 	/* ---------------------------------------------------------------- dragging */
@@ -1306,7 +1258,7 @@
 		const incoming = fit(src.payload.map(fromStored));
 		mutate(() => {
 			const t = idx(over) + (after ? 1 : 0);
-			value = [...value.slice(0, t), ...incoming, ...value.slice(t)];
+			insertAt(t, ...incoming);
 		});
 		src.remove();
 	}
@@ -1322,7 +1274,7 @@
 		if (!(b.type === 'p' && !b.html)) {
 			target = newBlock('p', '', { indent: b.indent });
 			const i = idx(b.id);
-			mutate(() => (value = [...value.slice(0, i + 1), target, ...value.slice(i + 1)]));
+			mutate(() => insertAt(i + 1, target));
 		}
 		await tick();
 		const ce = el(target.id);
