@@ -27,7 +27,7 @@ Minden lépés után frissül; a kész lépések commitolva vannak (helyben, kia
 - [x] 3.3 érintés és billentyűzet (F2, F3) — fogantyú gomb; menü `/`, Ctrl+/, menübillentyű; Mozgatás fel/le a menüben; érintőn a koppintott blokk buborékja látszik; élőben (érintés-emulációval is) ellenőrizve. Nincs: pointer-alapú húzás érintőn (a böngészők HTML5 drag-támogatására marad; eszközön nem próbálva)
 - [x] 3.5 formázás a táblacellákban (F5) — a teljes contenteditable-átírás helyett: szerkesztésen kívül formázott nézet (az szabja a cella méretét), szerkesztéskor markdown + Ctrl+B/I/E/Shift+X/K; a tárolt alak nem változott; élőben ellenőrizve
 - [x] 3.7 hosszabb távú (S4, P2) — előzmény: a lépések közösen használják a változatlan blokkokat (2000 blokknál előtte kb. 323 KB/lépés, mérve); `execCommand`: marad (minden böngészőben működik, nincs kivezetési jel; a kiváltás nagy kockázatú átírás) — döntés
-- [ ] kiadás (0.0.3): verzió, changelog, upgrading-címek, publikálás — csak jóváhagyással
+- [x] kiadás (0.0.3): verzió, changelog, upgrading-címek, publikálás (jóváhagyva 2026-11-11)
 
 ## Döntések (2026-11-11)
 

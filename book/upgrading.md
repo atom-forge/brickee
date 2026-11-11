@@ -7,7 +7,7 @@ This chapter lists the changes that may require action when you move to a newer 
 
 Changes that need no action from you — new exports, fixes, documentation updates — are listed only in the changelog (`CHANGELOG.md`, shipped with the package).
 
-## From 0.0.2 to Unreleased
+## From 0.0.2 to 0.0.3
 
 ### The editor needs its `dist` folder as a Tailwind `@source`
 
