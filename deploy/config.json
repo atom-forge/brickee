@@ -1,0 +1,9 @@
+{
+  "host": "root@ion.tinystudios.hu",
+  "path": "/var/www/eu.atom-forge.brickee",
+  "artifact": "build",
+  "build_commands": [
+    ["bun", "install", "--frozen-lockfile"],
+    ["bun", "run", "build"]
+  ]
+}

@@ -16,7 +16,7 @@
 		</p>
 		<div class="flex flex-wrap gap-3">
 			<a href="/guide/editor/" class="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 font-semibold text-accent-contrast no-underline hover:opacity-90"><Book size={18} /> Start the guide</a>
-			<a href="https://github.com/atom-forge/brickee/blob/main/docs/en/index.md" class="inline-flex items-center gap-2 rounded-lg border border-frame px-5 py-3 font-semibold text-canvas-contrast no-underline hover:border-accent">Read the documentation <ArrowRight size={18} /></a>
+			<a href="https://books.atom-forge.eu/brickee/" class="inline-flex items-center gap-2 rounded-lg border border-frame px-5 py-3 font-semibold text-canvas-contrast no-underline hover:border-accent">Read the documentation <ArrowRight size={18} /></a>
 		</div>
 		<pre class="inline-block rounded-lg bg-secondary px-4 py-2 font-mono text-sm text-secondary-contrast">bun add @atom-forge/brickee @atom-forge/ui @lucide/svelte</pre>
 	</Card>

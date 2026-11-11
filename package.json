@@ -24,7 +24,8 @@
 		"prepublishOnly": "bun run prepack",
 		"pub-check": "ship-it check",
 		"pub": "ship-it",
-		"pub-validate": "ship-it validate"
+		"pub-validate": "ship-it validate",
+		"deploy": "python3 deploy/local.py"
 	},
 	"ship": {
 		"verify": [

@@ -24,7 +24,7 @@
 
 	const EXTERNAL: MenuItem[] = [
 		{type: 'separator'},
-		{label: 'Documentation', icon: uiIcon(Book), href: 'https://github.com/atom-forge/brickee/blob/main/docs/en/index.md'},
+		{label: 'Documentation', icon: uiIcon(Book), href: 'https://books.atom-forge.eu/brickee/'},
 		{label: 'npm', icon: uiIcon(Package), href: 'https://www.npmjs.com/package/@atom-forge/brickee'},
 		{label: 'atom-forge.eu', icon: uiIcon(ExternalLink), href: 'https://atom-forge.eu'},
 		{label: 'GitHub', icon: uiIcon(ExternalLink), href: 'https://github.com/atom-forge/brickee'},
@@ -134,7 +134,7 @@
 				<Search size={13}/> Search <kbd class="ml-1 opacity-60">⌘K</kbd>
 			</button>
 			<a
-				href="https://github.com/atom-forge/brickee/blob/main/docs/en/index.md"
+				href="https://books.atom-forge.eu/brickee/"
 				class="hidden sm:flex items-center gap-2 text-xs text-muted-contrast border border-frame rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors no-underline"
 			>
 				<Book size={13}/> Documentation

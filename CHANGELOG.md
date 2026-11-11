@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The showcase site is published at https://brickee.atom-forge.eu: `bun run deploy` (static build, atomic release switch over SSH; `deploy/`, copied from `@atom-forge/ui`), with its Nginx site in `deploy/nginx.conf`. The README links it and the book's own address; the site's Documentation links open the book.
+
 ### Fixed
 
 - Book: links to a section use the heading's id (`[[writing-plugins#containers|…]]`), so the AtomForge documentation site builds with the book.

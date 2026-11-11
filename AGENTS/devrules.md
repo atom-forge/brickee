@@ -25,4 +25,5 @@ Development rules of this package. Unlike `AGENTS/changelog.md` and `AGENTS/docu
 - Use `bun`. Tests: `bun run test` (vitest; `src/lib/*.test.ts`, DOM through happy-dom), also run by the release checks and CI.
 - Typecheck: `bun run check` · Package: `bun run prepack` (SvelteKit sync, `svelte-package`, `publint`)
 - Release: `bun run pub <patch|minor|major>` · Verify: `bun run pub-check`
+- Showcase site: `bun run deploy` builds it and publishes `build/` to https://brickee.atom-forge.eu (`deploy/local.py`, copied from `@atom-forge/ui`: atomic release switch over SSH, `--rollback <release>`, `--dry-run`). Server, path and build steps: `deploy/config.json`; the server's Nginx site: `deploy/nginx.conf` (wildcard `*.atom-forge.eu` certificate).
 - Local use in an app: `bun link` here, `"@atom-forge/brickee": "link:@atom-forge/brickee"` there, and `bun run prepack` after each change (the app reads `dist/`). The linked folder carries its own `node_modules`: the app must dedupe `svelte`, `@atom-forge/ui`, `@lucide/svelte` and `zod` in Vite (`resolve.dedupe`) and point the `svelte` types to its own copy.
