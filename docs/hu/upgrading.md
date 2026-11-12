@@ -6,6 +6,14 @@ Ez a fejezet azokat a változásokat sorolja fel, amelyek teendőt igényelhetne
 
 A tőled semmit nem igénylő változások – új exportok, javítások, dokumentációfrissítések – csak a változásnaplóban (`CHANGELOG.md`, a csomaggal együtt szállítva) szerepelnek.
 
+## A 0.0.4-ről a 0.0.5-re
+
+### Legalább 0.1.0-s `@atom-forge/ui` kell
+
+A szerkesztő lebegő menüi (az eszköztár, a perjeles és az „Átalakítás” menü) alacsony z-indexszel a `<body>` végére kerültek, ezért `@atom-forge/ui` ablakban (modal) vagy fiókban (drawer) mögé kerültek, és az `Esc` egy menün az ablakot is bezárta. Most abba a lebegőrétegbe kerülnek, amelyet a `Root` az ablakok és a fiókok fölé renderel (az `@atom-forge/ui` 0.1.0 `portal` akciója), és a 0.1.0 ablakai békén hagyják azt az `Esc`-et, amelyet a szerkesztő már lekezelt.
+
+**Teendő:** frissítsd az `@atom-forge/ui`-t 0.1.0-ra vagy újabbra. Ennek a verziónak saját törő változásai is vannak (eltávolított szerkesztővezérlők, a dokumentáció a `docs/en/` alá került); lásd a könyvének frissítési fejezetét. Az alkalmazás maradjon a `Root` alatt: nélküle a menük a `<body>`-ba kerülnek, mint eddig.
+
 ## A 0.0.3-ról a 0.0.4-re
 
 ### Megszűntek a nézetenkénti mezőértékek

@@ -81,7 +81,7 @@
 		}
 	},
 	"peerDependencies": {
-		"@atom-forge/ui": ">=0.0.37",
+		"@atom-forge/ui": ">=0.1.0",
 		"@lucide/svelte": ">=1.0.0",
 		"svelte": "^5.0.0",
 		"temml": ">=0.13.0",
@@ -97,7 +97,7 @@
 	},
 	"devDependencies": {
 		"@atom-forge/ship": "0.2.0",
-		"@atom-forge/ui": "^0.0.37",
+		"@atom-forge/ui": "^0.1.0",
 		"@lucide/svelte": "^1.59.0",
 		"@sveltejs/adapter-static": "^4.0.1",
 		"@sveltejs/kit": "^2.50.2",

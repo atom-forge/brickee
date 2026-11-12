@@ -22,7 +22,7 @@
 
 <script lang="ts">
 	import { Check } from '@lucide/svelte';
-	import { portal } from '../dom';
+	import { portal } from '@atom-forge/ui';
 
 	let {
 		rows,
@@ -59,7 +59,8 @@
 </script>
 
 <!-- `menu`, `turn` and `active` are hooks (closing on an outside click, scrolling the active row into view), not styles.
-     It lives in the body (portal), so it keeps the editor's type size and colour itself. -->
+     It lives in the ui's floating layer (portal, above an open modal or drawer), so it keeps the editor's type size and
+     colour itself. -->
 <div
 	bind:this={menu}
 	use:portal

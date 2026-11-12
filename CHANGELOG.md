@@ -12,9 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Notes: the floating menus' z-index checked against the `@atom-forge/ui` source. The popup manager does not suit the format bar or the slash menu; the plan is to portal them into the ui's `#atom-forge-portal-target`. Also found: Escape in an editor inside a ui modal closes the modal too.
 - Repository: finished notes move to `notes/.archived/` (rule in `AGENTS.md`); the code review plan and the formula / inline plugin plan are archived. A note and a `TODO.md` item on the editor's floating menus (format bar, slash and Turn-into menus) showing behind a `@atom-forge/ui` modal, with the fix planned through the ui popup layer.
 - The showcase site is published at https://brickee.atom-forge.eu: `bun run deploy` (static build, atomic release switch over SSH; `deploy/`, copied from `@atom-forge/ui`), with its Nginx site in `deploy/nginx.conf`. The README links it and the book's own address; the site's Documentation links open the book.
+- `/dev/modal`, a development page with the editor inside an `@atom-forge/ui` modal and drawer.
+
+### Changed
+
+- **Breaking:** the `@atom-forge/ui` peer dependency is `>=0.1.0` (was `>=0.0.37`); see the book's upgrading chapter. The editor's own `portal` helper is replaced by the `portal` action of `@atom-forge/ui`.
 
 ### Fixed
 
+- Inside an `@atom-forge/ui` modal or drawer the formatting bar and the slash and Turn-into menus no longer appear behind it: they go into the floating layer that `Root` renders above modals and drawers (with `@atom-forge/ui` 0.1.0), and the link field and inline element forms stay above them. `Esc` on one of them, on the link field or in a block's text no longer closes the modal or drawer too; `Esc` on selected blocks still reaches it, so the editor can be left from the keyboard. Documented in the book (getting started, editing, pitfalls, upgrading), the docs and `README-AI.md`.
 - Book: links to a section use the heading's id (`[[writing-plugins#containers|…]]`), so the AtomForge documentation site builds with the book.
 
 ## [0.0.4] - 2026-11-11

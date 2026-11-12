@@ -81,6 +81,7 @@ A plain paragraph (`md:p`) is always allowed as the fallback.
 | Copy, cut, paste | Copying selected blocks puts their markdown on the clipboard (plugin blocks through their markdown form) and, beside it, the blocks themselves (`application/x-brickee+json`). Formatted text from elsewhere (a web page, Google Docs, Word) keeps its headings, lists, tables and marks (`fromHtml`); plain text is read as markdown. Pasted into a Brickee editor, copied blocks come back as they were; a plugin block that editor does not offer (or a second unique one) falls back to its markdown form. Pasted anywhere else, the markdown arrives. Pasting while blocks are selected puts the blocks after them. |
 | Paste | Multi-line text is read as markdown and becomes blocks. |
 | Undo, redo | `Ctrl/Cmd+Z`, `Ctrl/Cmd+Shift+Z` or `Ctrl/Cmd+Y`. |
+| Escape | `Esc` closes an open menu or link field; in a block's text it selects the block; on selected blocks it goes back to the text. In an `@atom-forge/ui` modal or drawer only the last one reaches the overlay: the first `Esc` in a block selects it, the second also closes the modal or drawer. |
 
 What a block can turn into depends on what it holds (its `content`):
 

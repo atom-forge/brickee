@@ -101,6 +101,7 @@ Az alkalmazás a csomag lefordított `dist/` mappáját olvassa, ezért minden v
 | A szerkesztő sorai, menüi vagy táblázata stílus nélküliek vagy összezsugorodnak | Az `@atom-forge/brickee` `dist` mappája nem Tailwind `@source` | Vedd fel az `@source "../node_modules/@atom-forge/brickee/dist";` sort az `@atom-forge/ui`-é mellé. |
 | A blokkmezők és a popupok stílus nélkülinek tűnnek | Hiányzik az `@atom-forge/ui` téma CSS-e vagy a Tailwind `@source`-a | Állítsd be az `@atom-forge/ui`-t a dokumentációja szerint, és az alkalmazást a `Root`-ja alatt rendereld. |
 | A blokkfogantyúk balra kilógnak | A fogantyúk a szerkesztő dobozától balra jelennek meg | Adj a szerkesztőt körülvevő elemnek kb. 22 px bal oldali paddinget. |
+| Az eszköztár vagy a perjeles menü egy ablak vagy fiók mögé kerül | 0.1.0-nál régebbi `@atom-forge/ui`, vagy az alkalmazás nincs a `Root` alatt | Frissítsd az `@atom-forge/ui`-t, és rendereld az alkalmazást a `Root` alatt, amely a lebegőréteget adja. |
 | A popupok nem nyílnak meg, vagy „context not found” hibák linkelt csomaggal | A `svelte` vagy az `@atom-forge/ui` két példányban van jelen | Vedd fel őket a Vite `resolve.dedupe` listájába. |
 | Egy plugin blokkja „Unknown block” feliratot mutat | A pluginja hiányzik a `plugins`-ból | Egy dokumentumtípus minden szerkesztőjének és előnézetének ugyanazokat a pluginokat add át. |
 | Egy blokk hiányzik a `Preview`-ból | A pluginjának nincs `preview`-ja | Adj a pluginnak `preview`-t (a mellékelt pluginoknak van alapértelmezett), vagy rendereld a blokkot a saját megjelenítőddel. |

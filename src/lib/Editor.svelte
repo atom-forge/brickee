@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
 	import { ArrowDown, ArrowUp, Bold, Check, Code, GripVertical, Italic, Link, Plus, RemoveFormatting, Replace, Strikethrough, Subscript, Superscript, Trash2, Underline, Ungroup } from '@lucide/svelte';
-	import { rich, clean, textLen, splitAtCaret, atStart, atEnd, caretOffset, caretRect, caretAt, setCaret, removeBeforeCaret, onEdgeLine, focusAtEdge, toggleCode, plainText, portal } from './dom';
+	import { rich, clean, textLen, splitAtCaret, atStart, atEnd, caretOffset, caretRect, caretAt, setCaret, removeBeforeCaret, onEdgeLine, focusAtEdge, toggleCode, plainText } from './dom';
 	import { fromMarkdown, fromStored, inlineElement, plainHtml, toMarkdown, toStored } from './markdown';
 	import { fromHtml } from './html';
 	import { useCodeLanguages } from './code';
 	import { provideText, useText, type Messages } from './i18n';
 	import { provideInlinePlugins, useInlinePlugins } from './inline-plugins';
-	import { PopupContainer, createPopupManager, getPopupManager } from '@atom-forge/ui';
+	import { PopupContainer, createPopupManager, getPopupManager, portal } from '@atom-forge/ui';
 	import LinkPrompt from './LinkPrompt.svelte';
 	import PluginHost from './PluginHost.svelte';
 	import PropsBar from './PropsBar.svelte';
@@ -1021,6 +1021,8 @@
 				focusBlock(nb.id, 'start');
 			}
 		} else if (key === 'Escape') {
+			// Not prevented on purpose: the first Escape selects the block, the second leaves the selection and reaches the
+			// host too, so an editor in a modal or drawer can still be closed from the keyboard.
 			const b = value[h];
 			selA = selH = null;
 			if (el(b.id)) focusBlock(b.id, 'end');

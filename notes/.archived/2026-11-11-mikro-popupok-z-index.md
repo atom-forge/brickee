@@ -28,9 +28,9 @@ Megnézendő a megvalósításkor:
       gépelés közben frissülnie kell (szűrés, pozíció). **Eredmény: részben; erre a két menüre nem való** (lásd lent).
 - [x] Ha nem tud, a rétegét (konténerét) kérjük el, és abba portálozunk, ne a `<body>`-ba. **Eredmény: van ilyen
       konténer, `#atom-forge-portal-target`; ez a javasolt út** (lásd lent).
-- [ ] A kívül kattintásra záródás, az Escape és a görgetéskori igazítás maradjon ugyanaz. (Az Escape-nél egy már
+- [x] A kívül kattintásra záródás, az Escape és a görgetéskori igazítás maradjon ugyanaz. (Az Escape-nél egy már
       meglévő hibát is javítani kell, lásd lent.)
-- [ ] Próba: szerkesztő egy ui-ablakban (modal), formázósáv, slash menü, Átalakítás menü, sötét mód; a képernyőképek
+- [x] Próba: szerkesztő egy ui-ablakban (modal), formázósáv, slash menü, Átalakítás menü, sötét mód; a képernyőképek
       (`scripts/shots.mjs`) ne változzanak.
 
 ## Az ellenőrzés eredménye (2026-11-12, `@atom-forge/ui` 0.0.39 forrása)
@@ -90,5 +90,17 @@ A Brickee az Escape-nél csak `preventDefault()`-ot hív, `stopPropagation()`-t 
 Ezért ablakban a slash menü Escape-pel bezárásakor az ablak is bezárul. Két javítás lehetséges, a kettő együtt a
 legjobb:
 
-- [ ] Brickee: ahol az Escape-et a szerkesztő kezeli, `stopPropagation()` is.
-- [ ] ui: a `handleKeydown` hagyja békén a `defaultPrevented` eseményt.
+- [x] ~~Brickee: ahol az Escape-et a szerkesztő kezeli, `stopPropagation()` is.~~ Nem kellett: a `preventDefault()` elég, mert az ui 0.1.0 ablakai figyelik.
+- [x] ui: a `handleKeydown` hagyja békén a `defaultPrevented` eseményt (ui 0.1.0).
+
+## Megvalósítva (2026-11-12, `@atom-forge/ui` 0.1.0)
+
+- Az ui 0.1.0 exportálja a `portal` akciót (alapból a `Root` lebegőrétegébe, `Root` nélkül a `<body>`-ba), és az
+  ablakai, fiókjai békén hagyják a `defaultPrevented` Escape-et. A Brickee saját `portal`-ja megszűnt; a FormatBar, a
+  BlockMenu és a szerkesztő `PopupContainer`-e az ui `portal`-ját használja. Peer: `@atom-forge/ui >=0.1.0`.
+- Escape: a szerkesztő minden ága `preventDefault()`-ot hív, egy kivétellel. A kijelölt blokkokon nyomott Escape (vissza
+  a szövegbe) szándékosan nem, különben a szerkesztőből billentyűzettel nem lehetne bezárni az ablakot (az első Escape
+  a szövegben kijelöli a blokkot, a második az ablakot is bezárja).
+- Próba a `/dev/modal` oldalon (ablak és jobb oldali fiók, Playwright): a slash, az Átalakítás menü és a formázósáv a
+  lebegőrétegben, felül; a linkmező fölöttük; Escape egyiken sem zárja be az ablakot; sötét módban is jó. A
+  `scripts/shots.mjs` 28 képe pixelre azonos a korábbiakkal.

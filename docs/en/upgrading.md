@@ -6,6 +6,14 @@ This chapter lists the changes that may require action when you move to a newer 
 
 Changes that need no action from you — new exports, fixes, documentation updates — are listed only in the changelog (`CHANGELOG.md`, shipped with the package).
 
+## From 0.0.4 to 0.0.5
+
+### `@atom-forge/ui` 0.1.0 or newer is required
+
+The editor's floating menus (the formatting bar, the slash and Turn-into menus) were appended to `<body>` with a low z-index, so inside an `@atom-forge/ui` modal or drawer they appeared behind it, and `Esc` on a menu closed the modal as well. They now go into the floating layer that `Root` renders above modals and drawers (the `portal` action of `@atom-forge/ui` 0.1.0), and the modals of 0.1.0 leave an `Esc` alone that the editor already handled.
+
+**What to do:** upgrade `@atom-forge/ui` to 0.1.0 or newer. That version has breaking changes of its own (removed editor controls, the documentation moved to `docs/en/`); see the upgrading chapter of its book. Keep the app beneath its `Root`: without it the menus fall back to `<body>`.
+
 ## From 0.0.3 to 0.0.4
 
 ### Per-view field values are gone

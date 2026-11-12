@@ -24,7 +24,7 @@ bun add @atom-forge/brickee @atom-forge/ui @lucide/svelte
 | Peer dependency | Why |
 |---|---|
 | `svelte` `^5.0.0` | The editor, the preview and the plugins are Svelte 5 components. |
-| `@atom-forge/ui` `>=0.0.37` | The popups (link prompt) and the form controls of the block fields. |
+| `@atom-forge/ui` `>=0.1.0` | The popups (link prompt), the form controls of the block fields, and the floating layer for the editor's menus. |
 | `@lucide/svelte` `>=1.0.0` | The block icons. |
 | `zod` `^4.0.0` (optional) | Only for the server-side schema in `@atom-forge/brickee/schema`. |
 
@@ -44,6 +44,8 @@ The block fields and popups are `@atom-forge/ui` components, so the application 
 - the application rendered beneath the `@atom-forge/ui` `Root` component, which provides the theme and the overlay contexts.
 
 The top-level `Editor` creates its own popup manager and renders its own popup container; editors nested in plugin blocks share it.
+
+The editor's floating menus (the formatting bar, the slash and Turn-into menus) are placed in the floating layer that `Root` renders above modals and drawers, and its popups above the menus. The editor therefore works inside an `@atom-forge/ui` modal or drawer too, and `Esc` on an open menu or link field closes only that (see [Editing](editor-and-preview.md#editing)).
 
 The editor takes its colours from the `@atom-forge/ui` theme tokens (`--color-surface`, `--color-frame`, `--color-muted-contrast`…), so it follows the host's light and dark mode. The preview's borders and captions are drawn from the text colour of the page.
 

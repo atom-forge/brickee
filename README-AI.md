@@ -6,10 +6,11 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`â
 
 ## Rules
 
-- Peers: `svelte` 5, `@atom-forge/ui` (popups and field controls), `@lucide/svelte`; `zod` only for `@atom-forge/brickee/schema`. The app must set up `@atom-forge/ui` (Tailwind 4, its theme CSS and `@source`, the app beneath its `Root`) and add `@atom-forge/brickee/dist` as a Tailwind `@source` too (the editor is styled with Tailwind classes); the preview needs no Tailwind.
+- Peers: `svelte` 5, `@atom-forge/ui` `>=0.1.0` (popups, field controls, the floating layer for the editor's menus), `@lucide/svelte`; `zod` only for `@atom-forge/brickee/schema`. The app must set up `@atom-forge/ui` (Tailwind 4, its theme CSS and `@source`, the app beneath its `Root`) and add `@atom-forge/brickee/dist` as a Tailwind `@source` too (the editor is styled with Tailwind classes); the preview needs no Tailwind.
 - Store the editor's `value` (`StoredBlock[]`) as it is. To change it from outside, assign a new array (an in-place change is not picked up); a read-only editor never writes it. Built-in types start with `md:`; any other `type` is a plugin's. Never rename a plugin's `type`: stored documents refer to it.
 - Pass the same `plugins` to the `Editor` and the `Preview` of a document type. Restrict what an editor offers with `palette` (palette ids: `md:*` kinds and plugin types), not by dropping plugins.
 - The editor's colours come from the `@atom-forge/ui` theme tokens (light/dark follow the host). Its block handles sit ~22 px left of its box: leave that much left padding around it.
+- The editor works inside an `@atom-forge/ui` modal or drawer: its menus (formatting bar, slash, Turn-into) go into the floating layer `Root` renders above them. `Esc` on a menu or link field closes only that; in a block the first `Esc` selects the block, the second also closes the modal or drawer.
 - No app-specific editor props: the editor takes code languages (`provideCodeLanguages`) and UI text (`messages` / `provideText`) from the host; everything else (media, screen widths, users) is the app's plugins' business: they read it from the app's own modules and contexts, and show their own controls in their view or their own fields `form`.
 - No image, media or per-view concept: such blocks are app plugins that store what the app chooses (a URL, an id of its own library, a value per view) and resolve it with the app's own data, the same way in view, preview and `markdown`.
 - Plugin props are untrusted user input. Previews sanitize: `safeColor` for colours, check links and image addresses (`http(s)` or site-relative), clamp numbers, never `{@html}` with props.
@@ -271,6 +272,7 @@ const result = blocksSchemaFor(plugins).safeParse(input); // or pass [{ type, ac
 | Fields and popups unstyled | `@atom-forge/ui` theme CSS / `@source` missing | Set up `@atom-forge/ui`; render beneath its `Root`. |
 | Editor rows, menus or table unstyled / shrunk | `@atom-forge/brickee/dist` not a Tailwind `@source` | `@source "../node_modules/@atom-forge/brickee/dist";` |
 | Block handles stick out on the left | Handles are drawn ~22 px left of the editor's box | Give the editor's container ~22 px left padding. |
+| Formatting bar or slash menu behind a modal or drawer | `@atom-forge/ui` < 0.1.0, or the app is not beneath `Root` | Upgrade `@atom-forge/ui`; render beneath its `Root` (it provides the floating layer). |
 | Context errors with a linked local copy | Duplicate `svelte` / `@atom-forge/ui` | Vite `resolve.dedupe: ['svelte', '@atom-forge/ui', '@lucide/svelte', 'zod']`. |
 | A block is missing from `<Preview>` | Its plugin has no `preview` | Add one (bundled plugins have a default) or render it yourself. |
 | "Unknown block" in the editor, block missing on the site | Plugin missing from `plugins` | Same plugins for editor and preview. |

@@ -24,7 +24,7 @@ bun add @atom-forge/brickee @atom-forge/ui @lucide/svelte
 | Peer dependency | Miért |
 |---|---|
 | `svelte` `^5.0.0` | A szerkesztő, az előnézet és a pluginok Svelte 5 komponensek. |
-| `@atom-forge/ui` `>=0.0.37` | A felugró ablakok (linkbekérő) és a blokkmezők űrlapvezérlői. |
+| `@atom-forge/ui` `>=0.1.0` | A felugró ablakok (linkbekérő), a blokkmezők űrlapvezérlői és a szerkesztő menüinek lebegőrétege. |
 | `@lucide/svelte` `>=1.0.0` | A blokkok ikonjai. |
 | `zod` `^4.0.0` (opcionális) | Csak az `@atom-forge/brickee/schema` szerveroldali sémájához. |
 
@@ -44,6 +44,8 @@ A blokkmezők és a felugró ablakok `@atom-forge/ui` komponensek, ezért az alk
 - az alkalmazás az `@atom-forge/ui` `Root` komponense alatt renderelődjön, amely a témát és az overlay-kontextusokat biztosítja.
 
 A legfelső szintű `Editor` saját felugróablak-kezelőt hoz létre, és saját felugróablak-tárolót renderel; a pluginblokkokba ágyazott szerkesztők ezt használják közösen.
+
+A szerkesztő lebegő menüi (az eszköztár, a perjeles és az „Átalakítás” menü) abba a lebegőrétegbe kerülnek, amelyet a `Root` az ablakok (modal) és a fiókok (drawer) fölé renderel, a felugró ablakai pedig a menük fölé. A szerkesztő ezért `@atom-forge/ui` ablakban vagy fiókban is működik, és az `Esc` egy nyitott menün vagy linkmezőn csak azt zárja be (lásd [Szerkesztés](editor-and-preview.md#szerkesztés)).
 
 A szerkesztő a színeit az `@atom-forge/ui` téma tokenjeiből veszi (`--color-surface`, `--color-frame`, `--color-muted-contrast`…), így követi a befogadó alkalmazás világos és sötét módját. Az előnézet keretei és képaláírásai az oldal szövegszínéből számolódnak.
 

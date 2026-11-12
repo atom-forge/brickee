@@ -79,6 +79,7 @@ A `PALETTE_ITEMS` a beépített blokkokat sorolja fel a címkéikkel, tippjeikke
 | Másolás, kivágás, beillesztés | A kijelölt blokkok másolásakor a markdownjuk kerül a vágólapra (a pluginblokkok a markdown alakjukon keresztül), mellé pedig maguk a blokkok is (`application/x-brickee+json`). Máshonnan (weboldal, Google Docs, Word) érkező formázott szöveg megtartja a címsorait, listáit, táblázatait és jelöléseit (`fromHtml`); a sima szöveget markdownként olvassa. Brickee-szerkesztőbe illesztve a másolt blokkok változatlanul jönnek vissza; az a pluginblokk, amelyet az a szerkesztő nem kínál fel (vagy egy második egyedi), a markdown alakjára esik vissza. Bárhová máshová illesztve a markdown érkezik. Blokk-kijelölés közben beillesztve a blokkok a kijelölés után kerülnek. |
 | Beillesztés | A többsoros szöveg markdownként értelmeződik, és blokkokká válik. |
 | Visszavonás, újra | `Ctrl/Cmd+Z`, `Ctrl/Cmd+Shift+Z` vagy `Ctrl/Cmd+Y`. |
+| Escape | Az `Esc` bezárja a nyitott menüt vagy linkmezőt; egy blokk szövegében kijelöli a blokkot; kijelölt blokkokon visszavisz a szövegbe. `@atom-forge/ui` ablakban vagy fiókban csak ez utóbbi jut el az ablakig: az első `Esc` egy blokkban kijelöli azt, a második az ablakot vagy a fiókot is bezárja. |
 
 Hogy egy blokk mivé alakítható, az attól függ, mit tartalmaz (a `content` értékétől):
 
