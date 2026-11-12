@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Notes: the floating menus' z-index checked against the `@atom-forge/ui` source. The popup manager does not suit the format bar or the slash menu; the plan is to portal them into the ui's `#atom-forge-portal-target`. Also found: Escape in an editor inside a ui modal closes the modal too.
 - Repository: finished notes move to `notes/.archived/` (rule in `AGENTS.md`); the code review plan and the formula / inline plugin plan are archived. A note and a `TODO.md` item on the editor's floating menus (format bar, slash and Turn-into menus) showing behind a `@atom-forge/ui` modal, with the fix planned through the ui popup layer.
 - The showcase site is published at https://brickee.atom-forge.eu: `bun run deploy` (static build, atomic release switch over SSH; `deploy/`, copied from `@atom-forge/ui`), with its Nginx site in `deploy/nginx.conf`. The README links it and the book's own address; the site's Documentation links open the book.
 
