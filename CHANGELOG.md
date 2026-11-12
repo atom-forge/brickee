@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-11-12
+
 ### Added
 
 - Notes: the floating menus' z-index checked against the `@atom-forge/ui` source. The popup manager does not suit the format bar or the slash menu; the plan is to portal them into the ui's `#atom-forge-portal-target`. Also found: Escape in an editor inside a ui modal closes the modal too.
