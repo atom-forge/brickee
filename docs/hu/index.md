@@ -2,7 +2,7 @@
 
 Az `@atom-forge/brickee` blokkszerkesztő Svelte 5-höz. A magja egy markdown blokkszerkesztő — bekezdések, címsorok, listák, teendők, idézetek, kód, elválasztók —, minden más blokk pedig **plugin**: egy blokk, amelynek van szerkesztőnézete, oldali előnézete, vannak mezői, és opcionálisan markdown alakja. A dokumentumok JSON-ként tárolódnak.
 
-Ezek az oldalak a [Brickee könyv](https://books.atom-forge.eu) alapján készültek, és angol nyelvű változatuk, a [`../en/index.md`](../en/index.md) fordításai; eltérés esetén az angol változat a mérvadó. Kódoló ágenseknek tömör referencia a [`README-AI.md`](../../README-AI.md).
+Ezek az oldalak a [Brickee könyv](https://books.atomforge.eu) alapján készültek, és angol nyelvű változatuk, a [`../en/index.md`](../en/index.md) fordításai; eltérés esetén az angol változat a mérvadó. Kódoló ágenseknek tömör referencia a [`README-AI.md`](../../README-AI.md).
 
 A csomag három rétegből épül fel:
 

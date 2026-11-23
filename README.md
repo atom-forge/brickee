@@ -31,8 +31,8 @@ bun add @atom-forge/brickee @atom-forge/ui @lucide/svelte
 
 ## Documentation
 
-- [Showcase](https://brickee.atom-forge.eu) — live examples with their code.
-- [The Brickee book](https://books.atom-forge.eu/brickee/) — concepts, plugins, recipes, and pitfalls.
+- [Showcase](https://brickee.atomforge.eu) — live examples with their code.
+- [The Brickee book](https://books.atomforge.eu/brickee/) — concepts, plugins, recipes, and pitfalls.
 - [English docs](docs/en/index.md) · [Magyar dokumentáció](docs/hu/index.md)
 - [README-AI.md](README-AI.md) — compact reference for coding agents.
 

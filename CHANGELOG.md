@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Notes: the floating menus' z-index checked against the `@atom-forge/ui` source. The popup manager does not suit the format bar or the slash menu; the plan is to portal them into the ui's `#atom-forge-portal-target`. Also found: Escape in an editor inside a ui modal closes the modal too.
 - Repository: finished notes move to `notes/.archived/` (rule in `AGENTS.md`); the code review plan and the formula / inline plugin plan are archived. A note and a `TODO.md` item on the editor's floating menus (format bar, slash and Turn-into menus) showing behind a `@atom-forge/ui` modal, with the fix planned through the ui popup layer.
-- The showcase site is published at https://brickee.atom-forge.eu: `bun run deploy` (static build, atomic release switch over SSH; `deploy/`, copied from `@atom-forge/ui`), with its Nginx site in `deploy/nginx.conf`. The README links it and the book's own address; the site's Documentation links open the book.
+- The showcase site is published at https://brickee.atomforge.eu: `bun run deploy` (static build, atomic release switch over SSH; `deploy/`, copied from `@atom-forge/ui`), with its Nginx site in `deploy/nginx.conf`. The README links it and the book's own address; the site's Documentation links open the book.
 - `/dev/modal`, a development page with the editor inside an `@atom-forge/ui` modal and drawer.
 
 ### Changed
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- The book is listed on the AtomForge documentation site (https://books.atom-forge.eu).
+- The book is listed on the AtomForge documentation site (https://books.atomforge.eu).
 
 - A plugin's own fields form: the new optional `BlockPlugin.form`, any Svelte component shown in the block's fields bar below the generated fields (or alone), with the block's props bound (`PluginFormProps`: `props`, `readonly`); assigning a new props object is one edit with its own undo step. For what the generated fields cannot do: the app's own pickers, data, contexts and scripts. Documented in *Writing plugins → Custom fields form*.
 - Showcase: a *Custom fields form* page (a photo block whose form picks from the album an app context names, with its own upload), replacing the *Image blocks* page.

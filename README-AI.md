@@ -299,4 +299,4 @@ In the installed package (`node_modules/@atom-forge/brickee/`):
 - [`CHANGELOG.md`](CHANGELOG.md) — release history.
 - `dist/index.d.ts`, `dist/plugins/index.d.ts` — the exported types of the installed version; `dist/plugins/` — the bundled plugins' source, useful as plugin examples.
 
-The book at https://books.atom-forge.eu is the source of these docs and adds the AI Notes chapter: instructions to copy into your project's agent instruction file. To develop the package itself, follow `AGENTS.md` in the repository.
+The book at https://books.atomforge.eu is the source of these docs and adds the AI Notes chapter: instructions to copy into your project's agent instruction file. To develop the package itself, follow `AGENTS.md` in the repository.

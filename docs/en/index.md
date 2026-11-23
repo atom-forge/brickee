@@ -2,7 +2,7 @@
 
 `@atom-forge/brickee` is a block editor for Svelte 5. Its core is a markdown block editor — paragraphs, headings, lists, to-dos, quotes, code, dividers — and every other block is a **plugin**: a block with an editor view, a site preview, its fields, and optionally a markdown form. Documents are stored as JSON.
 
-These pages are derived from the [Brickee book](https://books.atom-forge.eu), which is the source of truth. A Hungarian translation is in [`../hu/index.md`](../hu/index.md); a compact reference for coding agents is in [`README-AI.md`](../../README-AI.md).
+These pages are derived from the [Brickee book](https://books.atomforge.eu), which is the source of truth. A Hungarian translation is in [`../hu/index.md`](../hu/index.md); a compact reference for coding agents is in [`README-AI.md`](../../README-AI.md).
 
 The package is built in three layers:
 

@@ -2,7 +2,7 @@
 	import { Button } from '@atom-forge/ui';
 	import { Editor, fromMarkdown, toStored, type StoredBlock } from '@atom-forge/brickee';
 
-	let text = $state('# Imported\n\nSome **bold** and *italic* text with a [link](https://atom-forge.eu).\n\n- one\n- two\n  - nested\n\n- [x] done\n- [ ] to do\n\n> A quote\n\n```ts\nconst answer = 42;\n```');
+	let text = $state('# Imported\n\nSome **bold** and *italic* text with a [link](https://atomforge.eu).\n\n- one\n- two\n  - nested\n\n- [x] done\n- [ ] to do\n\n> A quote\n\n```ts\nconst answer = 42;\n```');
 	let value = $state<StoredBlock[]>([]);
 
 	// fromMarkdown makes the editor's blocks; toStored turns them into the stored form (browser only).
