@@ -12,6 +12,7 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`â
 - The editor's colours come from the `@atom-forge/ui` theme tokens (light/dark follow the host). Its block handles sit ~22 px left of its box: leave that much left padding around it.
 - The editor works inside an `@atom-forge/ui` modal or drawer: its menus (formatting bar, slash, Turn-into) go into the floating layer `Root` renders above them. `Esc` on a menu or link field closes only that; in a block the first `Esc` selects the block, the second also closes the modal or drawer.
 - No app-specific editor props: the editor takes code languages (`provideCodeLanguages`) and UI text (`messages` / `provideText`) from the host; everything else (media, screen widths, users) is the app's plugins' business: they read it from the app's own modules and contexts, and show their own controls in their view or their own fields `form`.
+- A field of formatted text on one line (a quiz answer, a caption) is an `InlineEditor` (`bind:value` is one line of inline markdown), or `<Editor oneline>` with a one-paragraph document: no blocks, menus or handles, `Enter` calls `onenter`, a paste is joined into one line; marks and inline plugins work.
 - No image, media or per-view concept: such blocks are app plugins that store what the app chooses (a URL, an id of its own library, a value per view) and resolve it with the app's own data, the same way in view, preview and `markdown`.
 - Plugin props are untrusted user input. Previews sanitize: `safeColor` for colours, check links and image addresses (`http(s)` or site-relative), clamp numbers, never `{@html}` with props.
 - A plugin view declares both `props` and `blocks` with `$bindable()`, even if unused.
@@ -28,7 +29,9 @@ Brickee is a block editor. Its core is a markdown block editor (`md:p`, `md:h1`â
 ```ts
 // @atom-forge/brickee â€” components
 // <Editor bind:value={StoredBlock[]} plugins?={BlockPlugin[]} palette?={string[]} messages?={Messages}
-//         readonly?={boolean} placeholder?={string} />   // `nested` is for Frame only
+//         readonly?={boolean} placeholder?={string} oneline?={boolean} onenter?={() => void} />   // `nested` is for Frame only
+// <InlineEditor bind:value={string} inlinePlugins?={InlinePlugin[]} messages?={Messages} readonly?={boolean}
+//               placeholder?={string} onenter?={() => void} />   // one line of inline markdown: Editor's `oneline` mode
 // <Preview blocks={StoredBlock[]} plugins={BlockPlugin[]} messages?={Messages}
 //          inlinePlugins?={InlinePlugin[]} nested?={boolean} />
 // <Frame bind:blocks {readonly} {palette} {plugins} heading?={string} empty?={string} image?={string} placeholder?={string} />

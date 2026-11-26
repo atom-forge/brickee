@@ -2,6 +2,7 @@
 // with; every other block is a plugin with an editor view, a site preview and optionally a markdown form. The bundled
 // plugins (@atom-forge/brickee/plugins) are plugins like any other. The stored form is `StoredBlock[]` (see model.ts).
 export { default as Editor } from './Editor.svelte';
+export { default as InlineEditor } from './InlineEditor.svelte';
 export { default as Preview } from './Preview.svelte';
 // The kit: what plugins are written with (box frame, empty state, helpers).
 export { default as Frame } from './kit/Frame.svelte';

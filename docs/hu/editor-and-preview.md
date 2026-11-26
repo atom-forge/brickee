@@ -14,6 +14,8 @@
 | `readonly` | `boolean` | `false` | Szerkesztés nélkül mutatja a dokumentumot; a pluginmezők rejtve vannak. Az írásvédett szerkesztő soha nem írja a `value`-t. |
 | `placeholder` | `string` | `Write something, or press '/' for blocks…` | Az üres blokk tippszövege. |
 | `nested` | `boolean` | `false` | A beágyazott blokkokat tartalmazó pluginok állítják be a belső szerkesztőjükön; a befogadó alkalmazás soha nem állítja be. |
+| `oneline` | `boolean` | `false` | Egy sor inline szöveg: egyetlen bekezdés, blokkok nélkül (lásd [Egysoros szerkesztő](#egysoros-szerkesztő)). |
+| `onenter` | `() => void` | — | Egysoros szerkesztő: `Enter`-t nyomtak. |
 
 Az üres dokumentum egyetlen üres bekezdésként jelenik meg, így a szerkesztő által visszaírt érték a csatolás után soha nem üres tömb: legalább `[{ type: 'md:p', indent: 0, text: '' }]`. Az előnézet kihagyja az üres bekezdéseket.
 
@@ -87,6 +89,34 @@ Hogy egy blokk mivé alakítható, az attól függ, mit tartalmaz (a `content` �
 - a tartalom nélküli blokk (elválasztó, videó, térkép) csak üres blokkokat vagy más tartalom nélküli blokkokat válthat fel;
 - a beágyazott blokkokat tartalmazó blokk (egy doboz) körbefoghatja a kijelölt blokkokat, ha mindegyiket elfogadja; a **„Kicsomagolás”** kimozgatja a doboz blokkjait; egy doboz átalakítható másik dobozszerű típussá, és az azonos nevű props értékek átkerülnek.
 
+## Egysoros szerkesztő
+
+Formázott szövegű mezőhöz — egy tesztkérdés válaszához, egy képaláíráshoz — az `InlineEditor` egyetlen sor inline markdownt szerkeszt, szöveges értékkel:
+
+```svelte
+<script lang="ts">
+	import { InlineEditor } from '@atom-forge/brickee';
+	import { inlineMath } from '@atom-forge/brickee/math';
+
+	let answer = $state('$\\mathcal{O}(n^2)$ lépés');
+	let next = () => {};
+</script>
+
+<InlineEditor bind:value={answer} inlinePlugins={[inlineMath]} placeholder="Válasz" onenter={next} />
+```
+
+| Prop | Típus | Alapérték | Jelentés |
+|---|---|---|---|
+| `value` | `string` (bindable) | `''` | A szöveg inline markdownként (`**félkövér**`, az inline képlet pluginnal `$x^2$`…), mindig egy sor. |
+| `readonly`, `placeholder`, `messages`, `inlinePlugins` | | | Mint a szerkesztőé. |
+| `onenter` | `() => void` | — | Entert nyomtak (pl. a következő mezőre lépéshez). |
+
+Ez a szerkesztő `oneline` módja; az `<Editor oneline>` szöveg helyett egy bekezdésből álló dokumentumot kap. Ebben a módban:
+
+- a mező egyetlen bekezdés: nincs perjeles menü, nincsenek markdown blokk-rövidítések (a `# ` szöveg marad), nincs fogantyú, blokkjelölés és „Átalakítás” menü, és nincs hely a szöveg alatt — így bal oldali térköz sem kell neki;
+- az `Enter` és a `Shift+Enter` nem kezd új sort: az `Enter` meghívja az `onenter`-t; a `Tab` és az `Esc` megtartja a jelentését a befogadó alkalmazásnak (fókuszváltás, modális ablak bezárása); a `Ctrl/Cmd+A` a mező szövegét jelöli ki;
+- a beillesztés egy sorba kerül: a sima szöveg sorai szóközzel összefűzve, a formázott szöveg a jelöléseivel, a blokkjai összefűzve (az elválasztók és a plugin-blokkok kimaradnak);
+- a formázósáv, a begépelt jelölések, a linkek és az inline pluginok úgy működnek, mint bármelyik bekezdésben.
 ## Görgetés-szinkron
 
 Ha az alkalmazás egymás mellett mutatja a szerkesztőt és az előnézetet, az előnézet követheti a szerkesztő görgetését. A `scrollSync()` két Svelte actiont és egy függvényt ad vissza:

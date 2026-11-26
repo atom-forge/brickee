@@ -37,6 +37,15 @@
 		messages?: Messages;
 		/** Inline plugins (a formula inside the text…); nested editors share their parent's. */
 		inlinePlugins?: InlinePlugin<any>[];
+		/**
+		 * One line of inline text: a single paragraph, no blocks. Enter and Shift+Enter add no line (Enter calls
+		 * `onenter`), a paste is joined into one line, and there are no handles, block menus or slash menu. The
+		 * formatting bar, the marks and the inline plugins work as in any paragraph. `InlineEditor` wraps this with a
+		 * string value.
+		 */
+		oneline?: boolean;
+		/** One-line editor: Enter was pressed (e.g. to move on to the next field). */
+		onenter?: () => void;
 	}
 	let {
 		value: doc = $bindable([]),
@@ -46,7 +55,9 @@
 		plugins = [],
 		nested = false,
 		messages,
-		inlinePlugins: inlineProp
+		inlinePlugins: inlineProp,
+		oneline = false,
+		onenter
 	}: Props = $props();
 
 	provideText(() => messages);
@@ -62,8 +73,9 @@
 
 	// One level of nesting: an editor inside a block offers no block types that hold blocks themselves, nor unique
 	// ones (those belong to the top level).
+	// A one-line editor holds a paragraph only: no shortcut, paste or menu turns it into another block.
 	const palette = $derived(
-		(paletteProp ?? [...BUILT_IN_IDS, ...plugins.map((p) => p.type)]).filter((id) => {
+		(oneline ? [MD + 'p'] : (paletteProp ?? [...BUILT_IN_IDS, ...plugins.map((p) => p.type)])).filter((id) => {
 			const p = plugins.find((x) => x.type === id);
 			return !(nested && (p?.content === 'blocks' || p?.unique));
 		})
@@ -278,7 +290,7 @@
 
 	function detectSlash(ce: HTMLElement, b: Block) {
 		const sel = getSelection();
-		if (!sel || !sel.rangeCount || !sel.isCollapsed || b.type === 'code') {
+		if (oneline || !sel || !sel.rangeCount || !sel.isCollapsed || b.type === 'code') {
 			slash = null;
 			return;
 		}
@@ -442,6 +454,19 @@
 		const i = idx(b.id);
 
 		if (slash && handleSlashKey(e)) return;
+
+		// One line: no new line or block from the keyboard. Enter goes to the host; Tab and Esc keep their native and
+		// host meaning (focus, closing a modal); Ctrl+A selects the field's text; no block selection, turn or move.
+		if (oneline) {
+			if (key === 'Enter') {
+				e.preventDefault();
+				autoMark(ce, b, true);
+				onenter?.();
+				return;
+			}
+			if (key === 'Tab' || key === 'Escape') return;
+			if (mod && (key === '/' || key.toLowerCase() === 'a' || (e.shiftKey && (key === 'ArrowUp' || key === 'ArrowDown')))) return;
+		}
 
 		if (mod) {
 			const k = key.toLowerCase();
@@ -800,6 +825,26 @@
 		const ce = e.currentTarget as HTMLElement;
 		const norm = (text ?? '').replace(/\r/g, '');
 
+		// One line: plain text with its lines joined by a space; formatted text (markdown, a web page) keeps its marks,
+		// its blocks joined into one line (dividers and plugin blocks dropped).
+		if (oneline) {
+			if (!rich) {
+				const line = norm.replace(/\s*\n\s*/g, ' ').trim();
+				if (line) document.execCommand('insertText', false, line);
+				return;
+			}
+			const parts = splitAtCaret(ce);
+			if (!parts) return;
+			const pre = clean(parts[0]);
+			const mid = (pasted(data) ?? [])
+				.filter((p) => !atomic(p))
+				.map((p) => p.html.replace(/<br\s*\/?>/gi, ' '))
+				.join(' ');
+			mutate(() => (b.html = pre + mid + clean(parts[1])));
+			focusBlock(b.id, textLen(pre + mid));
+			return;
+		}
+
 		// Plain text into a code block, or a single line of plain text: typed in as it is.
 		if (!rich && (b.type === 'code' || !norm.includes('\n'))) {
 			norm.split('\n').forEach((line, n) => {
@@ -989,7 +1034,8 @@
 			else undo();
 			return;
 		}
-		if (e.target !== root || !selSet.size || !selH) return;
+		// a one-line editor has no block selection
+		if (oneline || e.target !== root || !selSet.size || !selH) return;
 		if (onTurnKey(e)) return;
 		// The turn-into menu from the keyboard: '/' or Ctrl+/ (also the menu key, Shift+F10) on selected blocks.
 		if (!readonly && (e.key === '/' || e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10'))) {
@@ -1442,6 +1488,7 @@
 <div
 	class="editor"
 	class:nested
+	class:oneline
 	class:sweeping={sweep.sweeping}
 	role="presentation"
 	bind:this={root}
@@ -1452,7 +1499,7 @@
 	onpaste={onRootPaste}
 	onmousedown={(e) => {
 		if (selA && !(e.target as HTMLElement).closest('.grab')) selA = selH = null;
-		sweep.start(e);
+		if (!oneline) sweep.start(e);
 	}}
 	ondragover={drag.over}
 	ondrop={drag.drop}
@@ -1470,7 +1517,7 @@
 			data-type={b.type}
 			style:--indent={b.indent}
 		>
-			{#if !readonly}
+			{#if !readonly && !oneline}
 				<div class="gutter">
 					<!-- The handle: a bar the full height of the block (so it shows what a drag moves), the grip icon in its
 					     middle. Drag to move, click for the turn-into menu. Hovering it shows a small dark bubble on its right
@@ -1610,7 +1657,7 @@
 		</div>
 	{/each}
 
-	{#if !readonly}
+	{#if !readonly && !oneline}
 		<button type="button" class="tail block w-full cursor-text border-0 bg-transparent {nested ? 'min-h-3' : 'min-h-20'}" aria-label={tr('New block at the end')} onclick={tailClick}></button>
 	{/if}
 
@@ -1686,6 +1733,10 @@
 		}
 		&.nested {
 			font-size: 1em;
+			padding-bottom: 0;
+		}
+		// One line: no room below for a next block.
+		&.oneline {
 			padding-bottom: 0;
 		}
 	}

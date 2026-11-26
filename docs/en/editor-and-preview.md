@@ -14,6 +14,8 @@
 | `readonly` | `boolean` | `false` | Shows the document without editing; plugin fields are hidden. A read-only editor never writes `value`. |
 | `placeholder` | `string` | `Write something, or press '/' for blocks…` | The hint of an empty block. |
 | `nested` | `boolean` | `false` | Set by plugins with nested blocks for their inner editor; a host never sets it. |
+| `oneline` | `boolean` | `false` | One line of inline text: a single paragraph, no blocks (see [One-line editor](#one-line-editor)). |
+| `onenter` | `() => void` | — | One-line editor: `Enter` was pressed. |
 
 An empty document is shown as one empty paragraph, so the value the editor writes back is never an empty array once it has been mounted: it is at least `[{ type: 'md:p', indent: 0, text: '' }]`. The preview skips empty paragraphs.
 
@@ -87,6 +89,34 @@ What a block can turn into depends on what it holds (its `content`):
 - a block without content (divider, video, map) only replaces empty blocks or other blocks without content;
 - a block with nested blocks (a box) can wrap the selected blocks, if it accepts all of them; **Unwrap** moves a box's blocks out; a box can turn into another box-like type, and the props with the same names carry over.
 
+## One-line editor
+
+For a field of formatted text — an answer of a quiz question, a caption — `InlineEditor` edits one line of inline markdown, with a string value:
+
+```svelte
+<script lang="ts">
+	import { InlineEditor } from '@atom-forge/brickee';
+	import { inlineMath } from '@atom-forge/brickee/math';
+
+	let answer = $state('$\\mathcal{O}(n^2)$ steps');
+	let next = () => {};
+</script>
+
+<InlineEditor bind:value={answer} inlinePlugins={[inlineMath]} placeholder="Answer" onenter={next} />
+```
+
+| Prop | Type | Default | Meaning |
+|---|---|---|---|
+| `value` | `string` (bindable) | `''` | The text as inline markdown (`**bold**`, `$x^2$` with the inline math plugin…), always one line. |
+| `readonly`, `placeholder`, `messages`, `inlinePlugins` | | | As the editor's. |
+| `onenter` | `() => void` | — | Enter was pressed (e.g. to move on to the next field). |
+
+It is the editor's `oneline` mode; `<Editor oneline>` takes a document of one paragraph instead of a string. In this mode:
+
+- the field is a single paragraph: no slash menu, no markdown block shortcuts (`# ` stays text), no handles, block selection or Turn-into menu, and no room below the text — so it needs no left padding either;
+- `Enter` and `Shift+Enter` add no line: `Enter` calls `onenter`; `Tab` and `Esc` keep their meaning for the host (moving the focus, closing a modal); `Ctrl/Cmd+A` selects the field's text;
+- a paste is joined into one line: plain text with its lines joined by a space, formatted text with its marks and its blocks joined (dividers and plugin blocks dropped);
+- the formatting bar, typed marks, links and inline plugins work as in any paragraph.
 ## Scroll sync
 
 A host that shows the editor and the preview side by side can make the preview follow the editor's scrolling. `scrollSync()` returns two Svelte actions and a function:

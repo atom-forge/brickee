@@ -7,3 +7,4 @@ Tervezett munka, fontossági sorrendben. A részletek és az ötletek a `notes/`
 3. **Kódnéző dev-hiba:** a bemutatóoldal kódnézőjében a `svelte-highlight` `langtag.css` importja dev alatt 404-et ad.
 4. **Érintőképernyős húzás:** a blokkok húzása HTML5 drag-gel megy; eszközön nem próbáltuk. Ha nem megbízható, pointer-alapú húzás (a tábla sor/oszlop húzása a minta). Addig a „Mozgatás fel/le” menüpont pótolja.
 5. **Több saját plugin példa a bemutatóoldalon:** a gomb, a doboz és a saját mezőűrlapos fotó mellé további minták (pl. nézetenkénti érték saját `form`-mal és az alkalmazás kontextusával, egy galéria, egy alkalmazásadatból dolgozó blokk).
+6. **A formázósáv a bal szélen kilóg:** a kijelölés fölé középre kerül, és csak jobbról van korlátozva (`Math.min(…, innerWidth - …)`); a lap bal széléhez közeli kijelölésnél (pl. egy keskeny egysoros mezőben) a sáv eleje a képen kívül esik. Balról is korlátozni kell.
