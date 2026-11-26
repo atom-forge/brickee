@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-11-26
+
 ### Added
 
 - `InlineEditor` and the editor's `oneline` mode (`<Editor oneline>`, with `onenter`): one line of inline markdown for a field of formatted text (a quiz answer, a caption). A single paragraph with no slash menu, block shortcuts, handles, block selection or room below; `Enter` and `Shift+Enter` add no line (`Enter` calls `onenter`), `Tab`, `Esc` and `Ctrl/Cmd+A` keep their field meaning, and a paste is joined into one line (formatted text keeps its marks). The formatting bar, marks and inline plugins work as in any paragraph. `InlineEditor` binds a string. A `/dev/oneline` development page. Documented in the book (the editor and the preview), the docs and `README-AI.md`.
